@@ -14,6 +14,7 @@ import datetime
 from typing import Dict, Union, Generator
 import requests
 from requests.adapters import HTTPAdapter, Retry
+import numpy as np
 import pandas as pd
 from .utils import (
     api_config,
@@ -101,7 +102,7 @@ class GtRDataPreprocessor:
 
         # create publication_date from datePublished (miliseconds)
         publications_df["publication_date"] = publications_df["datePublished"].apply(
-            lambda x: datetime.datetime.fromtimestamp(x / 1000).strftime("%Y-%m-%d")
+            lambda x: datetime.datetime.fromtimestamp(x / 1000).strftime("%Y-%m-%d") if np.isfinite(x) else np.nan
         )
 
         # rename cols

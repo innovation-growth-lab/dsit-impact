@@ -8,3 +8,5 @@ notebook
 kedro-datasets[pandas.CSVDataset, pandas.ExcelDataset, pandas.ParquetDataset, plotly.PlotlyDataset, plotly.JSONDataset, matplotlib.MatplotlibWriter]>=1.0
 s3fs~=2024.6.0
 joblib~=1.4.2
+pandas~=2.2.2
+numpy~=2.0.0
