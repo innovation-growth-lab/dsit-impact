@@ -1,7 +1,7 @@
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/data/data_catalog.html
 _js: &_js
-  type: ${_json.type}
+  type: json.JSONDataset
   credentials: s3_credentials
 
 _pq: &_pq
@@ -40,7 +40,7 @@ _pkl: &_pkl
 
 _js_ptd: &_js_ptd
   type: partitions.PartitionedDataset
-  dataset: ${_json.type}
+  dataset: json.JSONDataset
   filename_suffix: ".json"
   credentials: s3_credentials
 
@@ -52,3 +52,11 @@ _csv_ptd: &_csv_ptd
       index: False
   filename_suffix: '.csv'
   credentials: s3_credentials
+
+gtr.data_collection.publications.raw:
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/gtr/publications/
+
+gtr.data_collection.publications.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/gtr/publications/main.parquet

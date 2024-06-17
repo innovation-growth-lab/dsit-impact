@@ -6,10 +6,12 @@ Functions:
     preprocess_data_to_df: Preprocesses the fetched data to a DataFrame.
     GtRDataPreprocessor: Class for preprocessing GtR data.
 """
+
 import logging
 import random
 import time
-from typing import Dict, List, Union, Any
+import datetime
+from typing import Dict, Union, Generator
 import requests
 from requests.adapters import HTTPAdapter, Retry
 import pandas as pd
@@ -35,7 +37,7 @@ class GtRDataPreprocessor:
         self.methods = {
             "organisations": self._preprocess_organisations,
             "funds": self._preprocess_funds,
-            "outcomes/publications": self._preprocess_publications,
+            "outcomes/publications": self.preprocess_publications,
             "projects": self._preprocess_projects,
         }
 
@@ -73,7 +75,8 @@ class GtRDataPreprocessor:
         funds_df = funds_df.drop(columns=["links"])
         return funds_df
 
-    def _preprocess_publications(self, publications_df: pd.DataFrame) -> pd.DataFrame:
+    @staticmethod
+    def preprocess_publications(publications_df: pd.DataFrame) -> pd.DataFrame:
         """
         Preprocesses the publications DataFrame by extracting project_id, renaming
         columns, and selecting specific columns.
@@ -96,6 +99,11 @@ class GtRDataPreprocessor:
             )
         )
 
+        # create publication_date from datePublished (miliseconds)
+        publications_df["publication_date"] = publications_df["datePublished"].apply(
+            lambda x: datetime.datetime.fromtimestamp(x / 1000).strftime("%Y-%m-%d")
+        )
+
         # rename cols
         publications_df = publications_df.rename(
             columns={
@@ -111,6 +119,7 @@ class GtRDataPreprocessor:
                 "outcome_id",
                 "title",
                 "type",
+                "publication_date",
                 "journal_title",
                 "publication_url",
                 "doi",
@@ -159,8 +168,8 @@ class GtRDataPreprocessor:
 
 
 def fetch_gtr_data(
-    parameters: Dict[str, Union[str, int]], endpoint, test: bool = False
-) -> List[Dict[str, Any]]:
+    parameters: Dict[str, Union[str, int]], endpoint: str
+) -> Generator[pd.DataFrame, None, None]:
     """Fetch data from the GtR API.
 
     Args:
@@ -172,11 +181,12 @@ def fetch_gtr_data(
     """
     config = api_config(parameters, endpoint)
 
-    all_data = []
     page = 1
     total_pages = 1
+    preprocessor = GtRDataPreprocessor()
 
     while page <= total_pages:
+        page_data = []
         url = f"{config['base_url']}{endpoint}?p={page}&s={config['page_size']}"
         session = requests.Session()
         retries = Retry(
@@ -188,7 +198,7 @@ def fetch_gtr_data(
             data = response.json()
             if "totalPages" in data and page == 1:
                 logger.info("Total pages: %s", data["totalPages"])
-                total_pages = data["totalPages"] if not test else 2
+                total_pages = data["totalPages"]
             if config["key"] in data:
                 items = data[config["key"]]
                 if not items:
@@ -196,7 +206,7 @@ def fetch_gtr_data(
                     break
                 for item in items:
                     item["page_fetched_from"] = page  # Add page info
-                    all_data.append(item)
+                    page_data.append(item)
             else:
                 logger.error("No '%s' key found in the response", config["key"])
                 break
@@ -204,25 +214,11 @@ def fetch_gtr_data(
             logger.error("Failed to decode JSON response")
             break
 
-        logger.info("Fetched page %s from %s", page, endpoint)
+        logger.info("Fetched page %s / %s", page, total_pages)
         page += 1
-        time.sleep(random.randint(2, 3))  # [HACK] Respect web etiquette
+        time.sleep(random.uniform(0, 0.5))  # [HACK] Respect web etiquette
 
-    return all_data
-
-
-def preprocess_data_to_df(
-    raw_data: List[Dict[str, Any]], endpoint: str
-) -> pd.DataFrame:
-    """Preprocess data to a DataFrame.
-
-    Args:
-        raw_data (List[Dict[str, Any]]): The raw data in a list of dictionaries.
-        endpoint (str): The endpoint to preprocess data for.
-
-    Returns:
-        pd.DataFrame: The preprocessed data.
-    """
-    df_data = pd.DataFrame(raw_data)
-    preprocess = GtRDataPreprocessor()
-    return preprocess.methods[endpoint](df_data)
+        # preprocess before save
+        page_df = pd.DataFrame(page_data)
+        page_df = preprocessor.preprocess_publications(page_df)
+        yield {f"p{page-1}": page_df}
