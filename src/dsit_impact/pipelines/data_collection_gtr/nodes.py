@@ -38,7 +38,7 @@ class GtRDataPreprocessor:
         self.methods = {
             "organisations": self._preprocess_organisations,
             "funds": self._preprocess_funds,
-            "outcomes/publications": self.preprocess_publications,
+            "publications": self._preprocess_publications,
             "projects": self._preprocess_projects,
         }
 
@@ -76,8 +76,7 @@ class GtRDataPreprocessor:
         funds_df = funds_df.drop(columns=["links"])
         return funds_df
 
-    @staticmethod
-    def preprocess_publications(publications_df: pd.DataFrame) -> pd.DataFrame:
+    def _preprocess_publications(self, publications_df: pd.DataFrame) -> pd.DataFrame:
         """
         Preprocesses the publications DataFrame by extracting project_id, renaming
         columns, and selecting specific columns.
@@ -221,5 +220,6 @@ def fetch_gtr_data(
 
         # preprocess before save
         page_df = pd.DataFrame(page_data)
-        page_df = preprocessor.preprocess_publications(page_df)
+        preprocessor = GtRDataPreprocessor()
+        page_df = preprocessor.methods[endpoint.split("/")[-1]](page_df)
         yield {f"p{page-1}": page_df}
