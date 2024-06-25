@@ -3,6 +3,7 @@ Test file for pipeline 'data_collection_gtr'. We use pytest, see more at:
 https://docs.pytest.org/en/latest/getting-started.html
 
 To run this test file just type in the terminal:
+$ pytest dsit_impact/tests/pipelines/data_collection_gtr/test_unit.py
 """
 
 # pylint: skip-file
