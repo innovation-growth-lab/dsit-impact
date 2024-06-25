@@ -19,12 +19,16 @@ gtr:
     publications:
       param_requests: ${.._param_requests}
       label: outcomes/publications
+      test_mode: ${test._false}
     organisations:
       param_requests: ${.._param_requests}
       label: organisations
+      test_mode: ${test._false}
     funds:
       param_requests: ${.._param_requests}
       label: funds
+      test_mode: ${test._false}
     projects:
       param_requests: ${.._param_requests}
       label: projects
+      test_mode: ${test._false}

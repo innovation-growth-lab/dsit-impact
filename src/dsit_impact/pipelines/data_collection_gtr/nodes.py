@@ -12,10 +12,11 @@ import random
 import time
 import datetime
 from typing import Dict, Union, Generator
-import requests
-from requests.adapters import HTTPAdapter, Retry
 import numpy as np
 import pandas as pd
+import requests
+from requests.adapters import HTTPAdapter, Retry
+from kedro.io import AbstractDataset
 from .utils import (
     api_config,
     extract_main_address,
@@ -172,7 +173,7 @@ class GtRDataPreprocessor:
 
 
 def fetch_gtr_data(
-    parameters: Dict[str, Union[str, int]], endpoint: str
+    parameters: Dict[str, Union[str, int]], endpoint: str, **kwargs
 ) -> Generator[pd.DataFrame, None, None]:
     """Fetch data from the GtR API.
 
@@ -202,28 +203,57 @@ def fetch_gtr_data(
             data = response.json()
             if "totalPages" in data and page == 1:
                 logger.info("Total pages: %s", data["totalPages"])
-                total_pages = data["totalPages"]
+                total_pages = 2 if kwargs.get("test_mode") is True else data["totalPages"]
             if config["key"] in data:
                 items = data[config["key"]]
                 if not items:
                     logger.info("No more data to fetch. Exiting loop.")
                     break
                 for item in items:
-                    item["page_fetched_from"] = page  # Add page info
+                    item["page_fetched_from"] = page # add page info
                     page_data.append(item)
             else:
                 logger.error("No '%s' key found in the response", config["key"])
                 break
-        except ValueError:  # [HACK] includes simplejson.decoder.JSONDecodeError
+        except ValueError:
             logger.error("Failed to decode JSON response")
             break
 
         logger.info("Fetched page %s / %s", page, total_pages)
         page += 1
-        time.sleep(random.uniform(0, 0.5))  # [HACK] Respect web etiquette
+        time.sleep(random.uniform(0, 0.5))
 
         # preprocess before save
         page_df = pd.DataFrame(page_data)
         preprocessor = GtRDataPreprocessor()
         page_df = preprocessor.methods[endpoint.split("/")[-1]](page_df)
         yield {f"p{page-1}": page_df}
+
+
+def concatenate_endpoint(abstract_dict: Union[AbstractDataset, Dict[str, pd.DataFrame]]) -> pd.DataFrame:
+    """
+    Concatenate DataFrames from a single endpoint into a single DataFrame.
+
+    Args:
+        abstract_dict (AbstractDataset): A dictionary where the keys are
+            the endpoint names and the values are functions that load the
+            DataFrames for each endpoint.
+
+    Returns:
+        pd.DataFrame: The concatenated DataFrame.
+    """
+    dataframes = []
+    for key, load_function in abstract_dict.items():
+        try:
+            try:
+                df = load_function()
+            except TypeError:
+                df = load_function
+            dataframes.append(df)
+        except Exception as e: # pylint: disable=broad-except
+            print(f"Failed to load DataFrame for {key}: {e}")
+
+    # concatenate all DataFrames into a single DataFrame
+    concatenated_df = pd.concat(dataframes, ignore_index=True)
+
+    return concatenated_df
