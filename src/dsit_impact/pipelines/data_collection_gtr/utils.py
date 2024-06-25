@@ -7,6 +7,7 @@ Functions:
     extract_value_from_nested_dict: Extracts a value from a nested dictionary.
     transform_nested_dict: Transforms a column containing nested dictionaries.
 """
+
 from typing import Dict, List, Any
 import pandas as pd
 
@@ -16,7 +17,7 @@ def api_config(parameters: Dict[str, Any], endpoint: str) -> Dict[str, Any]:
     Constructs the API configuration dictionary for a given endpoint.
 
     Args:
-        parameters (Dict[str, Any]): A dictionary containing the parameters for 
+        parameters (Dict[str, Any]): A dictionary containing the parameters for
             the API configuration.
         endpoint (str): The endpoint URL.
 
@@ -106,7 +107,9 @@ def extract_value_from_nested_dict(
     return matched_dict[extract_key].split("/")[-1] if matched_dict else None
 
 
-def transform_nested_dict(df: pd.DataFrame, parent_col: str, inner_keys: List[str]) -> pd.DataFrame:
+def transform_nested_dict(
+    df: pd.DataFrame, parent_col: str, inner_keys: List[str]
+) -> pd.DataFrame:
     """
     Transforms a column containing nested dictionaries into an inner dict.
 
@@ -122,7 +125,10 @@ def transform_nested_dict(df: pd.DataFrame, parent_col: str, inner_keys: List[st
     def _extract_dict(row):
         # Extract the nested list/dict under the parent key
         nested_items = row.get(parent_col, [])[parent_col[:-1]]
-        return [{key: item[key] for key in item if key in inner_keys} for item in nested_items]
+        return [
+            {key: item[key] for key in item if key in inner_keys}
+            for item in nested_items
+        ]
 
     df[parent_col] = df.apply(_extract_dict, axis=1)
     return df

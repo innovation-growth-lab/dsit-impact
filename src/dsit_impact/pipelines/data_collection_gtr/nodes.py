@@ -101,7 +101,11 @@ class GtRDataPreprocessor:
 
         # create publication_date from datePublished (miliseconds)
         publications_df["publication_date"] = publications_df["datePublished"].apply(
-            lambda x: datetime.datetime.fromtimestamp(x / 1000).strftime("%Y-%m-%d") if np.isfinite(x) else np.nan
+            lambda x: (
+                datetime.datetime.fromtimestamp(x / 1000).strftime("%Y-%m-%d")
+                if np.isfinite(x)
+                else np.nan
+            )
         )
 
         # rename cols
