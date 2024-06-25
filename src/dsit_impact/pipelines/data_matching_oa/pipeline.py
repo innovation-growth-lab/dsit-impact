@@ -11,7 +11,7 @@ from .nodes import (
 )
 
 
-def create_pipeline(**kwargs) -> Pipeline:
+def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
     """
     Creates a pipeline for collecting data from the GTR API.
 
