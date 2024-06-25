@@ -3,7 +3,10 @@ Test file for pipeline 'data_collection_gtr'. We use pytest, see more at:
 https://docs.pytest.org/en/latest/getting-started.html
 
 To run this test file just type in the terminal:
-$ pytest dsit_impact/tests/pipelines/data_collection_gtr/test_unit.py
+$ pytest tests/pipelines/data_collection_gtr/test_unit.py
+
+To run a specific parameterized test, use the following command:
+$ pytest tests/pipelines/data_collection_gtr/test_unit.py::test_nodes[projects]
 """
 
 # pylint: skip-file
@@ -36,7 +39,8 @@ def test_nodes(params, endpoint):
 
     # fetch data from the GtR API
     data_generator = fetch_gtr_data(
-        parameters=params[endpoint]["param_requests"], endpoint=params[endpoint]["label"]
+        parameters=params[endpoint]["param_requests"],
+        endpoint=params[endpoint]["label"],
     )
 
     data = next(data_generator)
