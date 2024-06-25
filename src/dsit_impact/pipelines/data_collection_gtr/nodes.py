@@ -214,14 +214,14 @@ def fetch_gtr_data(
                     page_data.append(item)
             else:
                 logger.error("No '%s' key found in the response", config["key"])
-                break
-        except ValueError:
+                continue
+        except ValueError:  # [HACK] includes simplejson.decoder.JSONDecodeError
             logger.error("Failed to decode JSON response")
-            break
+            continue
 
         logger.info("Fetched page %s / %s", page, total_pages)
         page += 1
-        time.sleep(random.uniform(0, 0.5))
+        time.sleep(random.uniform(0.1, 0.3))  # [HACK] Respect web etiquette
 
         # preprocess before save
         page_df = pd.DataFrame(page_data)
