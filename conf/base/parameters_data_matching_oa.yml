@@ -5,7 +5,7 @@
 # Link: https://docs.kedro.org/en/0.19.6/configuration/parameters.html
 
 oa:
-  data_collection:
+  data_matching:
     # API configuration
     api: &api
       mailto: data_analytics@nesta.org.uk

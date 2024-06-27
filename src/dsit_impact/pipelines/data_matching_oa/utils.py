@@ -248,6 +248,7 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                     "title",
                     "publication_date",
                     "cited_by_count",
+                    "counts_by_year",
                     "authorships",
                     "topics",
                     "concepts",
@@ -271,9 +272,6 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
             lambda x: (x.get("mag") if x and x.get("mag") else None)
         )
 
-        # change doi to remove the url
-        df["doi"] = df["doi"].str.replace("https://doi.org/", "")
-
         # break atuhorship nested dictionary jsons, create triplets of authorship
         df["authorships"] = df["authorships"].apply(
             lambda x: (
@@ -295,6 +293,18 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                     )
                     for author in x
                     for inst in author["institutions"] or [{}]
+                ]
+                if x
+                else None
+            )
+        )
+
+        # create tuples from counts by year, if available
+        df["counts_by_year"] = df["counts_by_year"].apply(
+            lambda x: (
+                [
+                    (year["year"], year["cited_by_count"])
+                    for year in x
                 ]
                 if x
                 else None
@@ -354,6 +364,21 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                 else None
             )
         )
+
+        df = df[[
+            "id",
+            "doi",
+            "pmid",
+            "mag_id",
+            "title",
+            "publication_date",
+            "cited_by_count",
+            "counts_by_year",
+            "authorships",
+            "topics",
+            "concepts",
+            "grants",
+        ]]
 
         # append to output
         output.append(df)

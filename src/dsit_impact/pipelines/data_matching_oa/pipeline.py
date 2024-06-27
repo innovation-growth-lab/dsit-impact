@@ -56,7 +56,7 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
                 name="concatenate_openalex"
             )
         ],
-        namespace="oa.data_collection.gtr",
+        namespace="oa.data_matching.gtr",
     )
 
     return gtr_collection_pipeline

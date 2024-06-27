@@ -24,18 +24,11 @@ def preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The preprocessed publication data.
     """
     if "doi" in df.columns:
-        df["doi"] = (
-            df["doi"]
-            .str.replace("/dx.", "/", regex=True)
-            .str.replace("http:", "https:", regex=False)
-            .str.split()
-            .str[0]
-            .apply(lambda x: x if isinstance(x, str) and x.count(":") <= 1 else None)
-        )
+        df["doi"] = df["doi"].str.extract(r'(10\..+)')
     return df
 
 
-def create_list_doi_inputs(df: pd.DataFrame) -> list:
+def create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
     """Create a list of doi values from the Gateway to Research publication data.
 
     Args:
@@ -47,7 +40,7 @@ def create_list_doi_inputs(df: pd.DataFrame) -> list:
     doi_singleton_list = df[df["doi"].notnull()]["doi"].drop_duplicates().tolist()
 
     # concatenate doi values to create group querise
-    doi_list = preprocess_ids(doi_singleton_list, grouped=True)
+    doi_list = preprocess_ids(doi_singleton_list, kwargs.get("grouped", True))
 
     return doi_list
 
@@ -101,5 +94,7 @@ def concatenate_openalex(
     outputs = []
     for i, (key, batch_loader) in enumerate(data.items()):
         data_batch = batch_loader()
-        outputs.append(json_loader(data_batch))
+        df_batch = json_loader(data_batch)
+        outputs.append(df_batch)
         logger.info("Loaded %s. Progress: %s/%s", key, i + 1, len(data))
+    return pd.concat(outputs)
