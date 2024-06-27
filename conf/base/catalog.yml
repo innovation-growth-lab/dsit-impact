@@ -70,5 +70,5 @@ oa.data_collection.gtr.doi.raw:
 
 oa.data_collection.gtr.doi.intermediate:
   <<: *_pq
-  path: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/doi/
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/doi/main.parquet
   
