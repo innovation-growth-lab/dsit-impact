@@ -57,6 +57,18 @@ gtr.data_collection.publications.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/gtr/publications/
 
-gtr.data_collection.publications.intermediate:
+gtr.data_collection.publications.intermediate: &gtr_input_publications
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/gtr/publications/main.parquet
+
+oa.data_matching.gtr.input:
+  <<: *gtr_input_publications
+
+oa.data_matching.gtr.doi.raw:
+  <<: *_js_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/doi/
+
+oa.data_matching.gtr.doi.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/doi/main.parquet
+  
