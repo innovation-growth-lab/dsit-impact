@@ -4,10 +4,11 @@ generated using Kedro 0.19.6
 """
 
 import logging
-from typing import List, Dict, Union, Callable
+from typing import List, Dict, Union, Callable, Generator
 import pandas as pd
 from joblib import Parallel, delayed
-from .utils import fetch_papers_for_id, preprocess_ids
+from kedro.io import AbstractDataset
+from .utils import fetch_papers_for_id, preprocess_ids, json_loader
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ def create_list_doi_inputs(df: pd.DataFrame) -> list:
 
     return doi_list
 
+
 def fetch_papers(
     ids: Union[List[str], List[List[str]]],
     mailto: str,
@@ -83,3 +85,21 @@ def fetch_papers(
         )
         for i, chunk in enumerate(oa_id_chunks)
     }
+
+
+def concatenate_openalex(
+    data: Dict[str, AbstractDataset],
+) -> Generator[pd.DataFrame, None, None]:
+    """
+    Load the partitioned JSON dataset, iterate transforms, return dataframe.
+
+    Args:
+        data (Dict[str, AbstractDataset]): The partitioned JSON dataset.
+
+
+    """
+    outputs = []
+    for i, (key, batch_loader) in enumerate(data.items()):
+        data_batch = batch_loader()
+        outputs.append(json_loader(data_batch))
+        logger.info("Loaded %s. Progress: %s/%s", key, i + 1, len(data))

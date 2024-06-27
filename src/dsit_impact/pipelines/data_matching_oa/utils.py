@@ -6,7 +6,9 @@ import logging
 from typing import Iterator, List, Dict, Sequence, Union, Generator
 import time
 import requests
+import pandas as pd
 from requests.adapters import HTTPAdapter, Retry
+from kedro.io import AbstractDataset
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +77,7 @@ def _parse_results(response: List[Dict]) -> Dict[str, List[str]]:
         for paper in response
     ]
 
+
 def preprocess_ids(
     ids: Union[str, List[str], Dict[str, str]], grouped: bool = True
 ) -> List[str]:
@@ -92,7 +95,8 @@ def _chunk_oa_ids(ids: List[str], chunk_size: int = 50) -> Generator[str, None, 
     """Yield successive chunk_size-sized chunks from ids."""
     for i in range(0, len(ids), chunk_size):
         yield "|".join(ids[i : i + chunk_size])
-        
+
+
 def _works_generator(
     mailto: str,
     perpage: str,
@@ -190,6 +194,7 @@ def _works_generator(
             logger.error("Error fetching data for %s: %s", oa_id, e)
             yield []
 
+
 def fetch_papers_for_id(
     oa_id: Union[str, List[str]],
     mailto: str,
@@ -217,3 +222,143 @@ def fetch_papers_for_id(
 
     return papers_for_id
 
+
+def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
+    """
+    Load JSON data, transform it into a DataFrame, and wrangle data.
+
+    Args:
+        data (Dict[str, Union[str, List[str]]): The JSON data.
+
+    Returns:
+        pandas.DataFrame: The transformed DataFrame.
+
+    """
+    output = []
+
+    for batch in data:
+        json_data = [
+            {
+                k: v
+                for k, v in item.items()
+                if k
+                in [
+                    "id",
+                    "ids",
+                    "doi",
+                    "title",
+                    "publication_date",
+                    "cited_by_count",
+                    "authorships",
+                    "topics",
+                    "concepts",
+                    "grants",
+                ]
+            }
+            for item in batch
+        ]
+
+        df = pd.DataFrame(json_data)
+
+        df["pmid"] = df["ids"].apply(
+            lambda x: (
+                x.get("pmid").replace("https://pubmed.ncbi.nlm.nih.gov/", "")
+                if x and x.get("pmid")
+                else None
+            )
+        )
+
+        df["mag_id"] = df["ids"].apply(
+            lambda x: (x.get("mag") if x and x.get("mag") else None)
+        )
+
+        # change doi to remove the url
+        df["doi"] = df["doi"].str.replace("https://doi.org/", "")
+
+        # break atuhorship nested dictionary jsons, create triplets of authorship
+        df["authorships"] = df["authorships"].apply(
+            lambda x: (
+                [
+                    (
+                        (
+                            author["author"]["id"].replace("https://openalex.org/", ""),
+                            inst["id"].replace("https://openalex.org/", ""),
+                            inst["country_code"],
+                            author["author_position"],
+                        )
+                        if author["institutions"]
+                        else [
+                            author["author"]["id"].replace("https://openalex.org/", ""),
+                            "",
+                            "",
+                            author["author_position"],
+                        ]
+                    )
+                    for author in x
+                    for inst in author["institutions"] or [{}]
+                ]
+                if x
+                else None
+            )
+        )
+
+        # create a list of topics
+        df["topics"] = df["topics"].apply(
+            lambda x: (
+                [
+                    (
+                        topic["id"].replace("https://openalex.org/", ""),
+                        topic["display_name"],
+                        topic["subfield"]["id"].replace("https://openalex.org/", ""),
+                        topic["subfield"]["display_name"],
+                        topic["field"]["id"].replace("https://openalex.org/", ""),
+                        topic["field"]["display_name"],
+                        topic["domain"]["id"].replace("https://openalex.org/", ""),
+                        topic["domain"]["display_name"],
+                    )
+                    for topic in x
+                ]
+                if x
+                else None
+            )
+        )
+
+        # extract concepts
+        df["concepts"] = df["concepts"].apply(
+            lambda x: (
+                [
+                    (
+                        concept["id"].replace("https://openalex.org/", ""),
+                        concept["display_name"],
+                    )
+                    for concept in x
+                ]
+                if x
+                else None
+            )
+        )
+
+        # process grants, getting triplets out of "funder", "funder_display_name", and "award_id"
+        df["grants"] = df["grants"].apply(
+            lambda x: (
+                [
+                    (
+                        grant.get("funder", {})
+                        # .get("id", "")
+                        .replace("https://openalex.org/", ""),
+                        grant.get("funder_display_name"),
+                        grant.get("award_id"),
+                    )
+                    for grant in x
+                ]
+                if x
+                else None
+            )
+        )
+
+        # append to output
+        output.append(df)
+
+    df = pd.concat(output)
+
+    return df

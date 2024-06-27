@@ -64,7 +64,11 @@ gtr.data_collection.publications.intermediate: &gtr_input_publications
 oa.data_collection.gtr.input:
   <<: *gtr_input_publications
 
-oa.data_collection.gtr.raw:
+oa.data_collection.gtr.doi.raw:
   <<: *_js_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/doi/
+
+oa.data_collection.gtr.doi.intermediate:
+  <<: *_pq
+  path: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/doi/
   

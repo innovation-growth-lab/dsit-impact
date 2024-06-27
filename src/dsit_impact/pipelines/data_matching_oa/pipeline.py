@@ -8,6 +8,7 @@ from .nodes import (
     preprocess_publication_doi,
     create_list_doi_inputs,
     fetch_papers,
+    concatenate_openalex
 )
 
 
@@ -45,9 +46,15 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
                     "filter_criteria": "params:filter_doi",
                     "parallel_jobs": "params:n_jobs",
                 },
-                outputs="raw",
+                outputs="doi.raw",
                 name="fetch_papers",
             ),
+            node(
+                func=concatenate_openalex,
+                inputs={"data": "doi.raw"},
+                outputs="doi.intermediate",
+                name="concatenate_openalex"
+            )
         ],
         namespace="oa.data_collection.gtr",
     )
