@@ -259,6 +259,8 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
         ]
 
         df = pd.DataFrame(json_data)
+        if df.empty:
+            continue
 
         df["pmid"] = df["ids"].apply(
             lambda x: (
