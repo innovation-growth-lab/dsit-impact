@@ -8,7 +8,6 @@ import time
 import requests
 import pandas as pd
 from requests.adapters import HTTPAdapter, Retry
-from kedro.io import AbstractDataset
 
 logger = logging.getLogger(__name__)
 
