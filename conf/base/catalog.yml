@@ -72,3 +72,6 @@ oa.data_matching.gtr.doi.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/doi/main.parquet
   
+cr.data_matching.gtr.doi.raw:
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/cr/matches/

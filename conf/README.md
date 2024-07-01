@@ -9,3 +9,7 @@ The `local` folder should be used for configuration that is either user-specific
 ## Base configuration
 
 The `base` folder is for shared configuration, such as non-sensitive and project-related configuration that may be shared across team members. Note that **credentials** are ignored by git, in practice users will need to create a `credentials.yml` file in `base` folder to include sensitive information, such as AWS S3 credentials.
+
+## Findings 
+- There are many repeated publication outcomes, often with different IDs.
+- 
