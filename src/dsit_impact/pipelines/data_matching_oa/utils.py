@@ -6,8 +6,10 @@ import logging
 from typing import Iterator, List, Dict, Sequence, Union, Generator
 import time
 import requests
-import pandas as pd
 from requests.adapters import HTTPAdapter, Retry
+import pandas as pd
+from html import unescape
+from thefuzz import fuzz
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +95,7 @@ def preprocess_ids(
 def _chunk_oa_ids(ids: List[str], chunk_size: int = 50) -> Generator[str, None, None]:
     """Yield successive chunk_size-sized chunks from ids."""
     for i in range(0, len(ids), chunk_size):
-        yield "|".join(ids[i : i + chunk_size])
+        yield "|".join(ids[i: i + chunk_size])
 
 
 def _works_generator(
@@ -126,7 +128,8 @@ def _works_generator(
     # multiple filter criteria
     if isinstance(filter_criteria, list) and isinstance(oa_id, list):
         filter_string = ",".join(
-            [f"{criteria}:{id_}" for criteria, id_ in zip(filter_criteria, oa_id)]
+            [f"{criteria}:{id_}" for criteria,
+                id_ in zip(filter_criteria, oa_id)]
         )
     else:
         filter_string = f"{filter_criteria}:{oa_id}"
@@ -151,7 +154,8 @@ def _works_generator(
             logger.info("Fetching data for %s", oa_id[:50])
             total_results = data["meta"]["count"]
             num_calls = total_results // int(perpage) + 1
-            logger.info("Total results: %s, in %s calls", total_results, num_calls)
+            logger.info("Total results: %s, in %s calls",
+                        total_results, num_calls)
             while cursor:
                 response = session.get(cursor_url.format(cursor), timeout=20)
                 data = response.json()
@@ -165,7 +169,8 @@ def _works_generator(
     else:  # OA does not accept cursor pagination with samples.
         cursor_url = (
             f"https://api.openalex.org/works?filter={filter_string}&seed=123"
-            f"&mailto={mailto}&per-page={perpage}&sample={sample_size}&page={{}}"
+            f"&mailto={
+                mailto}&per-page={perpage}&sample={sample_size}&page={{}}"
         )
 
         try:
@@ -182,7 +187,8 @@ def _works_generator(
             logger.info("Fetching data for %s", oa_id[:50])
             total_results = data["meta"]["count"]
             num_calls = total_results // int(perpage) + 1
-            logger.info("Total results: %s, in %s calls", total_results, num_calls)
+            logger.info("Total results: %s, in %s calls",
+                        total_results, num_calls)
             for page in range(1, num_calls + 1):
                 response = session.get(cursor_url.format(page), timeout=20)
                 data = response.json()
@@ -210,7 +216,8 @@ def fetch_papers_for_id(
     retries = Retry(total=5, backoff_factor=0.3)
     session.mount("https://", HTTPAdapter(max_retries=retries))
     for page, papers in enumerate(
-        _works_generator(mailto, perpage, oa_id, filter_criteria, session, **kwargs)
+        _works_generator(mailto, perpage, oa_id,
+                         filter_criteria, session, **kwargs)
     ):
         papers_for_id.extend(_parse_results(papers))
         logger.info(
@@ -280,14 +287,16 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                 [
                     (
                         (
-                            author["author"]["id"].replace("https://openalex.org/", ""),
+                            author["author"]["id"].replace(
+                                "https://openalex.org/", ""),
                             inst["id"].replace("https://openalex.org/", ""),
                             inst["country_code"],
                             author["author_position"],
                         )
                         if author["institutions"]
                         else [
-                            author["author"]["id"].replace("https://openalex.org/", ""),
+                            author["author"]["id"].replace(
+                                "https://openalex.org/", ""),
                             "",
                             "",
                             author["author_position"],
@@ -320,11 +329,14 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                     (
                         topic["id"].replace("https://openalex.org/", ""),
                         topic["display_name"],
-                        topic["subfield"]["id"].replace("https://openalex.org/", ""),
+                        topic["subfield"]["id"].replace(
+                            "https://openalex.org/", ""),
                         topic["subfield"]["display_name"],
-                        topic["field"]["id"].replace("https://openalex.org/", ""),
+                        topic["field"]["id"].replace(
+                            "https://openalex.org/", ""),
                         topic["field"]["display_name"],
-                        topic["domain"]["id"].replace("https://openalex.org/", ""),
+                        topic["domain"]["id"].replace(
+                            "https://openalex.org/", ""),
                         topic["domain"]["display_name"],
                     )
                     for topic in x
@@ -388,3 +400,118 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
     df = pd.concat(output)
 
     return df
+
+
+def process_item(
+    item: Dict[str, Union[str, Dict[str, str]]],
+    title: str,
+    author: str,
+    journal: str,
+    publication_date: str
+) -> Union[Dict[str, Union[str, int, float]], None]:
+    """
+    Process an item and return a dictionary containing relevant information if the
+    item meets certain criteria.
+
+    Args:
+        item (Dict[str, Union[str, Dict[str, str]]]): The item to be processed.
+        title (str): The title to compare with the item's title.
+        author (str): The author to compare with the item's author.
+        journal (str): The journal to compare with the item's journal.
+        publication_date (str): The publication date to compare with the item's year.
+
+    Returns:
+        Union[Dict[str, Union[str, int, float]], None]: A dictionary containing relevant
+        information if the item meets the criteria, or None if the item does not meet the
+        criteria.
+    """
+    try:
+        year = item["issued"]["date-parts"][0][0]
+        cr = {
+            "title": item["title"][0],
+            "author": f"{item['author'][0]['family']}, {item['author'][0]['given']}",
+            "journal": item["container-title"][0],
+            "year": year,
+            "doi": item["DOI"].lower(),
+            "score": item["score"],
+            "year_diff": abs(year - int(publication_date[:4])),
+        }
+        # calculate fuzzy scores and average them
+        fuzzy_scores = [
+            fuzz.token_set_ratio(title.lower(), cr["title"].lower()),
+            fuzz.token_set_ratio(author.lower(), cr["author"].lower()),
+        ]
+        if journal:
+            fuzzy_scores.append(fuzz.token_set_ratio(journal, cr["journal"]))
+        cr["fuzzy_score"] = sum(fuzzy_scores) / len(fuzzy_scores)
+
+        return cr if cr["year_diff"] <= 1 else None
+    except KeyError as e:
+        logger.warning("Missing key: %s", e)
+    except Exception as e:  # pylint: disable=broad-except
+        logger.warning("Error processing item: %s", e)
+    return None
+
+
+def clean_html_entities(
+    input_record: Dict[str, Union[str, int, float]]
+) -> Dict[str, Union[str, int, float]]:
+    """
+    Iterate over each key-value pair in the record and unescape HTML entities
+    in string values
+    """
+    return {
+        key: unescape(value.replace("&", "and")) if isinstance(
+            value, str) else value
+        for key, value in input_record.items()
+    }
+
+
+def select_best_match(
+    outcome_id: str, matches: List[Dict[str, Union[str, int, float]]]
+) -> Union[Dict[str, Union[str, int, float]], None]:
+    """
+    Selects the best match from a list of matches based on a composite score.
+
+    Args:
+        outcome_id (str): The ID of the outcome.
+        matches (List[Dict[str, Union[str, int, float]]]): A list of dictionaries
+        representing the matches.
+
+    Returns:
+        Union[Dict[str, Union[str, int, float]], None]: The best match dictionary
+        or None if no match is found.
+    """
+    best_match = None
+    highest_score = 0
+    for match in matches:
+        cr_score = match["score"]
+        cr_fuzzy_score = match["fuzzy_score"]
+
+        composite_score = cr_score + cr_fuzzy_score
+
+        if all([composite_score > highest_score, cr_score > 60, cr_fuzzy_score > 60]):
+            highest_score = composite_score
+            match["outcome_id"] = outcome_id
+            best_match = match
+
+    return best_match
+
+
+def setup_session():
+    """
+    Set up and configure a session for making HTTP requests.
+
+    Returns:
+        requests.Session: The configured session object.
+    """
+    retry_strategy = Retry(
+        total=3,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["HEAD", "GET", "OPTIONS"],
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = requests.Session()
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
