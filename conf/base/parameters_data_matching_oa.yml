@@ -15,3 +15,7 @@ oa:
       filter_doi: doi
       filter_oa: "ids.openalex"
       n_jobs: 8
+crossref:
+  doi_matching:
+    gtr:
+      api: *api

@@ -8,7 +8,9 @@ from .nodes import (
     preprocess_publication_doi,
     create_list_doi_inputs,
     fetch_papers,
-    concatenate_openalex
+    concatenate_openalex,
+    crossref_doi_match,
+    concatenate_crossref
 )
 
 
@@ -59,4 +61,25 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
         namespace="oa.data_matching.gtr",
     )
 
-    return gtr_collection_pipeline
+    cross_ref_matcher_pipeline = pipeline(
+        [
+            node(
+                func=crossref_doi_match,
+                inputs={
+                    "oa_data": "oa.data_matching.gtr.doi.intermediate",
+                    "gtr_data": "oa.data_matching.gtr.input",
+                    "mailto": "params:crossref.doi_matching.gtr.api.mailto",
+                },
+                outputs="cr.data_matching.gtr.doi.raw",
+                name="crossref_doi_match"
+            ),
+            node(
+                func=concatenate_crossref,
+                inputs={"data": "cr.data_matching.gtr.doi.raw"},
+                outputs="cr.data_matching.gtr.doi.intermediate",
+                name="concatenate_crossref"
+            )
+        ],
+    )
+
+    return gtr_collection_pipeline + cross_ref_matcher_pipeline
