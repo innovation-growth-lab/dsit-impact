@@ -244,7 +244,7 @@ def crossref_doi_match(oa_data: pd.DataFrame, gtr_data: pd.DataFrame, mailto: st
             continue
 
         # merge to dataframe of batch
-        df = df.merge(pd.DataFrame(batch), on="outcome_id", how="right", suffixes=("_gtr", "_cr"))
+        df = df.merge(pd.DataFrame(batch), on="outcome_id", how="right", suffixes=("_cr", "_gtr"))
         yield {f"s{i}": df}
 
 def concatenate_crossref(data: Dict[str, AbstractDataset]) -> pd.DataFrame:
