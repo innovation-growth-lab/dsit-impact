@@ -208,7 +208,7 @@ def oa_search_match(
     for i, batch in enumerate(input_batches):
         session = setup_session()
         logger.info("Processing batch %s / %s", i + 1, len(input_batches))
-        results = Parallel(n_jobs=1, verbose=10)(
+        results = Parallel(n_jobs=8, verbose=10)(
             delayed(get_oa_match)(
                 x["outcome_id"],
                 x["title"],
