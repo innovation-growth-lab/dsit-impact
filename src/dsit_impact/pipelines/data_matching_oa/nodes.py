@@ -208,9 +208,6 @@ def crossref_doi_match(oa_data: pd.DataFrame, gtr_data: pd.DataFrame, mailto: st
     oa_data["doi"] = oa_data["doi"].str.lower().str.extract(r"(10\..+)")
     unmatched_data = gtr_data[~gtr_data["doi"].isin(oa_data["doi"])]
 
-    # [HACK]
-    # unmatched_data = unmatched_data.sample(500)
-
     # create 5-item tuples for each row in unmatched_data
     inputs = unmatched_data[
         ["outcome_id", "title", "author", "journal_title", "publication_date"]
@@ -219,7 +216,7 @@ def crossref_doi_match(oa_data: pd.DataFrame, gtr_data: pd.DataFrame, mailto: st
 
     # create a number of batches from inputs
     input_batches = [
-        cleaned_inputs[i : i + 50] for i in range(0, len(cleaned_inputs), 50)
+        cleaned_inputs[i : i + 250] for i in range(0, len(cleaned_inputs), 250)
     ]
 
     for i, batch in enumerate(input_batches):
@@ -242,6 +239,26 @@ def crossref_doi_match(oa_data: pd.DataFrame, gtr_data: pd.DataFrame, mailto: st
         results = [r for r in results if r]
         df = pd.DataFrame(results)
 
+        if df.empty:
+            continue
+
         # merge to dataframe of batch
-        df = df.merge(pd.DataFrame(batch), on="outcome_id", how="right")
+        df = df.merge(pd.DataFrame(batch), on="outcome_id", how="right", suffixes=("_gtr", "_cr"))
         yield {f"s{i}": df}
+
+def concatenate_crossref(data: Dict[str, AbstractDataset]) -> pd.DataFrame:
+    """
+    Load the partitioned JSON dataset, iterate transforms, return dataframe.
+
+    Args:
+        data (Dict[str, AbstractDataset]): The partitioned JSON dataset.
+
+    Returns:
+        pd.DataFrame: The concatenated Crossref dataset.
+    """
+    outputs = []
+    for i, (key, batch_loader) in enumerate(data.items()):
+        data_batch = batch_loader()
+        outputs.append(data_batch)
+        logger.info("Loaded %s. Progress: %s/%s", key, i + 1, len(data))
+    return pd.concat(outputs, ignore_index=True)

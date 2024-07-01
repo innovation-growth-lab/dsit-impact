@@ -9,7 +9,8 @@ from .nodes import (
     create_list_doi_inputs,
     fetch_papers,
     concatenate_openalex,
-    crossref_doi_match
+    crossref_doi_match,
+    concatenate_crossref
 )
 
 
@@ -71,6 +72,12 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
                 },
                 outputs="cr.data_matching.gtr.doi.raw",
                 name="crossref_doi_match"
+            ),
+            node(
+                func=concatenate_crossref,
+                inputs={"data": "cr.data_matching.gtr.doi.raw"},
+                outputs="cr.data_matching.gtr.doi.intermediate",
+                name="concatenate_crossref"
             )
         ],
     )
