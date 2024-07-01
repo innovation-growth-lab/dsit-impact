@@ -107,6 +107,7 @@ def concatenate_openalex(
 
 
 def get_doi(outcome_id, title, author, journal, publication_date, mailto, session):
+    title = "".join([c for c in title if c.isalnum() or c.isspace()])
     query = f"{title}, {author}, {journal}, {publication_date}"
     url = f'https://api.crossref.org/works?query.bibliographic="{query}"&mailto={mailto}&rows=5'
     max_retries = 5
