@@ -12,7 +12,7 @@ import requests
 from kedro.io import AbstractDataset
 from .utils import (
     fetch_papers_for_id, preprocess_ids, json_loader,  # OA
-    process_item, select_best_match, clean_html_entities, setup_session  # CR
+    clean_html_entities, setup_session, get_doi  # CR
 )
 
 
@@ -109,62 +109,6 @@ def concatenate_openalex(
     return pd.concat(outputs)
 
 
-def get_doi(
-    outcome_id: str,
-    title: str,
-    author: str,
-    journal: str,
-    publication_date: str,
-    mailto: str,
-    session: requests.Session
-) -> Dict[str, str]:
-    """
-    Retrieves the DOI (Digital Object Identifier) for a given publication by querying
-    the Crossref API.
-
-    Args:
-        outcome_id (str): The ID of the outcome.
-        title (str): The title of the publication.
-        author (str): The author(s) of the publication.
-        journal (str): The journal of the publication.
-        publication_date (str): The publication date of the publication.
-        mailto (str): The email address to be used for API requests.
-        session (requests.Session): The session object to be used for making HTTP requests.
-
-    Returns:
-        Dict[str, str]: A dictionary containing the DOI and other relevant information
-        for the publication.
-    """
-
-    title = "".join([c for c in title if c.isalnum() or c.isspace()])
-    query = f"{title}, {author}, {journal}, {publication_date}"
-    url = f'https://api.crossref.org/works?query.bibliographic="{
-        query}"&mailto={mailto}&rows=5'
-    max_retries = 5
-    attempts = 0
-
-    while attempts < max_retries:
-        attempts += 1
-        logging.info("Attempt %s for: %s", attempts, query)
-        try:
-            response = session.get(url, timeout=20)
-            data = response.json()
-
-            processed_items = [
-                process_item(item, title, author, journal, publication_date)
-                for item in data["message"]["items"]
-            ]
-
-            res = [item for item in processed_items if item]
-            return select_best_match(outcome_id, res)
-        except KeyError as e:
-            logging.warning("Missing key: %s", e)
-        except Exception as e:  # pylint: disable=broad-except
-            logging.warning("Error fetching data: %s", e)
-        if attempts == max_retries:
-            logging.error("Max retries reached for: %s", query)
-            break
-    return None
 
 
 def crossref_doi_match(
