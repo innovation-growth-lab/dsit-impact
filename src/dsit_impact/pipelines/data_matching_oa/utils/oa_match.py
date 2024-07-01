@@ -1,4 +1,3 @@
-
 """
 Utilities for data collection from OpenAlex.
 """
@@ -33,7 +32,7 @@ def _process_string(s: str) -> Union[str, list]:
     cumulative = ""
     for part in parts:
         part = "".join([c for c in part if c.isalnum() or c.isspace()])
-        cumulative += (part if not cumulative else " " + part)
+        cumulative += part if not cumulative else " " + part
         cumulative_parts.append(unescape(cumulative.replace("&", "and")))
 
     return cumulative_parts
@@ -48,8 +47,11 @@ def clean_html_entities_for_oa(
     list of cumulative sub-strings.
     """
     return {
-        key: value if key in ["outcome_id", "author", "publication_date"] 
-        else _process_string(value) if isinstance(value, str) else value
+        key: (
+            value
+            if key in ["outcome_id", "author", "publication_date"]
+            else _process_string(value) if isinstance(value, str) else value
+        )
         for key, value in input_record.items()
     }
 
@@ -57,7 +59,7 @@ def clean_html_entities_for_oa(
 def get_oa_match(
     outcome_id: str,
     title: Union[str, List[str]],
-    chapterTitle: str,
+    chapter_title: str,
     author: str,
     publication_date: str,
     config: Dict[str, str],
@@ -68,17 +70,17 @@ def get_oa_match(
 
     Args:
         outcome_id (str): The ID of the outcome.
-        title (Union[str, List[str]]): The title(s) of the publication(s) 
+        title (Union[str, List[str]]): The title(s) of the publication(s)
         to match.
         chapterTitle (str): The chapter title of the publication.
         author (str): The author of the publication.
         publication_date (str): The publication date of the publication.
         config (Dict[str, str]): Configuration parameters.
-        session (requests.Session): The session object for making HTTP 
+        session (requests.Session): The session object for making HTTP
         requests.
 
     Returns:
-        List[Dict[str, str]]: A list of dictionaries containing the matched 
+        List[Dict[str, str]]: A list of dictionaries containing the matched
         OA publications.
             Each dictionary contains the following keys:
             - "outcome_id": The ID of the outcome.
@@ -86,8 +88,8 @@ def get_oa_match(
             - "title": The display name of the matched publication.
             - "doi": The DOI of the matched publication.
     """
-    
-    display_titles = title if not chapterTitle else chapterTitle
+
+    display_titles = title if not chapter_title else chapter_title
     mailto = config["mailto"]
     candidate_outputs = []
     for candidate_title in display_titles:
@@ -120,8 +122,7 @@ def get_oa_match(
                 logging.warning("Error fetching data: %s", e)
 
     # flatten list of candidates
-    candidate_flat = [
-        item for sublist in candidate_outputs for item in sublist]
+    candidate_flat = [item for sublist in candidate_outputs for item in sublist]
 
     # keep candidates with one approximate author name
     matching_author = []
@@ -153,7 +154,7 @@ def get_oa_match(
                 "outcome_id": outcome_id,
                 "id": cand_id,
                 "title": candidate_output["display_name"],
-                "doi": candidate_output["doi"]
+                "doi": candidate_output["doi"],
             }
             logger.info("Matched: %s", display_titles)
             return_dicts.append(return_dict)
@@ -162,27 +163,25 @@ def get_oa_match(
 
 
 def author_fuzzy_match(
-    author: str,
-    candidate_author: List[Dict[str, Union[str, Dict[str, str]]]]
+    author: str, candidate_author: List[Dict[str, Union[str, Dict[str, str]]]]
 ):
     """
-    Performs a fuzzy matching between the given author name and a 
+    Performs a fuzzy matching between the given author name and a
     candidate author name.
-    
+
     Args:
         author (str): The author name to match.
-        candidate_author (List[Dict[str, Union[str, Dict[str, str]]]]): The 
+        candidate_author (List[Dict[str, Union[str, Dict[str, str]]]]): The
         candidate author information.
-        
+
     Returns:
-        Dict[str, Union[str, Dict[str, str]]] or None: The candidate author 
+        Dict[str, Union[str, Dict[str, str]]] or None: The candidate author
         if the fuzzy score is above or equal to 75, otherwise None.
     """
-    
+
     candidate_author_name = candidate_author["display_name"]
     author = " ".join([word for word in author.split() if len(word) > 1])
-    fuzzy_score = fuzz.token_set_ratio(
-        author.lower(), candidate_author_name.lower())
+    fuzzy_score = fuzz.token_set_ratio(author.lower(), candidate_author_name.lower())
     if fuzzy_score >= 75:
         return candidate_author
     return None
