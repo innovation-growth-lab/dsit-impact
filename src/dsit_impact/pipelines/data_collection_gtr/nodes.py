@@ -247,7 +247,8 @@ def concatenate_endpoint(abstract_dict: Union[AbstractDataset, Dict[str, pd.Data
         pd.DataFrame: The concatenated DataFrame.
     """
     dataframes = []
-    for key, load_function in abstract_dict.items():
+    for i, (key, load_function) in enumerate(abstract_dict.items()):
+        logger.info("Adding DataFrame for %s. Number: %s / %s", key, i, len(abstract_dict))
         try:
             try:
                 df = load_function()
