@@ -122,12 +122,16 @@ class GtRDataPreprocessor:
             [
                 "project_id",
                 "outcome_id",
+                "pubMedId",
+                "isbn",
+                "issn",
+                "doi",
                 "title",
+                "chapterTitle",
                 "type",
                 "publication_date",
                 "journal_title",
                 "publication_url",
-                "doi",
                 "author",
             ]
         ]
