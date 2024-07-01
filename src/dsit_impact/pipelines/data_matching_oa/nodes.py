@@ -10,9 +10,14 @@ import pandas as pd
 from joblib import Parallel, delayed
 import requests
 from kedro.io import AbstractDataset
-from .utils import (
-    fetch_papers_for_id, preprocess_ids, json_loader,  # OA
-    clean_html_entities, setup_session, get_doi  # CR
+from .utils.oa import (
+    fetch_papers_for_id, preprocess_ids, json_loader
+)
+from .utils.cr import (
+    clean_html_entities, setup_session, get_doi
+)
+from .utils.oa_match import (
+    clean_html_entities_for_oa, get_oa_match
 )
 
 
@@ -109,8 +114,6 @@ def concatenate_openalex(
     return pd.concat(outputs)
 
 
-
-
 def crossref_doi_match(
     oa_data: pd.DataFrame, gtr_data: pd.DataFrame, mailto: str
 ) -> Generator[Dict[str, pd.DataFrame], None, None]:
@@ -172,12 +175,72 @@ def crossref_doi_match(
         yield {f"s{i}": df}
 
 
-def concatenate_crossref(data: Dict[str, AbstractDataset]) -> pd.DataFrame:
+def oa_search_match(
+    oa_data: pd.DataFrame, gtr_data: pd.DataFrame, config: Dict[str, Union[str, Dict[str, str]]]
+) -> Generator[Dict[str, pd.DataFrame], None, None]:
+    """
+    Perform OA search and matching for GTR data.
+
+    Args:
+        oa_data (pd.DataFrame): DataFrame containing OA data.
+        gtr_data (pd.DataFrame): DataFrame containing GTR data.
+        config (Dict[str, Union[str, Dict[str, str]]]): Configuration parameters.
+
+    Yields:
+        Generator[Dict[str, pd.DataFrame], None, None]: A generator that yields a dictionary
+        containing the results of each batch.
+
+    """
+    gtr_data["doi"] = gtr_data["doi"].str.lower().str.extract(r"(10\..+)")
+    oa_data["doi"] = oa_data["doi"].str.lower().str.extract(r"(10\..+)")
+    unmatched_data = gtr_data[~gtr_data["doi"].isin(oa_data["doi"])]
+
+    inputs = unmatched_data[
+        ["outcome_id", "title", "chapterTitle", "author", "publication_date"]
+    ].to_dict(orient="records")
+
+    cleaned_inputs = [clean_html_entities_for_oa(record) for record in inputs]
+
+    input_batches = [
+        cleaned_inputs[i: i + 250] for i in range(0, len(cleaned_inputs), 250)
+    ]
+
+    for i, batch in enumerate(input_batches):
+        session = setup_session()
+        logger.info("Processing batch %s / %s", i + 1, len(input_batches))
+        results = Parallel(n_jobs=1, verbose=10)(
+            delayed(get_oa_match)(
+                x["outcome_id"],
+                x["title"],
+                x["chapterTitle"],
+                x["author"],
+                x["publication_date"],
+                config,
+                session,
+            )
+            for x in batch
+        )
+
+        # skip None, transform to dataframe
+        results = [r for r in results if r]
+        df = pd.DataFrame([item for sublist in results for item in sublist])
+        df = df.drop_duplicates(subset=["outcome_id", "id", "doi"])
+
+        if df.empty:
+            continue
+
+        # merge to dataframe of batch
+        df = df.merge(pd.DataFrame(batch), on="outcome_id",
+                      how="right", suffixes=("_oa", "_gtr"))
+        yield {f"s{i}": df}
+
+
+def concatenate_matches(data: Dict[str, AbstractDataset]) -> pd.DataFrame:
     """
     Load the partitioned JSON dataset, iterate transforms, return dataframe.
 
     Args:
-        data(Dict[str, AbstractDataset]): The partitioned JSON dataset.
+        data(Dict[str, AbstractDataset]): The partitioned parquet dataset.
 
     Returns:
         pd.DataFrame: The concatenated Crossref dataset.

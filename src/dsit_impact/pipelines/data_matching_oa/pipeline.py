@@ -10,7 +10,8 @@ from .nodes import (
     fetch_papers,
     concatenate_openalex,
     crossref_doi_match,
-    concatenate_crossref
+    oa_search_match,
+    concatenate_matches,
 )
 
 
@@ -74,7 +75,7 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
                 name="crossref_doi_match"
             ),
             node(
-                func=concatenate_crossref,
+                func=concatenate_matches,
                 inputs={"data": "cr.data_matching.gtr.doi.raw"},
                 outputs="cr.data_matching.gtr.doi.intermediate",
                 name="concatenate_crossref"
@@ -82,4 +83,25 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
         ],
     )
 
-    return gtr_collection_pipeline + cross_ref_matcher_pipeline
+    oa_search_matcher_pipeline = pipeline(
+        [
+            node(
+                func=oa_search_match,
+                inputs={
+                    "oa_data": "oa.data_matching.gtr.doi.intermediate",
+                    "gtr_data": "oa.data_matching.gtr.input",
+                    "config": "params:oa.data_matching.gtr.api",
+                },
+                outputs="oa_search.data_matching.gtr.doi.raw",
+                name="oa_search_match"
+            ),
+            node(
+                func=concatenate_matches,
+                inputs={"data": "oa_search.data_matching.gtr.doi.raw"},
+                outputs="oa_search.data_matching.gtr.doi.intermediate",
+                name="concatenate_oa_search"
+            )
+        ],
+    )
+
+    return gtr_collection_pipeline + cross_ref_matcher_pipeline + oa_search_matcher_pipeline
