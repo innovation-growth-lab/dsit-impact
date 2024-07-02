@@ -5,10 +5,8 @@ generated using Kedro 0.19.6
 
 import logging
 from typing import List, Dict, Union, Callable, Generator
-from html import unescape
 import pandas as pd
 from joblib import Parallel, delayed
-import requests
 from kedro.io import AbstractDataset
 from .utils.oa import (
     fetch_papers_for_id, preprocess_ids, json_loader
