@@ -12,6 +12,8 @@ from .nodes import (
     crossref_doi_match,
     oa_search_match,
     concatenate_matches,
+    oa_filter,
+    select_better_match
 )
 
 
@@ -100,8 +102,28 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
                 inputs={"data": "oa_search.data_matching.gtr.doi.raw"},
                 outputs="oa_search.data_matching.gtr.doi.intermediate",
                 name="concatenate_oa_search"
+            ),
+            node(
+                func=oa_filter,
+                inputs={"data": "oa_search.data_matching.gtr.doi.intermediate"},
+                outputs="oa_search.data_matching.gtr.doi.best_match.intermediate",
+                name="get_best_oa_match"
             )
         ],
     )
 
-    return gtr_collection_pipeline + cross_ref_matcher_pipeline + oa_search_matcher_pipeline
+    merge_pipeline = pipeline(
+        [
+            node(
+                func=select_better_match,
+                inputs={
+                    "openalex": "oa_search.data_matching.gtr.doi.best_match.intermediate",
+                    "crossref": "cr.data_matching.gtr.doi.intermediate"
+                },
+                outputs="oa_search.data_matching.gtr.doi.combined.intermediate",
+                name="select_better_match"
+            )
+        ],
+    )
+
+    return gtr_collection_pipeline + cross_ref_matcher_pipeline + oa_search_matcher_pipeline + merge_pipeline

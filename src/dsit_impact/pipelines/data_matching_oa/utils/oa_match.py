@@ -7,7 +7,8 @@ from typing import List, Dict, Union
 import re
 from html import unescape
 import requests
-from thefuzz import fuzz # pylint: disable=import-error
+import pandas as pd
+from thefuzz import fuzz, process  # pylint: disable=import-error
 
 logger = logging.getLogger(__name__)
 
@@ -185,3 +186,30 @@ def author_fuzzy_match(
     if fuzzy_score >= 75:
         return candidate_author
     return None
+
+
+def get_best_match(group: pd.Series.groupby) -> pd.DataFrame:
+    """
+    Returns the best match from a group of records based on the 'title_gtr' column.
+
+    Parameters:
+        group (pd.Series.groupby): A group of records grouped by a specific criterion.
+
+    Returns:
+        pd.DataFrame: The best match from the group based on the 'title_gtr' column.
+    """
+    if len(group) > 1:
+        title_gtr = group["title_gtr"].iloc[0]
+        best_title_oa, _ = process.extractOne(title_gtr, group["title_oa"].tolist())
+        best_matches = group[group["title_oa"] == best_title_oa]
+
+        # doi break
+        if len(best_matches) > 1 and best_matches["doi"].notnull().any():
+            best_matches = best_matches[best_matches["doi"].notnull()]
+            # if there are still multiple entries with a DOI, take the first
+            best_matches = best_matches.iloc[0:1]
+
+        if len(best_matches) > 1:
+            best_matches = best_matches.iloc[0:1]
+        return best_matches
+    return group

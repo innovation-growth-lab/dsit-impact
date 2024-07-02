@@ -87,3 +87,11 @@ oa_search.data_matching.gtr.doi.raw:
 oa_search.data_matching.gtr.doi.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/matches/main.parquet
+
+oa_search.data_matching.gtr.doi.best_match.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/best_match/main.parquet
+
+oa_search.data_matching.gtr.doi.combined.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/combined/main.parquet
