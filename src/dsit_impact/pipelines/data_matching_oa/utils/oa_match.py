@@ -5,9 +5,9 @@ Utilities for data collection from OpenAlex.
 import logging
 from typing import List, Dict, Union
 import re
-import requests
 from html import unescape
-from thefuzz import fuzz
+import requests
+from thefuzz import fuzz # pylint: disable=import-error
 
 logger = logging.getLogger(__name__)
 

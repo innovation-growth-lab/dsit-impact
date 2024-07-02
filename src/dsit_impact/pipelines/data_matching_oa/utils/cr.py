@@ -1,9 +1,9 @@
 import logging
 from typing import List, Dict, Union
+from html import unescape
 import requests
 from requests.adapters import HTTPAdapter, Retry
-from html import unescape
-from thefuzz import fuzz
+from thefuzz import fuzz # pylint: disable=import-error
 
 logger = logging.getLogger(__name__)
 
