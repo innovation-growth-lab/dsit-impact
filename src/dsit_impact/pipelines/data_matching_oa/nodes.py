@@ -331,7 +331,7 @@ def select_better_match(crossref: pd.DataFrame, openalex: pd.DataFrame) -> pd.Da
 
 def break_ties(group: pd.DataFrame) -> pd.DataFrame:
     """
-    Breaks ties between matching records based on similarity scores, DOI presence, 
+    Breaks ties between matching records based on similarity scores, DOI presence,
     and source preference.
 
     Args:
@@ -340,6 +340,8 @@ def break_ties(group: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pandas.DataFrame: The best matching record based on tie-breaking rules.
     """
+
+    group = group.copy()
 
     # Compute similarity scores
     group["similarity"] = group.apply(
