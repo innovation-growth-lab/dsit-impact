@@ -79,3 +79,43 @@ cr.data_matching.gtr.doi.raw:
 cr.data_matching.gtr.doi.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cr/matches/main.parquet
+
+oa_search.data_matching.gtr.doi.raw:
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa_search/matches/
+
+oa_search.data_matching.gtr.doi.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/matches/main.parquet
+
+oa_search.data_matching.gtr.doi.best_match.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/best_match/main.parquet
+
+oa_search.data_matching.gtr.doi.combined.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/combined/main.parquet
+
+oa.data_matching.gtr.combined.doi.raw:
+  <<: *_js_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/combined/doi/
+
+oa.data_matching.gtr.combined.doi.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/combined/doi/main.parquet
+
+oa.data_matching.gtr.combined.id.raw:
+  <<: *_js_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/combined/id/
+
+oa.data_matching.gtr.combined.id.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/combined/id/main.parquet
+
+oa.publications.gtr.primary:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/publications/main.parquet
+
+oa.publications.gtr.map.primary:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/map/main.parquet
