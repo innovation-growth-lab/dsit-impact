@@ -97,7 +97,7 @@ oa_search.data_matching.gtr.doi.combined.intermediate:
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/combined/main.parquet
 
 oa.data_matching.gtr.combined.doi.raw:
-  <<: *_pq_ptd
+  <<: *_js_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/combined/doi/
 
 oa.data_matching.gtr.combined.doi.intermediate:
@@ -105,7 +105,7 @@ oa.data_matching.gtr.combined.doi.intermediate:
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/combined/doi/main.parquet
 
 oa.data_matching.gtr.combined.id.raw:
-  <<: *_pq_ptd
+  <<: *_js_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/combined/id/
 
 oa.data_matching.gtr.combined.id.intermediate:
