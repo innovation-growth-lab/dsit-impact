@@ -13,11 +13,13 @@ from .nodes import (
     oa_search_match,
     concatenate_matches,
     oa_filter,
-    select_better_match
+    select_better_match,
+    create_list_oa_inputs,
+    concatenate_datasets
 )
 
 
-def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
+def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
     """
     Creates a pipeline for collecting data from the GTR API.
 
@@ -28,7 +30,7 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
         Pipeline: The created pipeline.
     """
 
-    gtr_collection_pipeline = pipeline(
+    oa_first_collection_pipeline = pipeline(
         [
             node(
                 func=preprocess_publication_doi,
@@ -126,4 +128,82 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
         ],
     )
 
-    return gtr_collection_pipeline + cross_ref_matcher_pipeline + oa_search_matcher_pipeline + merge_pipeline
+    oa_doi_collection_pipeline = pipeline(
+        [
+            node(
+                func=create_list_doi_inputs,
+                inputs="oa_search.data_matching.gtr.doi.combined.intermediate",
+                outputs="doi_list",
+                name="create_nested_doi_list"
+            ),
+            node(
+                func=fetch_papers,
+                inputs={
+                    "mailto": "params:oa.data_matching.gtr.api.mailto",
+                    "perpage": "params:oa.data_matching.gtr.api.perpage",
+                    "ids": "doi_list",
+                    "filter_criteria": "params:oa.data_matching.gtr.filter_doi",
+                    "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
+                },
+                outputs="combined.doi.raw",
+                name="fetch_papers",
+            ),
+            node(
+                func=concatenate_openalex,
+                inputs={"data": "combined.doi.raw"},
+                outputs="oa.data_matching.gtr.combined.doi.intermediate",
+                name="concatenate_openalex"
+            )
+        ],
+    )
+
+    oa_id_collection_pipeline = pipeline(
+        [
+            node(
+                func=create_list_oa_inputs,
+                inputs="oa_search.data_matching.gtr.doi.combined.intermediate",
+                outputs="oa_list",
+                name="create_nested_oa_list"
+            ),
+            node(
+                func=fetch_papers,
+                inputs={
+                    "mailto": "params:oa.data_matching.gtr.api.mailto",
+                    "perpage": "params:oa.data_matching.gtr.api.perpage",
+                    "ids": "oa_list",
+                    "filter_criteria": "params:oa.data_matching.gtr.filter_oa",
+                    "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
+                },
+                outputs="combined.oa.raw",
+                name="fetch_papers",
+            ),
+            node(
+                func=concatenate_openalex,
+                inputs={"data": "combined.oa.raw"},
+                outputs="oa.data_matching.gtr.combined.id.intermediate",
+                name="concatenate_openalex"
+            )
+        ],
+    )
+
+    primary_pipeline = pipeline(
+        [
+            node(
+                func=concatenate_datasets,
+                inputs={
+                    "base": "oa.data_matching.gtr.doi.intermediate",
+                    "doi": "oa.data_matching.gtr.combined.doi.intermediate",
+                    "oa": "oa.data_matching.gtr.combined.oa.intermediate"
+                },
+                outputs="oa.publications.gtr.primary",
+                name="concatenate_datasets"
+            )
+        ],
+    )
+
+    return (
+        oa_first_collection_pipeline + # oa search using doi
+        cross_ref_matcher_pipeline + oa_search_matcher_pipeline + merge_pipeline + # lookups with CR & OA
+        oa_doi_collection_pipeline + oa_id_collection_pipeline + # fetch data for lookup results
+        primary_pipeline # merge all three datasets
+    )

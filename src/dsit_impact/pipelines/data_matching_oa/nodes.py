@@ -331,3 +331,36 @@ def select_better_match(crossref: pd.DataFrame, openalex: pd.DataFrame) -> pd.Da
             match_data[match_data["outcome_id"] == outcome_id]))
 
     return pd.concat(results, ignore_index=True)
+
+
+def create_list_oa_inputs(df: pd.DataFrame, **kwargs) -> list:
+    """Create a list of doi values from the Gateway to Research publication data.
+
+    Args:
+        df (pd.DataFrame): The Gateway to Research publication data.
+
+    Returns:
+        list: A list of oa values.
+    """
+    oa_singleton_list = df[(df["id_match"].notnull()) & (
+        df["doi"].isnull())]["id_match"].drop_duplicates().tolist()
+
+    # concatenate doi values to create group querise
+    doi_list = preprocess_ids(oa_singleton_list, kwargs.get("grouped", True))
+
+    return doi_list
+
+
+def concatenate_datasets(**kwargs) -> pd.DataFrame:
+    """
+    Concatenate the datasets from the given inputs.
+
+    Args:
+        **kwargs: An undefined number of dataframes.
+
+    Returns:
+        pd.DataFrame: The concatenated dataset.
+    """
+    for df in kwargs.values():
+        assert isinstance(df, pd.DataFrame), "All inputs must be dataframes"
+    return pd.concat([df for df in kwargs.values()], ignore_index=True)
