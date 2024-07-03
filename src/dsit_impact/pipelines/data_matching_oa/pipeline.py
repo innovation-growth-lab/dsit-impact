@@ -134,7 +134,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 func=create_list_doi_inputs,
                 inputs="oa_search.data_matching.gtr.doi.combined.intermediate",
                 outputs="doi_list",
-                name="create_nested_doi_list"
+                name="create_second_doi_list"
             ),
             node(
                 func=fetch_papers,
@@ -146,15 +146,16 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                     "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
                 },
                 outputs="combined.doi.raw",
-                name="fetch_papers",
+                name="fetch_papers_doi",
             ),
             node(
                 func=concatenate_openalex,
                 inputs={"data": "combined.doi.raw"},
                 outputs="oa.data_matching.gtr.combined.doi.intermediate",
-                name="concatenate_openalex"
+                name="concatenate_openalex_doi"
             )
         ],
+        tags="second_search"
     )
 
     oa_id_collection_pipeline = pipeline(
@@ -163,7 +164,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 func=create_list_oa_inputs,
                 inputs="oa_search.data_matching.gtr.doi.combined.intermediate",
                 outputs="oa_list",
-                name="create_nested_oa_list"
+                name="create_second_oa_list"
             ),
             node(
                 func=fetch_papers,
@@ -175,15 +176,16 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                     "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
                 },
                 outputs="combined.oa.raw",
-                name="fetch_papers",
+                name="fetch_papers_id",
             ),
             node(
                 func=concatenate_openalex,
                 inputs={"data": "combined.oa.raw"},
                 outputs="oa.data_matching.gtr.combined.id.intermediate",
-                name="concatenate_openalex"
+                name="concatenate_openalex_id"
             )
         ],
+        tags="second_search"
     )
 
     primary_pipeline = pipeline(
@@ -193,12 +195,13 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 inputs={
                     "base": "oa.data_matching.gtr.doi.intermediate",
                     "doi": "oa.data_matching.gtr.combined.doi.intermediate",
-                    "oa": "oa.data_matching.gtr.combined.oa.intermediate"
+                    "oa": "oa.data_matching.gtr.combined.id.intermediate"
                 },
                 outputs="oa.publications.gtr.primary",
                 name="concatenate_datasets"
             )
         ],
+        tags="second_search"
     )
 
     return (
