@@ -302,14 +302,12 @@ def select_better_match(crossref: pd.DataFrame, openalex: pd.DataFrame) -> pd.Da
     crossref.rename(
         columns={
             "title_cr": "title_match",
-            "author_cr": "author_match",
-            "doi": "doi_match",
+            "author_cr": "author_match"
         },
         inplace=True,
     )
     openalex.rename(
-        columns={"title_oa": "title_match",
-                 "id": "id_match", "doi": "doi_match"},
+        columns={"title_oa": "title_match"},
         inplace=True,
     )
 
@@ -342,8 +340,8 @@ def create_list_oa_inputs(df: pd.DataFrame, **kwargs) -> list:
     Returns:
         list: A list of oa values.
     """
-    oa_singleton_list = df[(df["id_match"].notnull()) & (
-        df["doi"].isnull())]["id_match"].drop_duplicates().tolist()
+    oa_singleton_list = df[(df["id"].notnull()) & (
+        df["doi"].isnull())]["id"].drop_duplicates().tolist()
 
     # concatenate doi values to create group querise
     doi_list = preprocess_ids(oa_singleton_list, kwargs.get("grouped", True))

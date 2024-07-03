@@ -145,12 +145,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                     "filter_criteria": "params:oa.data_matching.gtr.filter_doi",
                     "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
                 },
-                outputs="combined.doi.raw",
+                outputs="oa.data_matching.gtr.combined.doi.raw",
                 name="fetch_papers_doi",
             ),
             node(
                 func=concatenate_openalex,
-                inputs={"data": "combined.doi.raw"},
+                inputs={"data": "oa.data_matching.gtr.combined.doi.raw"},
                 outputs="oa.data_matching.gtr.combined.doi.intermediate",
                 name="concatenate_openalex_doi"
             )
@@ -175,12 +175,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                     "filter_criteria": "params:oa.data_matching.gtr.filter_oa",
                     "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
                 },
-                outputs="combined.oa.raw",
+                outputs="oa.data_matching.gtr.combined.id.raw",
                 name="fetch_papers_id",
             ),
             node(
                 func=concatenate_openalex,
-                inputs={"data": "combined.oa.raw"},
+                inputs={"data": "oa.data_matching.gtr.combined.id.raw"},
                 outputs="oa.data_matching.gtr.combined.id.intermediate",
                 name="concatenate_openalex_id"
             )

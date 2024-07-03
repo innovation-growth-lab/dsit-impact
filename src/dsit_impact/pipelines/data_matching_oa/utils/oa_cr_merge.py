@@ -22,7 +22,7 @@ def break_ties(group: pd.DataFrame) -> pd.DataFrame:
 
     # Sort by similarity, then by presence of DOI, then prefer 'oa' source
     group_sorted = group.sort_values(
-        by=["similarity", "doi_match", "source"], ascending=[False, False, True]
+        by=["similarity", "doi", "source"], ascending=[False, False, True]
     )
 
     # Apply tie-breaking rules
@@ -32,15 +32,15 @@ def break_ties(group: pd.DataFrame) -> pd.DataFrame:
         <= 5
     ):
         # If the top two are within 5 points, check DOI and source
-        if pd.notnull(group_sorted.iloc[0]["doi_match"]) and pd.notnull(
-            group_sorted.iloc[1]["doi_match"]
+        if pd.notnull(group_sorted.iloc[0]["doi"]) and pd.notnull(
+            group_sorted.iloc[1]["doi"]
         ):
             # If both have DOI, prefer 'oa' source
             best_match = group_sorted[group_sorted["source"] == "oa"].head(1)
         else:
             # Else, select the one with a DOI
             best_match = group_sorted[pd.notnull(
-                group_sorted["doi_match"])].head(1)
+                group_sorted["doi"])].head(1)
     else:
         # Else, select the top one
         best_match = group_sorted.head(1)
