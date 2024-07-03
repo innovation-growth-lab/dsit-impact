@@ -7,11 +7,11 @@ import logging
 from typing import List, Dict, Union, Callable, Generator
 import pandas as pd
 from joblib import Parallel, delayed
-from thefuzz import fuzz  # pylint: disable=import-error
 from kedro.io import AbstractDataset
 from .utils.oa import fetch_papers_for_id, preprocess_ids, json_loader
 from .utils.cr import clean_html_entities, setup_session, get_doi
 from .utils.oa_match import clean_html_entities_for_oa, get_oa_match, get_best_match
+from .utils.oa_cr_merge import break_ties
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,8 @@ def create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
     Returns:
         list: A list of doi values.
     """
-    doi_singleton_list = df[df["doi"].notnull()]["doi"].drop_duplicates().tolist()
+    doi_singleton_list = df[df["doi"].notnull(
+    )]["doi"].drop_duplicates().tolist()
 
     # concatenate doi values to create group querise
     doi_list = preprocess_ids(doi_singleton_list, kwargs.get("grouped", True))
@@ -73,11 +74,12 @@ def fetch_papers(
 
     """
     # slice oa_ids
-    oa_id_chunks = [ids[i : i + 80] for i in range(0, len(ids), 80)]
+    oa_id_chunks = [ids[i: i + 80] for i in range(0, len(ids), 80)]
     logger.info("Slicing data. Number of oa_id_chunks: %s", len(oa_id_chunks))
     return {
         f"s{str(i)}": lambda chunk=chunk: Parallel(n_jobs=parallel_jobs, verbose=10)(
-            delayed(fetch_papers_for_id)(oa_id, mailto, perpage, filter_criteria)
+            delayed(fetch_papers_for_id)(
+                oa_id, mailto, perpage, filter_criteria)
             for oa_id in chunk
         )
         for i, chunk in enumerate(oa_id_chunks)
@@ -134,7 +136,7 @@ def crossref_doi_match(
 
     # create a number of batches from inputs
     input_batches = [
-        cleaned_inputs[i : i + 250] for i in range(0, len(cleaned_inputs), 250)
+        cleaned_inputs[i: i + 250] for i in range(0, len(cleaned_inputs), 250)
     ]
 
     for i, batch in enumerate(input_batches):
@@ -196,7 +198,7 @@ def oa_search_match(
     cleaned_inputs = [clean_html_entities_for_oa(record) for record in inputs]
 
     input_batches = [
-        cleaned_inputs[i : i + 250] for i in range(0, len(cleaned_inputs), 250)
+        cleaned_inputs[i: i + 250] for i in range(0, len(cleaned_inputs), 250)
     ]
 
     for i, batch in enumerate(input_batches):
@@ -306,7 +308,8 @@ def select_better_match(crossref: pd.DataFrame, openalex: pd.DataFrame) -> pd.Da
         inplace=True,
     )
     openalex.rename(
-        columns={"title_oa": "title_match", "id": "id_match", "doi": "doi_match"},
+        columns={"title_oa": "title_match",
+                 "id": "id_match", "doi": "doi_match"},
         inplace=True,
     )
 
@@ -324,52 +327,7 @@ def select_better_match(crossref: pd.DataFrame, openalex: pd.DataFrame) -> pd.Da
     results = []
     for i, outcome_id in enumerate(match_data["outcome_id"].unique(), start=1):
         logger.info("Processing outcome %s / %s", i + 1, total_unique_outcomes)
-        results.append(break_ties(match_data[match_data["outcome_id"] == outcome_id]))
+        results.append(break_ties(
+            match_data[match_data["outcome_id"] == outcome_id]))
 
     return pd.concat(results, ignore_index=True)
-
-
-def break_ties(group: pd.DataFrame) -> pd.DataFrame:
-    """
-    Breaks ties between matching records based on similarity scores, DOI presence,
-    and source preference.
-
-    Args:
-        group (pandas.DataFrame): A group of matching records.
-
-    Returns:
-        pandas.DataFrame: The best matching record based on tie-breaking rules.
-    """
-
-    group = group.copy()
-
-    # Compute similarity scores
-    group["similarity"] = group.apply(
-        lambda x: fuzz.token_set_ratio(x["title_match"], x["title_gtr"]), axis=1
-    )
-
-    # Sort by similarity, then by presence of DOI, then prefer 'oa' source
-    group_sorted = group.sort_values(
-        by=["similarity", "doi_match", "source"], ascending=[False, False, True]
-    )
-
-    # Apply tie-breaking rules
-    if (
-        len(group_sorted) > 1
-        and abs(group_sorted.iloc[0]["similarity"] - group_sorted.iloc[1]["similarity"])
-        <= 5
-    ):
-        # If the top two are within 5 points, check DOI and source
-        if pd.notnull(group_sorted.iloc[0]["doi_match"]) and pd.notnull(
-            group_sorted.iloc[1]["doi_match"]
-        ):
-            # If both have DOI, prefer 'oa' source
-            best_match = group_sorted[group_sorted["source"] == "oa"].head(1)
-        else:
-            # Else, select the one with a DOI
-            best_match = group_sorted[pd.notnull(group_sorted["doi_match"])].head(1)
-    else:
-        # Else, select the top one
-        best_match = group_sorted.head(1)
-
-    return best_match
