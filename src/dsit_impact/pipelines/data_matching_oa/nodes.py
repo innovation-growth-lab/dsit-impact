@@ -349,7 +349,7 @@ def create_list_oa_inputs(df: pd.DataFrame, **kwargs) -> list:
     return doi_list
 
 
-def concatenate_datasets(**kwargs) -> pd.DataFrame:
+def concatenate_oa_datasets(**kwargs) -> pd.DataFrame:
     """
     Concatenate the datasets from the given inputs.
 
@@ -361,4 +361,54 @@ def concatenate_datasets(**kwargs) -> pd.DataFrame:
     """
     for df in kwargs.values():
         assert isinstance(df, pd.DataFrame), "All inputs must be dataframes"
-    return pd.concat([df for df in kwargs.values()], ignore_index=True)
+    datasets = pd.concat([df for df in kwargs.values()], ignore_index=True)
+    datasets.drop_duplicates(subset=["id", "doi", "title"])
+    return datasets
+
+
+def map_outcome_id(
+    gtr_data: pd.DataFrame,
+    oa_data: pd.DataFrame,
+    rlu_outputs: pd.DataFrame,
+):
+    """
+    Maps outcome IDs from GTR data to corresponding IDs and DOIs from OA data. It combines
+    direct DOI-matching entries with those obtained from the two-pronged reverse lookup
+    process.
+
+    Args:
+        gtr_data (pd.DataFrame): DataFrame containing GTR data with columns 'outcome_id' and 'doi'.
+        oa_data (pd.DataFrame): DataFrame containing OA data with columns 'id' and 'doi'.
+        rlu_outputs (pd.DataFrame): DataFrame containing RLU data with columns 'outcome_id', 'id', and 'doi'.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the mapped outcome IDs, IDs, and DOIs.
+
+    """
+    gtr_data["doi"] = gtr_data["doi"].str.lower().str.extract(r"(10\..+)")
+    gtr_data = gtr_data[["outcome_id", "doi"]]
+    rlu_outputs = rlu_outputs[["outcome_id", "id", "doi"]]
+    oa_data["doi"] = oa_data["doi"].str.lower().str.extract(r"(10\..+)")
+    oa_data = oa_data.drop_duplicates(subset=["doi"])[
+        ["id", "doi"]]
+
+    logger.info("matching to original OpenAlex data")
+    gtr_matches = gtr_data.merge(oa_data, on="doi", how="inner")
+    gtr_matches = gtr_matches.dropna(subset=["doi"])
+
+    logger.info("matching to RLU data based on DOI")
+    rlu_matches_doi = rlu_outputs[["outcome_id", "doi"]].merge(
+        oa_data, left_on="doi", right_on="doi", how="inner")
+    rlu_matches_doi = rlu_matches_doi.dropna(subset=["doi"])
+
+    logger.info("matching to RLU data based on ID")
+    rlu_matches_id = rlu_outputs[["outcome_id", "id"]].merge(
+        oa_data, left_on="id", right_on="id", how="inner")
+    rlu_matches_id = rlu_matches_id.dropna(subset=["id"])
+
+    # concatenate all matches and drop duplicates to ensure unique assignment
+    all_matches = pd.concat([gtr_matches, rlu_matches_doi, rlu_matches_id]).drop_duplicates(
+        subset=["outcome_id"], keep="first")
+    all_matches = all_matches[["outcome_id", "id", "doi"]].reset_index(drop=True)
+
+    return all_matches

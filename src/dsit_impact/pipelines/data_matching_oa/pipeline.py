@@ -15,7 +15,8 @@ from .nodes import (
     oa_filter,
     select_better_match,
     create_list_oa_inputs,
-    concatenate_datasets
+    concatenate_oa_datasets,
+    map_outcome_id
 )
 
 
@@ -191,7 +192,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
     primary_pipeline = pipeline(
         [
             node(
-                func=concatenate_datasets,
+                func=concatenate_oa_datasets,
                 inputs={
                     "base": "oa.data_matching.gtr.doi.intermediate",
                     "doi": "oa.data_matching.gtr.combined.doi.intermediate",
@@ -199,9 +200,19 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 },
                 outputs="oa.publications.gtr.primary",
                 name="concatenate_datasets"
+            ),
+            node(
+                func=map_outcome_id,
+                inputs={
+                    "gtr_data": "oa.data_matching.gtr.input",
+                    "oa_data": "oa.publications.gtr.primary",
+                    "rlu_outputs": "oa_search.data_matching.gtr.doi.combined.intermediate"
+                },
+                outputs="oa.publications.gtr.map.primary",
+                name="map_outcome_id"
             )
         ],
-        tags="second_search"
+        tags=["second_search", "primary"]
     )
 
     return (

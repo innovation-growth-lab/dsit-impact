@@ -115,3 +115,7 @@ oa.data_matching.gtr.combined.id.intermediate:
 oa.publications.gtr.primary:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/publications/main.parquet
+
+oa.publications.gtr.map.primary:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/map/main.parquet
