@@ -119,3 +119,11 @@ oa.publications.gtr.primary:
 oa.publications.gtr.map.primary:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/map/main.parquet
+
+s2.citation_details.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/main.parquet
+
+s2.paper_details.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/paper_details/main.parquet
