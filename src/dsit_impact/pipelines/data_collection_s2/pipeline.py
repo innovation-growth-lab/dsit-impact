@@ -21,7 +21,7 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
                 "api_key": "params:s2.data_collection.strength.api.key",
                 "perpage": "params:s2.data_collection.strength.api.perpage",
             },
-            outputs="s2.citation_details.intermediate",
+            outputs="s2.citation_details.raw",
             name="get_citation_data"
         ),
         node(
@@ -32,7 +32,7 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
                 "fields": "params:s2.data_collection.paper_details.api.fields",
                 "api_key": "params:s2.data_collection.paper_details.api.key",
             },
-            outputs="s2.paper_details.intermediate",
+            outputs="s2.paper_details.raw",
             name="get_paper_data"
         )
     ])

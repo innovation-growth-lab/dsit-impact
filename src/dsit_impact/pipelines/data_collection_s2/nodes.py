@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence
+from typing import Sequence, Generator
 import pandas as pd
 from .utils import get_intent, get_paper_details
 
@@ -11,7 +11,7 @@ def get_paper_data(
     base_url: str,
     fields: Sequence[str],
     api_key: str,
-):
+) -> Generator:
     """
     Retrieves paper data from the Open Access dataset.
 
@@ -21,21 +21,28 @@ def get_paper_data(
         fields (Sequence[str]): The fields to retrieve from the API.
         api_key (str): The API key for authentication.
 
-    Returns:
-        pd.DataFrame: The processed paper data.
+    Yields:
+        Dict: A dictionary containing the processed paper dataframe.
     """
     oa_dataset = oa_dataset.drop_duplicates(subset="id")
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
 
-    # get paper influential and PDF details
-    processed_df = get_paper_details(
-        oa_dataset=oa_dataset,
-        base_url=base_url,
-        fields=fields,
-        api_key=api_key,
-    )
+    # split the dataset into chunks of 10_000
+    dataset_chunks = [
+        oa_dataset.iloc[i : i + 10_000] for i in range(0, len(oa_dataset), 10_000)
+    ]
 
-    return processed_df
+    for i, chunk in enumerate(dataset_chunks):
+        logger.info("Processing chunk %d", i)
+        # get paper influential and PDF details
+        processed_df = get_paper_details(
+            oa_dataset=chunk,
+            base_url=base_url,
+            fields=fields,
+            api_key=api_key
+        )
+        logger.info("Processed chunk %d", i)
+        yield {f"s{i}": processed_df}
 
 
 def get_citation_data(
@@ -44,7 +51,7 @@ def get_citation_data(
     fields: Sequence[str],
     api_key: str,
     perpage: int = 500,
-) -> pd.DataFrame:
+) -> Generator:
     """
     Retrieves citation intent data from the GtR-OpenAlex dataset.
 
@@ -55,28 +62,27 @@ def get_citation_data(
         api_key (str): The API key to use.
         perpage (int, optional): The number of citations to fetch per page.
 
-    Returns:
-        pd.DataFrame: The processed dataset with citation intent information.
+    Yields:
+        Dict: A dictionary containing the processed citation dataframe.
 
     """
     oa_dataset = oa_dataset.drop_duplicates(subset="id")
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
 
-    # get the citation intent for each level
-    processed_df = get_intent(
-        oa_dataset=oa_dataset,
-        base_url=base_url,
-        fields=fields,
-        api_key=api_key,
-        perpage=perpage,
-    )
+    # split the dataset into chunks of 10_000
+    dataset_chunks = [
+        oa_dataset.iloc[i : i + 10_000] for i in range(0, len(oa_dataset), 10_000)
+    ]
 
-    # check how often doi is empty and pmid is not
-    logger.info(
-        "Number of rows with empty doi and non-empty pmid: %d",
-        processed_df[(processed_df["doi"] == "") & (processed_df["pmid"] != "")].shape[
-            0
-        ],
-    )
-
-    return processed_df
+    for i, chunk in enumerate(dataset_chunks):
+        logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
+        # get paper influential and PDF details
+        processed_df = get_intent(
+            oa_dataset=chunk,
+            base_url=base_url,
+            fields=fields,
+            api_key=api_key,
+            perpage=perpage,
+        )
+        logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
+        yield {f"s{i}": processed_df}
