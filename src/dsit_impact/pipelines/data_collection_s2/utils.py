@@ -31,7 +31,7 @@ def get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
         axis=1,
     ).tolist()
 
-    s2_outputs = Parallel(n_jobs=1, verbose=10)(
+    s2_outputs = Parallel(n_jobs=8, verbose=10)(
         delayed(iterate_citation_detail_points)(*input, direction="citations", **kwargs)
         for input in inputs
     )
