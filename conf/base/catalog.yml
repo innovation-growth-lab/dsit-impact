@@ -135,3 +135,7 @@ s2.citation_details.intermediate:
 s2.paper_details.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/paper_details/main.parquet
+
+examples_pdf:
+  type: json.JSONDataset
+  filepath: ~/projects/dsit-impact/data/test/pdfs.json

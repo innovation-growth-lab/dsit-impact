@@ -85,3 +85,7 @@ To automatically strip out all output cell contents before committing to `git`, 
 ## Package your Kedro project
 
 [Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+
+
+### Note:
+- Requires spacy's basic English dictionary `python -m spacy download en_core_web_sm`
