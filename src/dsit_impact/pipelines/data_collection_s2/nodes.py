@@ -1,6 +1,7 @@
 import logging
-from typing import Sequence, Generator
+from typing import Sequence, Generator, Dict
 import pandas as pd
+from kedro.io import AbstractDataset
 from .utils import get_intent, get_paper_details
 
 logger = logging.getLogger(__name__)
@@ -36,10 +37,7 @@ def get_paper_data(
         logger.info("Processing chunk %d", i)
         # get paper influential and PDF details
         processed_df = get_paper_details(
-            oa_dataset=chunk,
-            base_url=base_url,
-            fields=fields,
-            api_key=api_key
+            oa_dataset=chunk, base_url=base_url, fields=fields, api_key=api_key
         )
         logger.info("Processed chunk %d", i)
         yield {f"s{i}": processed_df}
@@ -86,3 +84,23 @@ def get_citation_data(
         )
         logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
         yield {f"s{i}": processed_df}
+
+
+def concatenate_partitions(
+    partitioned_dataset: Dict[str, AbstractDataset]
+) -> pd.DataFrame:
+    """
+    Concatenate the partitions from the given inputs.
+
+    Args:
+        partitioned_dataset (Dict[str, AbstractDataset]): The partitioned dataset.
+
+    Returns:
+        pd.DataFrame: The concatenated dataset.
+    """
+    datasets = []
+    for i, dataset in enumerate(partitioned_dataset.values()):
+        logger.info("Concatenating partition %d / %d", i + 1, len(partitioned_dataset))
+        datasets.append(dataset())
+    datasets = pd.concat(datasets, ignore_index=True)
+    return datasets

@@ -6,7 +6,8 @@ generated using Kedro 0.19.6
 from kedro.pipeline import Pipeline, pipeline, node
 from .nodes import (
     get_citation_data,
-    get_paper_data
+    get_paper_data,
+    concatenate_partitions
 )
 
 
@@ -34,5 +35,18 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
             },
             outputs="s2.paper_details.raw",
             name="get_paper_data"
+        ),
+        node(
+            func=concatenate_partitions,
+            inputs={"partitioned_dataset": "s2.citation_details.raw"},
+            outputs="s2.citation_details.intermediate",
+            name="concatenate_citation_partitions"
+        ),
+        node(
+            func=concatenate_partitions,
+            inputs={"partitioned_dataset": "s2.paper_details.raw"},
+            outputs="s2.paper_details.intermediate",
+            name="concatenate_paper_partitions"
         )
+
     ])

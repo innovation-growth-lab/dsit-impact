@@ -127,3 +127,11 @@ s2.citation_details.raw:
 s2.paper_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/s2/paper_details/
+
+s2.citation_details.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/main.parquet
+
+s2.paper_details.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/paper_details/main.parquet
