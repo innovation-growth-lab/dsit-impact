@@ -102,5 +102,4 @@ def concatenate_partitions(
     for i, dataset in enumerate(partitioned_dataset.values()):
         logger.info("Concatenating partition %d / %d", i + 1, len(partitioned_dataset))
         datasets.append(dataset())
-    datasets = pd.concat(datasets, ignore_index=True)
-    return datasets
+    return pd.concat(datasets, ignore_index=True)

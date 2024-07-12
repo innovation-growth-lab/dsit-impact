@@ -31,7 +31,7 @@ def get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
         axis=1,
     ).tolist()
 
-    s2_outputs = Parallel(n_jobs=8, verbose=10)(
+    s2_outputs = Parallel(n_jobs=1, verbose=10)(
         delayed(iterate_citation_detail_points)(*input, direction="citations", **kwargs)
         for input in inputs
     )
@@ -189,9 +189,11 @@ def process_citations(citation_outputs: Dict[str, Sequence[Dict[str, Any]]]) -> 
         for output in outputs:
             context_intents = output.get("contextsWithIntent", [])
             influential = output.get("isInfluential", "")
-            is_open_access = output.get("isOpenAccess", "")
-            pdf_url = output.get("openAccessPdf", [])
-            external_ids = output.get("citingPaper", {}).get("externalIds", {})
+            citing_outputs = output.get("citingPaper", {})
+            is_open_access = citing_outputs.get("isOpenAccess", False)
+            open_access_pdf = citing_outputs.get("openAccessPdf", {})
+            pdf_url = open_access_pdf.get("url", None) if open_access_pdf else None
+            external_ids = citing_outputs.get("externalIds", {})
             if not external_ids:
                 continue
             doi = external_ids.get("DOI", "")
