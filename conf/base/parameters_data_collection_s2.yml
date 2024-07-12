@@ -1,0 +1,24 @@
+s2:
+  data_collection:
+    strength:
+      api:
+        key: 0lnUkuBhBJ8NUT2RxpK9j82yWGfUL2I81UmlwN6b
+        base_url: https://api.semanticscholar.org/graph/v1/paper
+        cites: citations
+        cited_by: references
+        fields:
+          - externalIds
+          - contextsWithIntent
+          - isInfluential
+          - isOpenAccess
+          - openAccessPdf
+        perpage: 500
+    paper_details:
+      api:
+        key: 0lnUkuBhBJ8NUT2RxpK9j82yWGfUL2I81UmlwN6b
+        base_url: https://api.semanticscholar.org/graph/v1/paper
+        fields:
+          - isOpenAccess
+          - openAccessPdf
+          - influentialCitationCount
+
