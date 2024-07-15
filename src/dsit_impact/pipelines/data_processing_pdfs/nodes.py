@@ -35,7 +35,7 @@ def parse_pdf(
     """
     try:
         article_dict = scipdf.parse_pdf_to_dict(pdf)
-    except Exception as e: # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
         logger.error("Error parsing PDF for %s: %s", parent_title, e)
         return []
 
@@ -94,18 +94,20 @@ def get_pdf_content(dataset: pd.DataFrame):
     return sections
 
 
-def get_citation_sections(oa_dataset: pd.DataFrame, s2_dataset: pd.DataFrame):
+def preprocess_for_section_collection(
+    oa_dataset: pd.DataFrame, s2_dataset: pd.DataFrame
+):
     """
-    Retrieves citation sections from the PDFs based on the Semantic Scholar data.
+    Preprocesses the datasets for section collection.
 
     Args:
-        oa_dataset (pd.DataFrame): The OpenAlex dataset containing IDs.
-        s2_dataset (pd.DataFrame): The Semantic Scholar dataset containing titles.
+        oa_dataset (pd.DataFrame): The dataset containing the open access articles.
+        s2_dataset (pd.DataFrame): The dataset containing the semantic scholar articles.
 
     Returns:
-        Dict: A dictionary containing the processed citation sections.
-
+        pd.DataFrame: The preprocessed merged dataset with grouped contexts.
     """
+
     # drop those with None in pdf_url
     s2_dataset.dropna(subset=["pdf_url"], inplace=True)
 
@@ -122,9 +124,25 @@ def get_citation_sections(oa_dataset: pd.DataFrame, s2_dataset: pd.DataFrame):
         .reset_index()
     )
 
+    return merged_data
+
+
+def get_citation_sections(dataset: pd.DataFrame):
+    """
+    Retrieves citation sections from the PDFs based on the Semantic Scholar + OA data.
+
+    Args:
+        oa_dataset (pd.DataFrame): The OpenAlex dataset containing IDs.
+        s2_dataset (pd.DataFrame): The Semantic Scholar dataset containing titles.
+
+    Returns:
+        Dict: A dictionary containing the processed citation sections.
+
+    """
+
     # split the dataset into chunks of 1_000
     dataset_chunks = [
-        merged_data.iloc[i : i + 1_000] for i in range(0, len(merged_data), 1_000)
+        dataset.iloc[i : i + 1_000] for i in range(0, len(dataset), 1_000)
     ]
 
     for i, chunk in enumerate(dataset_chunks):

@@ -154,7 +154,11 @@ pdfs.s2_dataset.input:
       - 'id'
       - 'pdf_url'
       - 'context'
-  
-examples_pdf:
-  type: json.JSONDataset
-  filepath: ~/projects/dsit-impact/data/test/pdfs.json
+
+s2.section_details.input:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/section_inputs.parquet
+
+pdfs.s2_dataset.output:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/s2/paper_details/main.parquet
