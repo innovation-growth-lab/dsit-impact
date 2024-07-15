@@ -359,15 +359,14 @@ def process_paper_details(paper_details: Dict[str, Sequence[Dict[str, Any]]]) ->
     """
     rows = []
     for oa_id, output in paper_details.items():
-        influential_count = output.get("influentialCitationCount", "")
-        is_open_access = output.get("isOpenAccess", "")
+        influential_count = output.get("influentialCitationCount", 0)
+        is_open_access = output.get("isOpenAccess", False)
         pdf_url_dict = output.get("openAccessPdf", {})
-        if pdf_url_dict:
-            pdf_url = pdf_url_dict.get("url", None)
+        pdf_url = pdf_url_dict.get("url", None) if pdf_url_dict else None
         rows.append(
             [
                 oa_id,
-                influential_count,
+                int(influential_count),
                 is_open_access,
                 pdf_url,
             ]

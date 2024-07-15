@@ -7,42 +7,6 @@ from .utils import get_intent, get_paper_details
 logger = logging.getLogger(__name__)
 
 
-def get_paper_data(
-    oa_dataset: pd.DataFrame,
-    base_url: str,
-    fields: Sequence[str],
-    api_key: str,
-) -> Generator:
-    """
-    Retrieves paper data from the Open Access dataset.
-
-    Args:
-        oa_dataset (pd.DataFrame): The Open Access dataset.
-        base_url (str): The base URL for the API.
-        fields (Sequence[str]): The fields to retrieve from the API.
-        api_key (str): The API key for authentication.
-
-    Yields:
-        Dict: A dictionary containing the processed paper dataframe.
-    """
-    oa_dataset = oa_dataset.drop_duplicates(subset="id")
-    oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
-
-    # split the dataset into chunks of 10_000
-    dataset_chunks = [
-        oa_dataset.iloc[i : i + 10_000] for i in range(0, len(oa_dataset), 10_000)
-    ]
-
-    for i, chunk in enumerate(dataset_chunks):
-        logger.info("Processing chunk %d", i)
-        # get paper influential and PDF details
-        processed_df = get_paper_details(
-            oa_dataset=chunk, base_url=base_url, fields=fields, api_key=api_key
-        )
-        logger.info("Processed chunk %d", i)
-        yield {f"s{i}": processed_df}
-
-
 def get_citation_data(
     oa_dataset: pd.DataFrame,
     base_url: str,
@@ -81,6 +45,42 @@ def get_citation_data(
             fields=fields,
             api_key=api_key,
             perpage=perpage,
+        )
+        logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
+        yield {f"s{i}": processed_df}
+
+
+def get_paper_data(
+    oa_dataset: pd.DataFrame,
+    base_url: str,
+    fields: Sequence[str],
+    api_key: str,
+) -> Generator:
+    """
+    Retrieves paper data from the Open Access dataset.
+
+    Args:
+        oa_dataset (pd.DataFrame): The Open Access dataset.
+        base_url (str): The base URL for the API.
+        fields (Sequence[str]): The fields to retrieve from the API.
+        api_key (str): The API key for authentication.
+
+    Yields:
+        Dict: A dictionary containing the processed paper dataframe.
+    """
+    oa_dataset = oa_dataset.drop_duplicates(subset="id")
+    oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
+
+    # split the dataset into chunks of 10_000
+    dataset_chunks = [
+        oa_dataset.iloc[i : i + 10_000] for i in range(0, len(oa_dataset), 10_000)
+    ]
+
+    for i, chunk in enumerate(dataset_chunks):
+        logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
+        # get paper influential and PDF details
+        processed_df = get_paper_details(
+            oa_dataset=chunk, base_url=base_url, fields=fields, api_key=api_key
         )
         logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
         yield {f"s{i}": processed_df}
