@@ -155,10 +155,10 @@ pdfs.s2_dataset.input:
       - 'pdf_url'
       - 'context'
 
-s2.section_details.input:
+pdfs.section_details.input:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/section_inputs.parquet
+  filepath: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_details/section_inputs.parquet
 
 pdfs.section_details.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/s2/citation_sections/
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/pdf/citation_sections/
