@@ -160,5 +160,5 @@ s2.section_details.input:
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/section_inputs.parquet
 
 pdfs.s2_dataset.output:
-  <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/s2/paper_details/main.parquet
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/s2/citation_sections/

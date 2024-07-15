@@ -89,3 +89,4 @@ To automatically strip out all output cell contents before committing to `git`, 
 
 ### Note:
 - Requires spacy's basic English dictionary `python -m spacy download en_core_web_sm`
+- I had to change the `serve_grobid.sh` file to take the smaller docker image.

@@ -55,7 +55,7 @@ def parse_pdf(
         if ref_id in section.get("publication_ref", []):
             sections.append(tuple([oa_id, i, section_heading]))
         else:
-            if contexts:
+            if len(contexts) > 0:
                 for context in contexts:
                     # fuzzy ratio a substring of context in section text
                     if fuzz.token_set_ratio(context, section.get("text", "")) > 75:
