@@ -136,6 +136,25 @@ s2.paper_details.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/paper_details/main.parquet
 
+pdfs.oa_dataset.input:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/publications/main.parquet
+  load_args:
+    engine: pyarrow
+    columns:
+      - 'id'
+      - 'title'
+
+pdfs.s2_dataset.input:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/main.parquet
+  load_args:
+    engine: pyarrow
+    columns:
+      - 'id'
+      - 'pdf_url'
+      - 'context'
+  
 examples_pdf:
   type: json.JSONDataset
   filepath: ~/projects/dsit-impact/data/test/pdfs.json
