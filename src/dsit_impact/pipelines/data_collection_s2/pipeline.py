@@ -11,7 +11,7 @@ from .nodes import (
 )
 
 
-def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument
+def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument, missing-function-docstring
     return pipeline([
         node(
             func=get_citation_data,
