@@ -7,7 +7,7 @@ from kedro.pipeline import Pipeline, pipeline, node
 from .nodes import get_citation_sections, preprocess_for_section_collection
 
 
-def create_pipeline(**kwargs) -> Pipeline:
+def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=C0116, W0613
     return pipeline([
         node(
             func=preprocess_for_section_collection,
