@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_pdf(
-    oa_id: str, pdf: str, parent_title: str, contexts: Sequence[str]
+    oa_id: str, doi: str, mag_id: str, pmid: int, pdf: str, parent_title: str, contexts: Sequence[str]
 ) -> Sequence[Tuple[int, str]]:
     """
     Parses a PDF document and extracts relevant sections based on the
@@ -35,36 +35,53 @@ def parse_pdf(
     """
     try:
         article_dict = scipdf.parse_pdf_to_dict(pdf)
-    except Exception as e:  # pylint: disable=broad-except
+        if article_dict is None:
+            logger.error(
+                "Received None for article_dict while parsing PDF for %s."
+                "This may indicate an issue with the PDF file or the parser.",
+                parent_title,
+            )
+            return []
+        if not isinstance(article_dict, dict):
+            logger.error(
+                "Expected article_dict to be a dictionary but got %s for %s."
+                "Check the parser's output.",
+                type(article_dict).__name__,
+                parent_title,
+            )
+            return []
+    except Exception as e: # pylint: disable=broad-except
         logger.error("Error parsing PDF for %s: %s", parent_title, e)
         return []
 
-    best_match_score = 50
-    ref_id = None
-    for reference in article_dict.get("references", []):
-        title = reference.get("title", "")
-        score = fuzz.token_sort_ratio(parent_title, title)
-        if score > best_match_score:
-            best_match_score = score
-            ref_id = reference.get("ref_id")
+    try:
+        best_match_score = 50
+        ref_id = None
+        for reference in article_dict.get("references", []):
+            title = reference.get("title", "")
+            score = fuzz.token_sort_ratio(parent_title, title)
+            if score > best_match_score:
+                best_match_score = score
+                ref_id = reference.get("ref_id")
 
-    # check for each section in "sections" if ref_id is present
-    sections = []
-    for i, section in enumerate(article_dict.get("sections", [])):
-        section_heading = section.get("heading", "")
-        if ref_id in section.get("publication_ref", []):
-            sections.append(tuple([oa_id, i, section_heading]))
-        else:
-            if len(contexts) > 0:
-                for context in contexts:
-                    # fuzzy ratio a substring of context in section text
-                    if fuzz.token_set_ratio(context, section.get("text", "")) > 75:
-                        sections.append(tuple([oa_id, i, section_heading]))
+        sections = []
+        for i, section in enumerate(article_dict.get("sections", [])):
+            section_heading = section.get("heading", "")
+            if ref_id in section.get("publication_ref", []):
+                sections.append(tuple([oa_id, doi, mag_id, pmid, i, section_heading]))
             else:
-                logger.info("No contexts provided for %s", parent_title)
+                if len(contexts) > 0:
+                    for context in contexts:
+                        if fuzz.token_set_ratio(context, section.get("text", "")) > 75:
+                            sections.append(tuple([oa_id, doi, mag_id, pmid, i, section_heading]))
+                else:
+                    logger.info("No contexts provided for %s", parent_title)
 
-    logger.info("Found %d sections for %s", len(sections), parent_title)
-    return sections
+        logger.info("Found %d sections for %s", len(sections), parent_title)
+        return sections
+    except Exception as e: # pylint: disable=broad-except
+        logger.error("Error processing sections for %s: %s", parent_title, e)
+        return []
 
 
 def get_pdf_content(dataset: pd.DataFrame):
@@ -78,12 +95,8 @@ def get_pdf_content(dataset: pd.DataFrame):
     Returns:
         list: A list of paper sections extracted from the PDF files.
     """
-    assert all(
-        dataset.columns.isin(["id", "pdf_url", "title", "context"])
-    ), "The dataset should contain 'id', 'pdf_url', 'title', and 'context' columns."
-
     inputs = dataset.apply(
-        lambda x: (x["id"], x["pdf_url"], x["title"], x["context"]), axis=1
+        lambda x: (x["id"], x["doi"], x["mag_id"], x["pmid"], x["pdf_url"], x["title"], x["context"]), axis=1
     ).tolist()
 
     # get paper sections
@@ -119,7 +132,7 @@ def preprocess_for_section_collection(
 
     # groupby 'id' and 'pdf_url', create a list of contexts
     merged_data = (
-        merged_data.groupby(["id", "title", "pdf_url"])["context"]
+        merged_data.groupby(["id", "doi", "mag_id", "pmid", "title", "pdf_url"])["context"]
         .apply(list)
         .reset_index()
     )

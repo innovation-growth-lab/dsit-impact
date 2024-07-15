@@ -154,6 +154,9 @@ pdfs.s2_dataset.input:
       - 'id'
       - 'pdf_url'
       - 'context'
+      - 'doi'
+      - 'mag_id'
+      - 'pmid'
 
 pdfs.section_details.input:
   <<: *_pq
@@ -161,4 +164,4 @@ pdfs.section_details.input:
 
 pdfs.section_details.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/pdf/citation_sections/
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_sections/
