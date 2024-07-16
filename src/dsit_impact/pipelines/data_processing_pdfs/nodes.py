@@ -8,7 +8,7 @@ from typing import Sequence, Tuple
 import scipdf
 import pandas as pd
 import numpy as np
-from thefuzz import fuzz, process
+from thefuzz import fuzz
 from joblib import Parallel, delayed
 
 
@@ -236,12 +236,3 @@ def get_citation_sections(dataset: pd.DataFrame):
         )
 
         yield {f"s{i}": processed_df}
-
-
-def find_closest_index(section_index, general_indices):
-    closest = None
-    for index in general_indices:
-        if index <= section_index:
-            if closest is None or index > closest:
-                closest = index
-    return closest
