@@ -7,15 +7,44 @@ import logging
 from typing import Sequence, Tuple
 import scipdf
 import pandas as pd
-from thefuzz import fuzz
+import numpy as np
+from thefuzz import fuzz, process
 from joblib import Parallel, delayed
 
 
 logger = logging.getLogger(__name__)
 
+TYPICAL_SECTIONS = [
+    "Abstract",
+    "Introduction",
+    "Background",
+    "Literature Review",
+    "Theoretical Framework",
+    "Methods",
+    "Methodology",
+    "Empirical Design",
+    "Experimental Design",
+    "Data",
+    "Data Collection",
+    "Data Analysis",
+    "Results",
+    "Discussion",
+    "Conclusion",
+    "Recommendations",
+    "Future Work",
+    "Limitations",
+    "Acknowledgements",
+]
+
 
 def parse_pdf(
-    oa_id: str, doi: str, mag_id: str, pmid: int, pdf: str, parent_title: str, contexts: Sequence[str]
+    oa_id: str,
+    doi: str,
+    mag_id: str,
+    pmid: int,
+    pdf: str,
+    parent_title: str,
+    contexts: Sequence[str],
 ) -> Sequence[Tuple[int, str]]:
     """
     Parses a PDF document and extracts relevant sections based on the
@@ -50,7 +79,7 @@ def parse_pdf(
                 parent_title,
             )
             return []
-    except Exception as e: # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
         logger.error("Error parsing PDF for %s: %s", parent_title, e)
         return []
 
@@ -65,21 +94,37 @@ def parse_pdf(
                 ref_id = reference.get("ref_id")
 
         sections = []
+        general_sections = []
         for i, section in enumerate(article_dict.get("sections", [])):
             section_heading = section.get("heading", "")
+            for typical_section in TYPICAL_SECTIONS:
+                score = fuzz.token_sort_ratio(typical_section, section_heading)
+                if score > 75:
+                    general_sections.append((typical_section, i))
+                    break
             if ref_id in section.get("publication_ref", []):
-                sections.append(tuple([oa_id, doi, mag_id, pmid, i, section_heading]))
+                sections.append([oa_id, doi, mag_id, pmid, i, section_heading])
             else:
                 if len(contexts) > 0:
                     for context in contexts:
                         if fuzz.token_set_ratio(context, section.get("text", "")) > 75:
-                            sections.append(tuple([oa_id, doi, mag_id, pmid, i, section_heading]))
+                            sections.append(
+                                [oa_id, doi, mag_id, pmid, i, section_heading]
+                            )
                 else:
                     logger.info("No contexts provided for %s", parent_title)
 
+        general_section_indices = np.array([gs[1] for gs in general_sections])
+        # find closest negative (or exact) match for each section
+        for section in sections:
+            section_differences = general_section_indices - section[4]
+            section_idx = np.argmax(section_differences[section_differences <= 0])
+            section.append(general_sections[section_idx][0])
+
         logger.info("Found %d sections for %s", len(sections), parent_title)
         return sections
-    except Exception as e: # pylint: disable=broad-except
+
+    except Exception as e:  # pylint: disable=broad-except
         logger.error("Error processing sections for %s: %s", parent_title, e)
         return []
 
@@ -96,11 +141,20 @@ def get_pdf_content(dataset: pd.DataFrame):
         list: A list of paper sections extracted from the PDF files.
     """
     inputs = dataset.apply(
-        lambda x: (x["id"], x["doi"], x["mag_id"], x["pmid"], x["pdf_url"], x["title"], x["context"]), axis=1
+        lambda x: (
+            x["id"],
+            x["doi"],
+            x["mag_id"],
+            x["pmid"],
+            x["pdf_url"],
+            x["title"],
+            x["context"],
+        ),
+        axis=1,
     ).tolist()
 
     # get paper sections
-    sections = Parallel(n_jobs=8, verbose=10)(
+    sections = Parallel(n_jobs=12, verbose=10)(
         delayed(parse_pdf)(*input) for input in inputs
     )
 
@@ -132,7 +186,9 @@ def preprocess_for_section_collection(
 
     # groupby 'id' and 'pdf_url', create a list of contexts
     merged_data = (
-        merged_data.groupby(["id", "doi", "mag_id", "pmid", "title", "pdf_url"])["context"]
+        merged_data.groupby(["id", "doi", "mag_id", "pmid", "title", "pdf_url"])[
+            "context"
+        ]
         .apply(list)
         .reset_index()
     )
@@ -168,7 +224,24 @@ def get_citation_sections(dataset: pd.DataFrame):
 
         processed_df = pd.DataFrame(
             [item for sublist in processed_data for item in sublist],
-            columns=["id", "section_index", "section_heading"],
+            columns=[
+                "parent_id",
+                "doi",
+                "mag_id",
+                "pmid",
+                "section_index",
+                "section_heading",
+                "main_section_heading",
+            ],
         )
 
         yield {f"s{i}": processed_df}
+
+
+def find_closest_index(section_index, general_indices):
+    closest = None
+    for index in general_indices:
+        if index <= section_index:
+            if closest is None or index > closest:
+                closest = index
+    return closest
