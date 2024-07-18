@@ -1,6 +1,6 @@
 import io
 from pathlib import PurePosixPath
-from typing import Any, Dict, Union, Sequence
+from typing import Any, Dict
 from kedro.io import AbstractDataset
 from kedro.io.core import get_filepath_str, get_protocol_and_path
 import fsspec
