@@ -20,27 +20,117 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 logger = logging.getLogger(__name__)
 
-TYPICAL_SECTIONS = [
-    "Abstract",
-    "Introduction",
-    "Background",
-    "Literature Review",
-    "Theoretical Framework",
-    "Methods",
-    "Methodology",
-    "Empirical Design",
-    "Experimental Design",
-    "Data",
-    "Data Collection",
-    "Data Analysis",
-    "Results",
-    "Discussion",
-    "Conclusion",
-    "Recommendations",
-    "Future Work",
-    "Limitations",
-    "Acknowledgements",
-]
+
+def preprocess_for_section_collection(
+    oa_dataset: pd.DataFrame, s2_dataset: pd.DataFrame
+):
+    """
+    Preprocesses the datasets for section collection.
+
+    Args:
+        oa_dataset (pd.DataFrame): The dataset containing the open access articles.
+        s2_dataset (pd.DataFrame): The dataset containing the semantic scholar articles.
+
+    Returns:
+        pd.DataFrame: The preprocessed merged dataset with grouped contexts.
+    """
+
+    # drop those with None in pdf_url
+    s2_dataset.dropna(subset=["pdf_url"], inplace=True)
+
+    # keep unique id, titles
+    oa_dataset = oa_dataset.drop_duplicates(subset=["id", "title"])
+
+    # merge the datasets
+    merged_data = pd.merge(oa_dataset, s2_dataset, on="id", how="right")
+
+    # groupby 'id' and 'pdf_url', create a list of contexts
+    merged_data = (
+        merged_data.groupby(["id", "doi", "mag_id", "pmid", "title", "pdf_url"])[
+            "context"
+        ]
+        .apply(list)
+        .reset_index()
+    )
+
+    return merged_data
+
+
+def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]):
+    """
+    Retrieves citation sections from the PDFs based on the Semantic Scholar + OA data.
+
+    Args:
+        oa_dataset (pd.DataFrame): The OpenAlex dataset containing IDs.
+        s2_dataset (pd.DataFrame): The Semantic Scholar dataset containing titles.
+
+    Returns:
+        Dict: A dictionary containing the processed citation sections.
+
+    """
+
+    # split the dataset into chunks of 1_000
+    dataset_chunks = [
+        dataset.iloc[i : i + 1_000] for i in range(0, len(dataset), 1_000)
+    ]
+
+    for i, chunk in enumerate(dataset_chunks):
+        # if i < 341:
+        #     continue
+        logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
+        # get the PDF content
+        processed_data = get_pdf_content(
+            dataset=chunk,
+            main_sections=main_sections,
+        )
+        logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
+
+        processed_df = pd.DataFrame(
+            [item for sublist in processed_data for item in sublist],
+            columns=[
+                "parent_id",
+                "doi",
+                "mag_id",
+                "pmid",
+                "section_index",
+                "section_heading",
+                "main_section_heading",
+            ],
+        )
+
+        yield {f"s{i}": processed_df}
+
+
+def get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]):
+    """
+    Retrieves the content of PDF files based on the provided dataset.
+
+    Args:
+        dataset (pd.DataFrame): The dataset containing 'id', 'pdf_url',
+            'title', and 'context' columns.
+
+    Returns:
+        list: A list of paper sections extracted from the PDF files.
+    """
+    inputs = dataset.apply(
+        lambda x: (
+            x["id"],
+            x["doi"],
+            x["mag_id"],
+            x["pmid"],
+            x["pdf_url"],
+            x["title"],
+            x["context"],
+        ),
+        axis=1,
+    ).tolist()
+
+    # get paper sections
+    sections = Parallel(n_jobs=1, verbose=10)(
+        delayed(parse_pdf)(*input, main_sections=main_sections) for input in inputs
+    )
+
+    return sections
 
 
 def parse_pdf(
@@ -136,119 +226,7 @@ def parse_pdf(
         return []
 
 
-def get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]):
-    """
-    Retrieves the content of PDF files based on the provided dataset.
-
-    Args:
-        dataset (pd.DataFrame): The dataset containing 'id', 'pdf_url',
-            'title', and 'context' columns.
-
-    Returns:
-        list: A list of paper sections extracted from the PDF files.
-    """
-    inputs = dataset.apply(
-        lambda x: (
-            x["id"],
-            x["doi"],
-            x["mag_id"],
-            x["pmid"],
-            x["pdf_url"],
-            x["title"],
-            x["context"],
-        ),
-        axis=1,
-    ).tolist()
-
-    # get paper sections
-    sections = Parallel(n_jobs=10, verbose=10)(
-        delayed(parse_pdf)(*input, main_sections=main_sections) for input in inputs
-    )
-
-    return sections
-
-
-def preprocess_for_section_collection(
-    oa_dataset: pd.DataFrame, s2_dataset: pd.DataFrame
-):
-    """
-    Preprocesses the datasets for section collection.
-
-    Args:
-        oa_dataset (pd.DataFrame): The dataset containing the open access articles.
-        s2_dataset (pd.DataFrame): The dataset containing the semantic scholar articles.
-
-    Returns:
-        pd.DataFrame: The preprocessed merged dataset with grouped contexts.
-    """
-
-    # drop those with None in pdf_url
-    s2_dataset.dropna(subset=["pdf_url"], inplace=True)
-
-    # keep unique id, titles
-    oa_dataset = oa_dataset.drop_duplicates(subset=["id", "title"])
-
-    # merge the datasets
-    merged_data = pd.merge(oa_dataset, s2_dataset, on="id", how="right")
-
-    # groupby 'id' and 'pdf_url', create a list of contexts
-    merged_data = (
-        merged_data.groupby(["id", "doi", "mag_id", "pmid", "title", "pdf_url"])[
-            "context"
-        ]
-        .apply(list)
-        .reset_index()
-    )
-
-    return merged_data
-
-
-def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]):
-    """
-    Retrieves citation sections from the PDFs based on the Semantic Scholar + OA data.
-
-    Args:
-        oa_dataset (pd.DataFrame): The OpenAlex dataset containing IDs.
-        s2_dataset (pd.DataFrame): The Semantic Scholar dataset containing titles.
-
-    Returns:
-        Dict: A dictionary containing the processed citation sections.
-
-    """
-
-    # split the dataset into chunks of 1_000
-    dataset_chunks = [
-        dataset.iloc[i : i + 1_000] for i in range(0, len(dataset), 1_000)
-    ]
-
-    for i, chunk in enumerate(dataset_chunks):
-        if i < 341:
-            continue
-        logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
-        # get the PDF content
-        processed_data = get_pdf_content(
-            dataset=chunk,
-            main_sections=main_sections,
-        )
-        logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
-
-        processed_df = pd.DataFrame(
-            [item for sublist in processed_data for item in sublist],
-            columns=[
-                "parent_id",
-                "doi",
-                "mag_id",
-                "pmid",
-                "section_index",
-                "section_heading",
-                "main_section_heading",
-            ],
-        )
-
-        yield {f"s{i}": processed_df}
-
-
-def get_browser_pdf_object(combined_id: str, url: pd.DataFrame):
+def get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
     """
     Downloads a PDF file from a given URL using a headless Chrome browser.
 
@@ -258,63 +236,66 @@ def get_browser_pdf_object(combined_id: str, url: pd.DataFrame):
 
     Returns:
         list: A list containing the combined ID and the content of the downloaded PDF file.
-              If an error occurs during the download, an empty string is returned instead 
+              If an error occurs during the download, an empty string is returned instead
               of the PDF content.
     """
-    try:
-        with tempfile.TemporaryDirectory() as tmp_download_path:
-            chrome_options = Options()
-            chrome_options.add_experimental_option(
-                "prefs",
-                {
-                    "download.default_directory": tmp_download_path,
-                    "download.prompt_for_download": False,  # Disable download prompt
-                    "download.directory_upgrade": True,
-                    "plugins.always_open_pdf_externally": True,  # Disable PDF viewer
-                },
-            )
+    article_outputs = []
+    with tempfile.TemporaryDirectory() as tmp_download_path:
+        chrome_options = Options()
+        chrome_options.add_experimental_option(
+            "prefs",
+            {
+                "download.default_directory": tmp_download_path,
+                "download.prompt_for_download": False,  # Disable download prompt
+                "download.directory_upgrade": True,
+                "plugins.always_open_pdf_externally": True,  # Disable PDF viewer
+            },
+        )
 
-            driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.set_page_load_timeout(10)
 
-            # Navigate to the URL, which should automatically trigger the PDF download
-            driver.get(url)
+        for combined_id, url in articles:
+            try:
+                initial_files = set(os.listdir(tmp_download_path))
+                # url navigate triggers download
+                driver.get(url)
 
-            WebDriverWait(driver, 5).until(
-                lambda driver: len(os.listdir(tmp_download_path)) > 0
-            )
-
-            start_time = time.time()  # Record the start time
-            is_download_finished = False
-            while not is_download_finished:
-                if time.time() - start_time > 10:
-                    logger.error("Download timed out.")
-                    break  # Exit the loop if the timeout is exceeded
-
-                logger.debug("Waiting for download to complete...")
-                time.sleep(0.5)  # Polling interval
-                is_download_finished = not any(
-                    fname.endswith(".crdownload") for fname in os.listdir(tmp_download_path)
+                WebDriverWait(driver, 5).until(
+                    lambda driver: len(os.listdir(tmp_download_path))
+                    > len(initial_files)  # pylint: disable=cell-var-from-loop
                 )
 
-            # Assuming the PDF filename is not known beforehand and is the only file in the directory
-            files = os.listdir(tmp_download_path)
-            if files:
-                logger.info("Downloaded file: %s", combined_id)
-                downloaded_file_path = os.path.join(tmp_download_path, files[0])
-                # read file
+                start_time = time.time()
+                while True:
+                    time.sleep(0.25)  # polling interval
+                    current_files = set(os.listdir(tmp_download_path))
+                    new_files = current_files - initial_files
+                    new_files = {
+                        file
+                        for file in new_files
+                        if not file.endswith(".crdownload")
+                        and "IDSCOC" not in file
+                        and "google.chrome" not in file
+                    }
+                    if new_files or time.time() - start_time > 10:
+                        break
+                if not new_files:
+                    logger.error("Download timed out or failed for %s.", combined_id)
+                    continue
+
+                # Assuming the PDF filename is not known beforehand and is the only file in the directory
+                new_file = next(iter(new_files))
+                downloaded_file_path = os.path.join(tmp_download_path, new_file)
+                logger.info("Downloaded file for %s: %s", combined_id, new_file)
                 with open(downloaded_file_path, "rb") as file:
                     pdf_content = file.read()
-                return [combined_id, pdf_content]
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error("Error downloading PDF for %s: %s", combined_id, e)
-        return [combined_id, ""]
-
-    finally:
-        # Close the WebDriver
-        try:
-            driver.quit()
-        except Exception as e: # pylint: disable=broad-except
-            logger.error("Error closing the WebDriver: %s", e)
+                article_outputs.append((combined_id, pdf_content))
+            except Exception as e:  # pylint: disable=broad-except
+                logger.error("Error downloading PDF for %s: %s", combined_id, e)
+                continue
+        driver.quit()
+    return article_outputs
 
 
 def get_browser_pdfs(dataset: pd.DataFrame):
@@ -337,11 +318,16 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         + dataset["pmid"].astype(str)
     )
     inputs = dataset.apply(lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
-    input_batches = [inputs[i : i + 50] for i in range(0, len(inputs), 50)]
+    input_inner_batches = [inputs[i : i + 50] for i in range(0, len(inputs), 50)]
+    input_batches = [
+        input_inner_batches[i : i + 25] for i in range(0, len(input_inner_batches), 25)
+    ]
     for i, batch in enumerate(input_batches):
         logger.info("Processing batch %d / %d", i, len(input_batches))
-        pdfs = Parallel(n_jobs=8, verbose=10)(
-            delayed(get_browser_pdf_object)(*input) for input in batch
+        pdfs = Parallel(n_jobs=-1, verbose=10)(
+            delayed(get_browser_pdf_object)(input) for input in batch
         )
+        # flatten
+        pdfs = [pdf for pdf_batch in pdfs for pdf in pdf_batch]
         pdfs = [(filename, pdf) for filename, pdf in pdfs if isinstance(pdf, bytes)]
         yield {f"s{i}": pdfs}
