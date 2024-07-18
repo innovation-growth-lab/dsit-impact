@@ -1,0 +1,39 @@
+# This is a boilerplate parameters config generated for pipeline 'data_processing_pdfs'
+# using Kedro 0.19.6.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/0.19.6/configuration/parameters.html
+pdfs:
+  data_collection:
+    main_sections:
+      - Abstract
+      - Introduction
+      - Background
+      - Literature Review
+      - Theoretical Framework
+      - Methods
+      - Methodology
+      - Empirical Design
+      - Experimental Design
+      - Data
+      - Data Collection
+      - Data Analysis
+      - Results
+      - Discussion
+      - Conclusion
+      - Recommendations
+      - Future Work
+      - Limitations
+      - Acknowledgements
+
+urls:
+  - https://besjournals.onlinelibrary.wiley.com/doi/pdfdirect/10.1111/1365-2745.12513
+  - https://www.nature.com/articles/s41586-021-03828-1.pdf
+  - https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/prot.26171
+  - http://manuscript.elsevier.com/S0959440X21000142/pdf/S0959440X21000142.pdf
+  - https://www.biorxiv.org/content/biorxiv/early/2021/08/27/2021.02.12.430858.full.pdf
+  - https://academic.oup.com/nar/article-pdf/49/D1/D480/35364103/gkaa1100.pdf
+  - https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1008865&type=printable
+  - https://journals.plos.org/plospathogens/article/file?id=10.1371/journal.ppat.1008707&type=printable
+  - https://f1000research.com/articles/9-667/v1/pdf
+  - https://www.nature.com/articles/s41586-020-2649-2.pdf

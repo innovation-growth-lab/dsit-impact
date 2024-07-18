@@ -45,6 +45,7 @@ def parse_pdf(
     pdf: str,
     parent_title: str,
     contexts: Sequence[str],
+    main_sections: Sequence[str],
 ) -> Sequence[Tuple[int, str]]:
     """
     Parses a PDF document and extracts relevant sections based on the
@@ -80,7 +81,7 @@ def parse_pdf(
             )
             return []
     except Exception as e:  # pylint: disable=broad-except
-        logger.error("Error parsing PDF for %s: %s", parent_title, e)
+        logger.error("Error parsing PDF for %s: %s", doi, e)
         return []
 
     try:
@@ -97,7 +98,7 @@ def parse_pdf(
         general_sections = []
         for i, section in enumerate(article_dict.get("sections", [])):
             section_heading = section.get("heading", "")
-            for typical_section in TYPICAL_SECTIONS:
+            for typical_section in main_sections:
                 score = fuzz.token_sort_ratio(typical_section, section_heading)
                 if score > 75:
                     general_sections.append((typical_section, i))
@@ -129,7 +130,7 @@ def parse_pdf(
         return []
 
 
-def get_pdf_content(dataset: pd.DataFrame):
+def get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]):
     """
     Retrieves the content of PDF files based on the provided dataset.
 
@@ -154,8 +155,8 @@ def get_pdf_content(dataset: pd.DataFrame):
     ).tolist()
 
     # get paper sections
-    sections = Parallel(n_jobs=12, verbose=10)(
-        delayed(parse_pdf)(*input) for input in inputs
+    sections = Parallel(n_jobs=10, verbose=10)(
+        delayed(parse_pdf)(*input, main_sections=main_sections) for input in inputs
     )
 
     return sections
@@ -196,7 +197,7 @@ def preprocess_for_section_collection(
     return merged_data
 
 
-def get_citation_sections(dataset: pd.DataFrame):
+def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]):
     """
     Retrieves citation sections from the PDFs based on the Semantic Scholar + OA data.
 
@@ -215,10 +216,13 @@ def get_citation_sections(dataset: pd.DataFrame):
     ]
 
     for i, chunk in enumerate(dataset_chunks):
+        if i < 341:
+            continue
         logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
         # get the PDF content
         processed_data = get_pdf_content(
             dataset=chunk,
+            main_sections=main_sections,
         )
         logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
 
@@ -236,3 +240,98 @@ def get_citation_sections(dataset: pd.DataFrame):
         )
 
         yield {f"s{i}": processed_df}
+
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+import time
+import os
+import tempfile
+
+
+def get_browser_pdf_object(combined_id: str, url: pd.DataFrame):
+    try:
+        with tempfile.TemporaryDirectory() as tmp_download_path:
+            chrome_options = Options()
+            chrome_options.add_experimental_option(
+                "prefs",
+                {
+                    "download.default_directory": tmp_download_path,
+                    "download.prompt_for_download": False,  # Disable download prompt
+                    "download.directory_upgrade": True,
+                    "plugins.always_open_pdf_externally": True,  # Disable PDF viewer
+                },
+            )
+
+            driver = webdriver.Chrome(options=chrome_options)
+
+            # Navigate to the URL, which should automatically trigger the PDF download
+            driver.get(url)
+
+            WebDriverWait(driver, 5).until(
+                lambda driver: len(os.listdir(tmp_download_path)) > 0
+            )
+
+            start_time = time.time()  # Record the start time
+            is_download_finished = False
+            while not is_download_finished:
+                if time.time() - start_time > 10:
+                    logger.error("Download timed out.")
+                    break  # Exit the loop if the timeout is exceeded
+
+                logger.debug("Waiting for download to complete...")
+                time.sleep(0.5)  # Polling interval
+                is_download_finished = not any(
+                    fname.endswith(".crdownload") for fname in os.listdir(tmp_download_path)
+                )
+
+            # Assuming the PDF filename is not known beforehand and is the only file in the directory
+            files = os.listdir(tmp_download_path)
+            if files:
+                logger.info("Downloaded file: %s", combined_id)
+                downloaded_file_path = os.path.join(tmp_download_path, files[0])
+                # read file
+                with open(downloaded_file_path, "rb") as file:
+                    pdf_content = file.read()
+                return [combined_id, pdf_content]
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error("Error downloading PDF for %s: %s", combined_id, e)
+        return [combined_id, ""]
+
+    finally:
+        # Close the WebDriver
+        try:
+            driver.quit()
+        except:
+            pass
+
+
+def get_browser_pdfs(dataset: pd.DataFrame):
+    """
+    Retrieves the content of PDF files based on the provided dataset.
+
+    Args:
+        dataset (pd.DataFrame): The dataset containing 'id', 'pdf_url',
+            'title', and 'context' columns.
+
+    Returns:
+        list: A list of paper sections extracted from the PDF files.
+    """
+    dataset = dataset[["doi", "mag_id", "pmid", "pdf_url"]].drop_duplicates()
+    dataset["combined_id"] = (
+        dataset["doi"].astype(str)
+        + "_"
+        + dataset["mag_id"].astype(str)
+        + "_"
+        + dataset["pmid"].astype(str)
+    )
+    inputs = dataset.apply(lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
+    input_batches = [inputs[i : i + 50] for i in range(0, len(inputs), 50)]
+    for i, batch in enumerate(input_batches):
+        logger.info("Processing batch %d / %d", i, len(input_batches))
+        pdfs = Parallel(n_jobs=8, verbose=10)(
+            delayed(get_browser_pdf_object)(*input) for input in batch
+        )
+        pdfs = [(filename, pdf) for filename, pdf in pdfs if isinstance(pdf, bytes)]
+        yield {f"s{i}": pdfs}

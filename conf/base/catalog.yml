@@ -162,6 +162,17 @@ pdfs.section_details.input:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_details/section_inputs.parquet
 
+# pdfs.objects.d.raw:
+#   type: dsit_impact.datasets.pdf_dataset.PdfDataset
+#   filepath: s3://igl-dsit-impact/03_impact/data/00_test/test.pdf
+#   credentials: s3_credentials
+
+pdfs.objects.raw:
+  type: partitions.PartitionedDataset
+  dataset: dsit_impact.datasets.pdf_dataset.PdfDataset
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/objects/
+  credentials: s3_credentials
+
 pdfs.section_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_sections/
