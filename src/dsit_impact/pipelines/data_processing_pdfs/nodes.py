@@ -3,13 +3,19 @@ This is a boilerplate pipeline 'data_processing_pdfs'
 generated using Kedro 0.19.6
 """
 
+import os
 import logging
 from typing import Sequence, Tuple
+import time
+import tempfile
 import scipdf
 import pandas as pd
 import numpy as np
 from thefuzz import fuzz
 from joblib import Parallel, delayed
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 logger = logging.getLogger(__name__)
@@ -242,15 +248,19 @@ def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]):
         yield {f"s{i}": processed_df}
 
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-import time
-import os
-import tempfile
-
-
 def get_browser_pdf_object(combined_id: str, url: pd.DataFrame):
+    """
+    Downloads a PDF file from a given URL using a headless Chrome browser.
+
+    Args:
+        combined_id (str): The combined ID of the PDF file.
+        url (pd.DataFrame): The URL of the PDF file to download.
+
+    Returns:
+        list: A list containing the combined ID and the content of the downloaded PDF file.
+              If an error occurs during the download, an empty string is returned instead 
+              of the PDF content.
+    """
     try:
         with tempfile.TemporaryDirectory() as tmp_download_path:
             chrome_options = Options()
@@ -303,8 +313,8 @@ def get_browser_pdf_object(combined_id: str, url: pd.DataFrame):
         # Close the WebDriver
         try:
             driver.quit()
-        except:
-            pass
+        except Exception as e: # pylint: disable=broad-except
+            logger.error("Error closing the WebDriver: %s", e)
 
 
 def get_browser_pdfs(dataset: pd.DataFrame):
