@@ -55,7 +55,7 @@ def preprocess_for_section_collection(
             {
                 "id": list,
                 "title": list,
-                "context": lambda x: list(x),  # keep the lists of contexts intact
+                "context": lambda x: list(x),  # pylint: disable=unnecessary-lambda
             }
         )
         .reset_index()
@@ -169,7 +169,8 @@ def parse_pdf(
         main_sections (Sequence[str]): A sequence of main sections to extract from the PDF.
 
     Returns:
-        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the extracted section.
+        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the 
+            extracted section.
 
     """
     try:
@@ -202,7 +203,6 @@ def parse_pdf(
             citation_title,
             citation_contexts,
             main_sections,
-            oa_id,
             doi,
             mag_id,
             pmid,
@@ -219,7 +219,6 @@ def parent_section_extraction(
     parent_title: str,
     contexts: str,
     main_sections: str,
-    oa_id: str,
     doi: str,
     mag_id: str,
     pmid: str,
@@ -266,9 +265,7 @@ def parent_section_extraction(
                 if len(contexts) > 0:
                     for context in contexts:
                         if fuzz.token_set_ratio(context, section.get("text", "")) > 85:
-                            sections.append(
-                                [doi, mag_id, pmid, i, section_heading]
-                            )
+                            sections.append([doi, mag_id, pmid, i, section_heading])
                 else:
                     logger.info("No contexts provided for %s", parent_title)
 
@@ -279,14 +276,17 @@ def parent_section_extraction(
             for section in sections:
                 section_differences = general_section_indices - section[4]
                 upstream_differences = section_differences[section_differences <= 0]
-                if np.max(upstream_differences) < int(-len(article_dict.get("sections", []))/3):
+                if np.max(upstream_differences) < int(
+                    -len(article_dict.get("sections", [])) / 3
+                ):
                     section.append("Not Found")
                 else:
-                    section_idx = np.argmax(section_differences[section_differences <= 0])
+                    section_idx = np.argmax(
+                        section_differences[section_differences <= 0]
+                    )
                     section.append(general_sections[section_idx][0])
 
             logger.info("Found %d sections for %s", len(sections), parent_title)
-            
 
         # if sections is empty, return a single row saying not found
         if len(sections) == 0:
