@@ -126,13 +126,13 @@ def get_pdf_content(
     """
     inputs = dataset.apply(
         lambda x: (
-            x["id"],
             x["doi"],
             x["mag_id"],
             x["pmid"],
             x["pdf_url"],
-            x["title"],
-            x["context"],
+            list(x["id"]),
+            list(x["title"]),
+            list(x["context"]),
         ),
         axis=1,
     ).tolist()
@@ -146,11 +146,11 @@ def get_pdf_content(
 
 
 def parse_pdf(
-    oa_id: Sequence[str],
     doi: str,
     mag_id: str,
     pmid: int,
     pdf: str,
+    oa_id: Sequence[str],
     parent_title: Sequence[str],
     contexts: Sequence[Sequence[str]],
     main_sections: Sequence[str],
@@ -242,7 +242,7 @@ def parent_section_extraction(
 
     """
     try:
-        best_match_score = 50
+        best_match_score = 65
         ref_id = None
         for reference in article_dict.get("references", []):
             title = reference.get("title", "")
@@ -261,30 +261,41 @@ def parent_section_extraction(
                     general_sections.append((typical_section, i))
                     break
             if ref_id in section.get("publication_ref", []):
-                sections.append([oa_id, doi, mag_id, pmid, i, section_heading])
+                sections.append([doi, mag_id, pmid, i, section_heading])
             else:
                 if len(contexts) > 0:
                     for context in contexts:
-                        if fuzz.token_set_ratio(context, section.get("text", "")) > 75:
+                        if fuzz.token_set_ratio(context, section.get("text", "")) > 85:
                             sections.append(
-                                [oa_id, doi, mag_id, pmid, i, section_heading]
+                                [doi, mag_id, pmid, i, section_heading]
                             )
                 else:
                     logger.info("No contexts provided for %s", parent_title)
 
         general_section_indices = np.array([gs[1] for gs in general_sections])
         # find closest negative (or exact) match for each section
-        for section in sections:
-            section_differences = general_section_indices - section[4]
-            section_idx = np.argmax(section_differences[section_differences <= 0])
-            section.append(general_sections[section_idx][0])
+        if len(general_section_indices) == 0:
+            general_section_indices = np.array([-100])
+            for section in sections:
+                section_differences = general_section_indices - section[4]
+                upstream_differences = section_differences[section_differences <= 0]
+                if np.max(upstream_differences) < int(-len(article_dict.get("sections", []))/3):
+                    section.append("Not Found")
+                else:
+                    section_idx = np.argmax(section_differences[section_differences <= 0])
+                    section.append(general_sections[section_idx][0])
 
-        logger.info("Found %d sections for %s", len(sections), parent_title)
+            logger.info("Found %d sections for %s", len(sections), parent_title)
+            
+
+        # if sections is empty, return a single row saying not found
+        if len(sections) == 0:
+            sections.append([doi, mag_id, pmid, -1, "Not Found", "Not Found"])
         return sections
 
     except Exception as e:  # pylint: disable=broad-except
         logger.error("Error processing sections for %s: %s", parent_title, e)
-        return []
+        return [[doi, mag_id, pmid, -2, "Error", "Error"]]
 
 
 def get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
