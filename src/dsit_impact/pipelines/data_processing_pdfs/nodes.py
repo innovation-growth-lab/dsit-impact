@@ -5,7 +5,7 @@ generated using Kedro 0.19.6
 
 import os
 import logging
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, Dict, Generator, Union
 import time
 import tempfile
 import scipdf
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def preprocess_for_section_collection(
     oa_dataset: pd.DataFrame, s2_dataset: pd.DataFrame
-):
+) -> pd.DataFrame:
     """
     Preprocesses the datasets for section collection.
 
@@ -35,28 +35,29 @@ def preprocess_for_section_collection(
         pd.DataFrame: The preprocessed merged dataset with grouped contexts.
     """
 
-    # drop those with None in pdf_url
     s2_dataset.dropna(subset=["pdf_url"], inplace=True)
-
-    # keep unique id, titles
     oa_dataset = oa_dataset.drop_duplicates(subset=["id", "title"])
-
-    # merge the datasets
     merged_data = pd.merge(oa_dataset, s2_dataset, on="id", how="right")
 
-    # groupby 'id' and 'pdf_url', create a list of contexts
+    # first groupby creates lists of context
     merged_data = (
         merged_data.groupby(["id", "doi", "mag_id", "pmid", "title", "pdf_url"])[
-            "context"
-        ]
+            "context"]
         .apply(list)
         .reset_index()
     )
 
-    return merged_data
+    # second groupby guarantees unique pdf fetches
+    final_data = merged_data.groupby(["doi", "mag_id", "pmid", "pdf_url"]).agg({
+        "id": list,
+        "title": list,
+        "context": lambda x: list(x)  # keep the lists of contexts intact
+    }).reset_index()
+
+    return final_data
 
 
-def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]):
+def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]) -> Generator[Dict, None, None]:
     """
     Retrieves citation sections from the PDFs based on the Semantic Scholar + OA data.
 
@@ -71,7 +72,7 @@ def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]):
 
     # split the dataset into chunks of 1_000
     dataset_chunks = [
-        dataset.iloc[i : i + 1_000] for i in range(0, len(dataset), 1_000)
+        dataset.iloc[i: i + 1_000] for i in range(0, len(dataset), 1_000)
     ]
 
     for i, chunk in enumerate(dataset_chunks):
@@ -101,7 +102,7 @@ def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]):
         yield {f"s{i}": processed_df}
 
 
-def get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]):
+def get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]) -> Sequence[Tuple[int, str]]:
     """
     Retrieves the content of PDF files based on the provided dataset.
 
@@ -134,29 +135,30 @@ def get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]):
 
 
 def parse_pdf(
-    oa_id: str,
+    oa_id: Sequence[str],
     doi: str,
     mag_id: str,
     pmid: int,
     pdf: str,
-    parent_title: str,
-    contexts: Sequence[str],
+    parent_title: Sequence[str],
+    contexts: Sequence[Sequence[str]],
     main_sections: Sequence[str],
 ) -> Sequence[Tuple[int, str]]:
     """
-    Parses a PDF document and extracts relevant sections based on the
-        parent title and contexts.
+    Parse a PDF file and extract citation sections.
 
     Args:
-        id (str): The ID of the parent document.
-        pdf (str): The path or content of the PDF document.
-        parent_title (str): The title of the parent document.
-        contexts (Sequence[str]): A sequence of context strings to match
-            against the section text.
+        oa_id (Sequence[str]): A sequence of citation IDs.
+        doi (str): The DOI (Digital Object Identifier) of the article.
+        mag_id (str): The MAG (Microsoft Academic Graph) ID of the article.
+        pmid (int): The PubMed ID of the article.
+        pdf (str): The path to the PDF file.
+        parent_title (Sequence[str]): A sequence of parent titles for each citation.
+        contexts (Sequence[Sequence[str]]): A sequence of sequences containing citation contexts.
+        main_sections (Sequence[str]): A sequence of main sections to extract from the PDF.
 
     Returns:
-        Sequence[Tuple[int, str]]: A sequence of tuples containing the index
-            and heading of the matched sections.
+        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the extracted section.
 
     """
     try:
@@ -165,7 +167,7 @@ def parse_pdf(
             logger.error(
                 "Received None for article_dict while parsing PDF for %s."
                 "This may indicate an issue with the PDF file or the parser.",
-                parent_title,
+                pdf,
             )
             return []
         if not isinstance(article_dict, dict):
@@ -173,13 +175,43 @@ def parse_pdf(
                 "Expected article_dict to be a dictionary but got %s for %s."
                 "Check the parser's output.",
                 type(article_dict).__name__,
-                parent_title,
+                pdf,
             )
             return []
     except Exception as e:  # pylint: disable=broad-except
         logger.error("Error parsing PDF for %s: %s", doi, e)
         return []
 
+    citation_sections = []
+    for citation_id, citation_title, citation_contexts in zip(oa_id, parent_title, contexts):
+        sections = parent_section_extraction(
+            article_dict, citation_title, citation_contexts, main_sections, oa_id, doi, mag_id, pmid
+        )
+        for section in sections:
+            section.insert(0, citation_id)
+        citation_sections.extend(sections)
+
+    return citation_sections
+
+
+def parent_section_extraction(article_dict: Dict[str, Union[str, Dict[str,str]]], parent_title: str, contexts: str, main_sections: str, oa_id: str, doi: str, mag_id: str, pmid: str) -> Sequence[Tuple[int, str]]:
+    """
+    Extracts parent sections from an article based on the provided parameters.
+
+    Args:
+        article_dict (dict): The dictionary containing the article information.
+        parent_title (str): The title of the parent section.
+        contexts (list): A list of contexts to match against the article sections.
+        main_sections (list): A list of typical section headings.
+        oa_id (str): The Open Access ID of the article.
+        doi (str): The DOI of the article.
+        mag_id (str): The MAG ID of the article.
+        pmid (str): The PMID of the article.
+
+    Returns:
+        list: A list of sections matching the provided parameters.
+
+    """
     try:
         best_match_score = 50
         ref_id = None
@@ -215,7 +247,8 @@ def parse_pdf(
         # find closest negative (or exact) match for each section
         for section in sections:
             section_differences = general_section_indices - section[4]
-            section_idx = np.argmax(section_differences[section_differences <= 0])
+            section_idx = np.argmax(
+                section_differences[section_differences <= 0])
             section.append(general_sections[section_idx][0])
 
         logger.info("Found %d sections for %s", len(sections), parent_title)
@@ -258,8 +291,7 @@ def get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
         for combined_id, url in articles:
             try:
                 initial_files = set(os.listdir(tmp_download_path))
-                # url navigate triggers download
-                driver.get(url)
+                driver.get(url)  # url navigate triggers download
 
                 WebDriverWait(driver, 5).until(
                     lambda driver: len(os.listdir(tmp_download_path))
@@ -281,18 +313,21 @@ def get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
                     if new_files or time.time() - start_time > 5:
                         break
                 if not new_files:
-                    logger.error("Download timed out or failed for %s.", combined_id)
+                    logger.error(
+                        "Download timed out or failed for %s.", combined_id)
                     continue
 
-                # Assuming the PDF filename is not known beforehand and is the only file in the directory
                 new_file = next(iter(new_files))
-                downloaded_file_path = os.path.join(tmp_download_path, new_file)
-                logger.info("Downloaded file for %s: %s", combined_id, new_file)
+                downloaded_file_path = os.path.join(
+                    tmp_download_path, new_file)
+                logger.info("Downloaded file for %s: %s",
+                            combined_id, new_file)
                 with open(downloaded_file_path, "rb") as file:
                     pdf_content = file.read()
                 article_outputs.append((combined_id, pdf_content))
             except Exception as e:  # pylint: disable=broad-except
-                logger.error("Error downloading PDF for %s: %s", combined_id, e)
+                logger.error("Error downloading PDF for %s: %s",
+                             combined_id, e)
                 continue
         driver.quit()
     return article_outputs
@@ -317,10 +352,12 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         + "_"
         + dataset["pmid"].astype(str)
     )
-    inputs = dataset.apply(lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
-    input_inner_batches = [inputs[i : i + 50] for i in range(0, len(inputs), 50)]
+    inputs = dataset.apply(
+        lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
+    input_inner_batches = [inputs[i: i + 50]
+                           for i in range(0, len(inputs), 50)]
     input_batches = [
-        input_inner_batches[i : i + 15] for i in range(0, len(input_inner_batches), 15)
+        input_inner_batches[i: i + 15] for i in range(0, len(input_inner_batches), 15)
     ]
     for i, batch in enumerate(input_batches):
         if i < 1003:
@@ -331,5 +368,6 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         )
         # flatten
         pdfs = [pdf for pdf_batch in pdfs for pdf in pdf_batch]
-        pdfs = [(filename, pdf) for filename, pdf in pdfs if isinstance(pdf, bytes)]
+        pdfs = [(filename, pdf)
+                for filename, pdf in pdfs if isinstance(pdf, bytes)]
         yield {f"s{i}": pdfs}
