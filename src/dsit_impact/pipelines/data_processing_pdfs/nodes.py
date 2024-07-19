@@ -42,22 +42,31 @@ def preprocess_for_section_collection(
     # first groupby creates lists of context
     merged_data = (
         merged_data.groupby(["id", "doi", "mag_id", "pmid", "title", "pdf_url"])[
-            "context"]
+            "context"
+        ]
         .apply(list)
         .reset_index()
     )
 
     # second groupby guarantees unique pdf fetches
-    final_data = merged_data.groupby(["doi", "mag_id", "pmid", "pdf_url"]).agg({
-        "id": list,
-        "title": list,
-        "context": lambda x: list(x)  # keep the lists of contexts intact
-    }).reset_index()
+    final_data = (
+        merged_data.groupby(["doi", "mag_id", "pmid", "pdf_url"])
+        .agg(
+            {
+                "id": list,
+                "title": list,
+                "context": lambda x: list(x),  # keep the lists of contexts intact
+            }
+        )
+        .reset_index()
+    )
 
     return final_data
 
 
-def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]) -> Generator[Dict, None, None]:
+def get_citation_sections(
+    dataset: pd.DataFrame, main_sections: Sequence[str]
+) -> Generator[Dict, None, None]:
     """
     Retrieves citation sections from the PDFs based on the Semantic Scholar + OA data.
 
@@ -72,7 +81,7 @@ def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]) -
 
     # split the dataset into chunks of 1_000
     dataset_chunks = [
-        dataset.iloc[i: i + 1_000] for i in range(0, len(dataset), 1_000)
+        dataset.iloc[i : i + 1_000] for i in range(0, len(dataset), 1_000)
     ]
 
     for i, chunk in enumerate(dataset_chunks):
@@ -102,7 +111,9 @@ def get_citation_sections(dataset: pd.DataFrame, main_sections: Sequence[str]) -
         yield {f"s{i}": processed_df}
 
 
-def get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]) -> Sequence[Tuple[int, str]]:
+def get_pdf_content(
+    dataset: pd.DataFrame, main_sections: Sequence[str]
+) -> Sequence[Tuple[int, str]]:
     """
     Retrieves the content of PDF files based on the provided dataset.
 
@@ -183,9 +194,18 @@ def parse_pdf(
         return []
 
     citation_sections = []
-    for citation_id, citation_title, citation_contexts in zip(oa_id, parent_title, contexts):
+    for citation_id, citation_title, citation_contexts in zip(
+        oa_id, parent_title, contexts
+    ):
         sections = parent_section_extraction(
-            article_dict, citation_title, citation_contexts, main_sections, oa_id, doi, mag_id, pmid
+            article_dict,
+            citation_title,
+            citation_contexts,
+            main_sections,
+            oa_id,
+            doi,
+            mag_id,
+            pmid,
         )
         for section in sections:
             section.insert(0, citation_id)
@@ -194,7 +214,16 @@ def parse_pdf(
     return citation_sections
 
 
-def parent_section_extraction(article_dict: Dict[str, Union[str, Dict[str,str]]], parent_title: str, contexts: str, main_sections: str, oa_id: str, doi: str, mag_id: str, pmid: str) -> Sequence[Tuple[int, str]]:
+def parent_section_extraction(
+    article_dict: Dict[str, Union[str, Dict[str, str]]],
+    parent_title: str,
+    contexts: str,
+    main_sections: str,
+    oa_id: str,
+    doi: str,
+    mag_id: str,
+    pmid: str,
+) -> Sequence[Tuple[int, str]]:
     """
     Extracts parent sections from an article based on the provided parameters.
 
@@ -247,8 +276,7 @@ def parent_section_extraction(article_dict: Dict[str, Union[str, Dict[str,str]]]
         # find closest negative (or exact) match for each section
         for section in sections:
             section_differences = general_section_indices - section[4]
-            section_idx = np.argmax(
-                section_differences[section_differences <= 0])
+            section_idx = np.argmax(section_differences[section_differences <= 0])
             section.append(general_sections[section_idx][0])
 
         logger.info("Found %d sections for %s", len(sections), parent_title)
@@ -313,21 +341,17 @@ def get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
                     if new_files or time.time() - start_time > 5:
                         break
                 if not new_files:
-                    logger.error(
-                        "Download timed out or failed for %s.", combined_id)
+                    logger.error("Download timed out or failed for %s.", combined_id)
                     continue
 
                 new_file = next(iter(new_files))
-                downloaded_file_path = os.path.join(
-                    tmp_download_path, new_file)
-                logger.info("Downloaded file for %s: %s",
-                            combined_id, new_file)
+                downloaded_file_path = os.path.join(tmp_download_path, new_file)
+                logger.info("Downloaded file for %s: %s", combined_id, new_file)
                 with open(downloaded_file_path, "rb") as file:
                     pdf_content = file.read()
                 article_outputs.append((combined_id, pdf_content))
             except Exception as e:  # pylint: disable=broad-except
-                logger.error("Error downloading PDF for %s: %s",
-                             combined_id, e)
+                logger.error("Error downloading PDF for %s: %s", combined_id, e)
                 continue
         driver.quit()
     return article_outputs
@@ -352,12 +376,10 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         + "_"
         + dataset["pmid"].astype(str)
     )
-    inputs = dataset.apply(
-        lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
-    input_inner_batches = [inputs[i: i + 50]
-                           for i in range(0, len(inputs), 50)]
+    inputs = dataset.apply(lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
+    input_inner_batches = [inputs[i : i + 50] for i in range(0, len(inputs), 50)]
     input_batches = [
-        input_inner_batches[i: i + 15] for i in range(0, len(input_inner_batches), 15)
+        input_inner_batches[i : i + 15] for i in range(0, len(input_inner_batches), 15)
     ]
     for i, batch in enumerate(input_batches):
         if i < 1003:
@@ -368,6 +390,5 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         )
         # flatten
         pdfs = [pdf for pdf_batch in pdfs for pdf in pdf_batch]
-        pdfs = [(filename, pdf)
-                for filename, pdf in pdfs if isinstance(pdf, bytes)]
+        pdfs = [(filename, pdf) for filename, pdf in pdfs if isinstance(pdf, bytes)]
         yield {f"s{i}": pdfs}
