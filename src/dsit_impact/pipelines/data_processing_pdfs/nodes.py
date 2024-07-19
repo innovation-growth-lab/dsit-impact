@@ -278,7 +278,7 @@ def get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
                         and "IDSCOC" not in file
                         and "google.chrome" not in file
                     }
-                    if new_files or time.time() - start_time > 10:
+                    if new_files or time.time() - start_time > 5:
                         break
                 if not new_files:
                     logger.error("Download timed out or failed for %s.", combined_id)
@@ -320,11 +320,13 @@ def get_browser_pdfs(dataset: pd.DataFrame):
     inputs = dataset.apply(lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
     input_inner_batches = [inputs[i : i + 50] for i in range(0, len(inputs), 50)]
     input_batches = [
-        input_inner_batches[i : i + 25] for i in range(0, len(input_inner_batches), 25)
+        input_inner_batches[i : i + 15] for i in range(0, len(input_inner_batches), 15)
     ]
     for i, batch in enumerate(input_batches):
+        if i < 1003:
+            continue
         logger.info("Processing batch %d / %d", i, len(input_batches))
-        pdfs = Parallel(n_jobs=-1, verbose=10)(
+        pdfs = Parallel(n_jobs=10, verbose=10)(
             delayed(get_browser_pdf_object)(input) for input in batch
         )
         # flatten
