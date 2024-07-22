@@ -112,7 +112,7 @@ oa.data_matching.gtr.combined.id.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/combined/id/main.parquet
 
-oa.publications.gtr.primary:
+oa.publications.gtr.primary: &_oa_publications
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/publications/main.parquet
 
@@ -128,7 +128,7 @@ s2.paper_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/s2/paper_details/
 
-s2.citation_details.intermediate:
+s2.citation_details.intermediate: &_s2_citation_details
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/main.parquet
 
@@ -136,9 +136,8 @@ s2.paper_details.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/paper_details/main.parquet
 
-pdfs.oa_dataset.input:
-  <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/publications/main.parquet
+pdfs.oa_dataset.input: 
+  <<: *_oa_publications
   load_args:
     engine: pyarrow
     columns:
@@ -146,8 +145,7 @@ pdfs.oa_dataset.input:
       - 'title'
 
 pdfs.s2_dataset.input:
-  <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/main.parquet
+  <<: *_s2_citation_details
   load_args:
     engine: pyarrow
     columns:
@@ -176,3 +174,11 @@ pdfs.objects.raw:
 pdfs.section_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_sections/
+
+authors.oa_dataset.input:
+  <<: *_oa_publications
+  load_args:
+    engine: pyarrow
+    columns:
+      - 'id'
+      - 'authorships'
