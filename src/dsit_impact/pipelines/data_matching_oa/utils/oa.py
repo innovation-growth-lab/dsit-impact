@@ -1,5 +1,5 @@
 import logging
-from typing import Iterator, List, Dict, Sequence, Union, Generator
+from typing import Iterator, List, Dict, Sequence, Union, Generator, Optional
 import time
 import requests
 from requests.adapters import HTTPAdapter, Retry
@@ -39,26 +39,28 @@ def _revert_abstract_index(abstract_inverted_index: Dict[str, Sequence[int]]) ->
         return ""
 
 
-def _parse_results(response: List[Dict]) -> Dict[str, List[str]]:
-    """Parses OpenAlex API response to retain:
-        id, doi, display_name, title, publication_date, abstract, authorships,
-            cited_by_count, concepts, keywords, grants, referenced_works
+def _parse_results(
+    response: List[Dict], keys_to_include: Optional[List[str]] = None
+) -> List[Dict]:
+    """Parses OpenAlex API response to retain specified keys or all if keys_to_include
+     is None.
 
     Args:
         response (List[Dict]): The response from the OpenAlex API.
+        keys_to_include (Optional[List[str]]): List of keys to include in the 
+            result. Returns full dictionary if None.
 
     Returns:
-        Dict[str, List[str]]: A dictionary containing the parsed information.
+        List[Dict]: A list of dictionaries containing the parsed information.
     """
-    return [
-        {
+    parsed_response = []
+    for paper in response:
+        parsed_paper = {
             "id": paper.get("id", "").replace("https://openalex.org/", ""),
             "doi": paper.get("doi", ""),
             "title": paper.get("title", ""),
             "publication_date": paper.get("publication_date", ""),
-            "abstract": _revert_abstract_index(
-                paper.get("abstract_inverted_index", {})
-            ),
+            "abstract": _revert_abstract_index(paper.get("abstract_inverted_index", {})),
             "authorships": paper.get("authorships", []),
             "cited_by_count": paper.get("cited_by_count", ""),
             "concepts": paper.get("concepts", []),
@@ -69,8 +71,13 @@ def _parse_results(response: List[Dict]) -> Dict[str, List[str]]:
             "ids": paper.get("ids", []),
             "counts_by_year": paper.get("counts_by_year", []),
         }
-        for paper in response
-    ]
+        if keys_to_include is not None:
+            # Filter the dictionary to only include specified keys
+            parsed_paper = {
+                key: parsed_paper[key] for key in keys_to_include if key in parsed_paper
+            }
+        parsed_response.append(parsed_paper)
+    return parsed_response
 
 
 def preprocess_ids(
@@ -212,10 +219,10 @@ def fetch_papers_for_id(
     for page, papers in enumerate(
         _works_generator(
             mailto, perpage, oa_id,
-            filter_criteria, session, **kwargs
+            filter_criteria, session, sample_size=kwargs.get("sample_size", -1)
         )
     ):
-        papers_for_id.extend(_parse_results(papers))
+        papers_for_id.extend(_parse_results(papers, kwargs.get("keys_to_include", None)))
         logger.info(
             "Fetching page %s. Total papers collected: %s",
             page,
