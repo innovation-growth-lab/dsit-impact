@@ -135,14 +135,14 @@ def postprocess_results(
         lambda x: (
             [
                 (
-                    topic["id"].replace("https://openalex.org/", ""),
-                    topic["display_name"],
-                    topic["subfield"]["id"].replace("https://openalex.org/", ""),
-                    topic["subfield"]["display_name"],
-                    topic["field"]["id"].replace("https://openalex.org/", ""),
-                    topic["field"]["display_name"],
-                    topic["domain"]["id"].replace("https://openalex.org/", ""),
-                    topic["domain"]["display_name"],
+                topic.get("id", "").replace("https://openalex.org/", "") if topic.get("id") else "",
+                topic.get("display_name", "") if topic.get("display_name") else "",
+                topic.get("subfield", {}).get("id", "").replace("https://openalex.org/", "") if topic.get("subfield") else "",
+                topic.get("subfield", {}).get("display_name", "") if topic.get("subfield") else "",
+                topic.get("field", {}).get("id", "").replace("https://openalex.org/", "") if topic.get("field") else "",
+                topic.get("field", {}).get("display_name", "") if topic.get("field") else "",
+                topic.get("domain", {}).get("id", "").replace("https://openalex.org/", "") if topic.get("domain") else "",
+                topic.get("domain", {}).get("display_name", "") if topic.get("domain") else "",
                 )
                 for topic in x
             ]
