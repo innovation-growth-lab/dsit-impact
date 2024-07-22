@@ -4,9 +4,8 @@ generated using Kedro 0.19.6
 """
 
 import logging
-from typing import Sequence, Dict, Generator, Union
+from typing import Tuple
 import pandas as pd
-from joblib import Parallel, delayed
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import pdist, squareform
@@ -15,8 +14,19 @@ from scipy.spatial.distance import pdist, squareform
 logger = logging.getLogger(__name__)
 
 
-def compute_topic_embeddings(cwts_data: pd.DataFrame):
+def compute_topic_embeddings(
+    cwts_data: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Compute topic embeddings and distance matrices for topics, subfields, fields, and domains.
 
+    Args:
+        cwts_data (pd.DataFrame): The input dataframe containing the CWTS data.
+
+    Returns:
+        Tuple: A tuple containing the topic distance matrix, subfield distance matrix,
+        field distance matrix, and domain distance matrix.
+    """
     cwts_data["string_to_encode"] = (
         cwts_data["domain_name"]
         + ", "
@@ -58,16 +68,19 @@ def compute_topic_embeddings(cwts_data: pd.DataFrame):
     )
 
 
-def compute_distance_matrix(embeddings, ids):
+def compute_distance_matrix(embeddings: np.ndarray, ids: list) -> pd.DataFrame:
     """
     Compute the distance matrix between embeddings and return a normalized matrix.
 
     Parameters:
-    embeddings (numpy.ndarray): An array of shape (n_samples, n_features) containing the embeddings.
-    ids (list): A list of length n_samples containing the IDs corresponding to each embedding.
+        embeddings (numpy.ndarray): An array of shape (n_samples, n_features) containing the
+            embeddings.
+        ids (list): A list of length n_samples containing the IDs corresponding to each
+            embedding.
 
     Returns:
-    pandas.DataFrame: A DataFrame of shape (n_samples, n_samples) containing the normalized distance matrix.
+        pd.DataFrame: A DataFrame of shape (n_samples, n_samples) containing the normalized
+            distance matrix.
     """
     distance_matrix = squareform(pdist(embeddings, "euclidean"))
     min_value = np.min(distance_matrix[distance_matrix >= 0])
@@ -77,7 +90,9 @@ def compute_distance_matrix(embeddings, ids):
     return pd.DataFrame(np.tril(normalized_matrix), index=ids, columns=ids)
 
 
-def aggregate_embeddings_and_compute_matrix(data, group_by_col, embeddings_col):
+def aggregate_embeddings_and_compute_matrix(
+    data: pd.DataFrame, group_by_col: str, embeddings_col: str
+) -> pd.DataFrame:
     """
     Aggregates embeddings and computes a distance matrix based on the aggregated embeddings.
 
@@ -87,8 +102,7 @@ def aggregate_embeddings_and_compute_matrix(data, group_by_col, embeddings_col):
         embeddings_col (str): The column containing the embeddings.
 
     Returns:
-        tuple: A tuple containing the distance matrix and the list of IDs.
-
+        pd.DataFrame: The distance matrix based on the aggregated embeddings.
     """
     grouped_data = data.groupby(group_by_col)[embeddings_col].apply(
         lambda x: np.mean(np.vstack(x), axis=0)
