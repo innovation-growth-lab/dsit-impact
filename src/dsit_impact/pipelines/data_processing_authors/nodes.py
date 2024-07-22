@@ -29,7 +29,7 @@ def create_author_list(
         .tolist()
     )
     # batch authors for OA queries
-    authors = [authors[i : i + 5_000] for i in range(0, len(authors), 5_000)]
+    authors = [authors[i : i + 1_250] for i in range(0, len(authors), 1_250)]
     return authors
 
 
@@ -46,17 +46,18 @@ def fetch_author_papers(
         authors (Sequence[str]): A sequence of authors to fetch papers for.
         mailto (str): The email address to be used for API requests.
         perpage (int): The number of papers to fetch per page.
-        filter_criteria (Union[str, Sequence[str]]): The filter criteria to be used for 
+        filter_criteria (Union[str, Sequence[str]]): The filter criteria to be used for
             fetching papers.
 
     Yields:
-        Generator[Dict[str, pd.DataFrame], None, None]: A generator that yields a dictionary 
+        Generator[Dict[str, pd.DataFrame], None, None]: A generator that yields a dictionary
             containing author papers.
 
     """
     for i, author_batch in enumerate(authors):
         author_inputs = [
-            ["2005-12-31", "|".join(author_batch[i : i + 50])] for i in range(0, len(author_batch), 50)
+            ["2005-12-31", "|".join(author_batch[i : i + 50])]
+            for i in range(0, len(author_batch), 50)
         ]
 
         logger.info("Fetching papers for authors batch %s / %s", i + 1, len(authors))
@@ -75,7 +76,7 @@ def fetch_author_papers(
         logger.info("Concatenating author papers")
         logger.info("Creating author column")
         author_df = []
-        for  paper_group in author_papers:
+        for paper_group in author_papers:
             author_df.append(pd.DataFrame(paper_group))
         author_df = pd.concat(author_df, ignore_index=True)
 
@@ -83,7 +84,10 @@ def fetch_author_papers(
 
         yield {f"s{i}": author_df}
 
-def postprocess_results(dataframe: pd.DataFrame, input_authors: Sequence[str]) -> pd.DataFrame:
+
+def postprocess_results(
+    dataframe: pd.DataFrame, input_authors: Sequence[str]
+) -> pd.DataFrame:
     """
     Postprocesses the results by adding author and topic information to the dataframe.
 
@@ -101,16 +105,14 @@ def postprocess_results(dataframe: pd.DataFrame, input_authors: Sequence[str]) -
             [
                 (
                     (
-                        author["author"]["id"].replace(
-                            "https://openalex.org/", ""),
+                        author["author"]["id"].replace("https://openalex.org/", ""),
                         inst["id"].replace("https://openalex.org/", ""),
                         inst["country_code"],
                         author["author_position"],
                     )
                     if author["institutions"]
                     else [
-                        author["author"]["id"].replace(
-                            "https://openalex.org/", ""),
+                        author["author"]["id"].replace("https://openalex.org/", ""),
                         "",
                         "",
                         author["author_position"],
