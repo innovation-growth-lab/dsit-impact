@@ -135,14 +135,48 @@ def postprocess_results(
         lambda x: (
             [
                 (
-                topic.get("id", "").replace("https://openalex.org/", "") if topic.get("id") else "",
-                topic.get("display_name", "") if topic.get("display_name") else "",
-                topic.get("subfield", {}).get("id", "").replace("https://openalex.org/", "") if topic.get("subfield") else "",
-                topic.get("subfield", {}).get("display_name", "") if topic.get("subfield") else "",
-                topic.get("field", {}).get("id", "").replace("https://openalex.org/", "") if topic.get("field") else "",
-                topic.get("field", {}).get("display_name", "") if topic.get("field") else "",
-                topic.get("domain", {}).get("id", "").replace("https://openalex.org/", "") if topic.get("domain") else "",
-                topic.get("domain", {}).get("display_name", "") if topic.get("domain") else "",
+                    (
+                        topic.get("id", "").replace("https://openalex.org/", "")
+                        if topic.get("id")
+                        else ""
+                    ),
+                    topic.get("display_name", "") if topic.get("display_name") else "",
+                    (
+                        topic.get("subfield", {})
+                        .get("id", "")
+                        .replace("https://openalex.org/", "")
+                        if topic.get("subfield")
+                        else ""
+                    ),
+                    (
+                        topic.get("subfield", {}).get("display_name", "")
+                        if topic.get("subfield")
+                        else ""
+                    ),
+                    (
+                        topic.get("field", {})
+                        .get("id", "")
+                        .replace("https://openalex.org/", "")
+                        if topic.get("field")
+                        else ""
+                    ),
+                    (
+                        topic.get("field", {}).get("display_name", "")
+                        if topic.get("field")
+                        else ""
+                    ),
+                    (
+                        topic.get("domain", {})
+                        .get("id", "")
+                        .replace("https://openalex.org/", "")
+                        if topic.get("domain")
+                        else ""
+                    ),
+                    (
+                        topic.get("domain", {}).get("display_name", "")
+                        if topic.get("domain")
+                        else ""
+                    ),
                 )
                 for topic in x
             ]
