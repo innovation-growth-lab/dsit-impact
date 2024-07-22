@@ -16,3 +16,5 @@ thefuzz~=0.22.1
 spacy~=3.7.5
 pymupdf~=1.24.7
 selenium~=4.22.0
+sentence-transformers~=3.0.1
+adapters~=0.2.2
