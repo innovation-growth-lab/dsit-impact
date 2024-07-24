@@ -5,7 +5,7 @@ generated using Kedro 0.19.6
 
 import os
 import logging
-from typing import Sequence, Tuple, Dict, Generator, Union, Set
+from typing import Sequence, Tuple, Dict, Generator, Union
 import time
 import tempfile
 import scipdf
