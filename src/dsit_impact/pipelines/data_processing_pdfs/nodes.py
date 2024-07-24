@@ -5,7 +5,7 @@ generated using Kedro 0.19.6
 
 import os
 import logging
-from typing import Sequence, Tuple, Dict, Generator, Union
+from typing import Sequence, Tuple, Dict, Generator, Union, Set
 import time
 import tempfile
 import scipdf
@@ -85,8 +85,6 @@ def get_citation_sections(
     ]
 
     for i, chunk in enumerate(dataset_chunks):
-        # if i < 341:
-        #     continue
         logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
         # get the PDF content
         processed_data = get_pdf_content(
@@ -138,7 +136,7 @@ def get_pdf_content(
     ).tolist()
 
     # get paper sections
-    sections = Parallel(n_jobs=-1, verbose=10)(
+    sections = Parallel(n_jobs=12, verbose=10)(
         delayed(parse_pdf)(*input, main_sections=main_sections) for input in inputs
     )
 
@@ -392,8 +390,6 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         input_inner_batches[i : i + 15] for i in range(0, len(input_inner_batches), 15)
     ]
     for i, batch in enumerate(input_batches):
-        if i < 1003:
-            continue
         logger.info("Processing batch %d / %d", i, len(input_batches))
         pdfs = Parallel(n_jobs=10, verbose=10)(
             delayed(get_browser_pdf_object)(input) for input in batch
