@@ -85,8 +85,6 @@ def get_citation_sections(
     ]
 
     for i, chunk in enumerate(dataset_chunks):
-        # if i < 341:
-        #     continue
         logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
         # get the PDF content
         processed_data = get_pdf_content(
@@ -138,7 +136,7 @@ def get_pdf_content(
     ).tolist()
 
     # get paper sections
-    sections = Parallel(n_jobs=-1, verbose=10)(
+    sections = Parallel(n_jobs=8, verbose=10)(
         delayed(parse_pdf)(*input, main_sections=main_sections) for input in inputs
     )
 
@@ -169,7 +167,7 @@ def parse_pdf(
         main_sections (Sequence[str]): A sequence of main sections to extract from the PDF.
 
     Returns:
-        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the 
+        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the
             extracted section.
 
     """
@@ -255,7 +253,9 @@ def parent_section_extraction(
         for i, section in enumerate(article_dict.get("sections", [])):
             section_heading = str(section.get("heading", ""))
             for typical_section in main_sections:
-                score = fuzz.token_sort_ratio(typical_section.lower(), section_heading.lower())
+                score = fuzz.token_sort_ratio(
+                    typical_section.lower(), section_heading.lower()
+                )
                 if score > 75:
                     general_sections.append((typical_section, i))
                     break
@@ -280,9 +280,7 @@ def parent_section_extraction(
             ):
                 section.append("Not Found")
             else:
-                section_idx = np.argmax(
-                    section_differences[section_differences <= 0]
-                )
+                section_idx = np.argmax(section_differences[section_differences <= 0])
                 section.append(general_sections[section_idx][0])
 
         logger.info("Found %d sections for %s", len(sections), parent_title)
@@ -392,8 +390,6 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         input_inner_batches[i : i + 15] for i in range(0, len(input_inner_batches), 15)
     ]
     for i, batch in enumerate(input_batches):
-        if i < 1003:
-            continue
         logger.info("Processing batch %d / %d", i, len(input_batches))
         pdfs = Parallel(n_jobs=10, verbose=10)(
             delayed(get_browser_pdf_object)(input) for input in batch

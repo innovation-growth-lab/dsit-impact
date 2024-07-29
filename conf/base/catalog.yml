@@ -160,11 +160,6 @@ pdfs.section_details.input:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_details/section_inputs.parquet
 
-# pdfs.objects.d.raw:
-#   type: dsit_impact.datasets.pdf_dataset.PdfDataset
-#   filepath: s3://igl-dsit-impact/03_impact/data/00_test/test.pdf
-#   credentials: s3_credentials
-
 pdfs.objects.raw:
   type: partitions.PartitionedDataset
   dataset: dsit_impact.datasets.pdf_dataset.PdfDataset
@@ -182,3 +177,15 @@ authors.oa_dataset.input:
     columns:
       - 'id'
       - 'authorships'
+
+authors.oa_dataset.raw:
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/authors/past_publications/
+
+cwts.topics.input:
+  type: pandas.ExcelDataset
+  filepath: s3://igl-dsit-impact/03_impact/data/01_raw/cwts/cwts_oa_topics.xlsx
+
+"cwts.topics.{level}.distance_matrix":
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cwts/distance_matrices/{level}.parquet

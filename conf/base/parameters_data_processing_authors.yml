@@ -1,0 +1,13 @@
+# This is a boilerplate parameters config generated for pipeline 'data_processing_authors'
+# using Kedro 0.19.6.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/0.19.6/configuration/parameters.html
+
+authors:
+  api:
+    mailto: data_analytics@nesta.org.uk
+    perpage: "200"
+  filter_criteria:
+    - "from_publication_date"
+    -  "author.id"

@@ -379,7 +379,8 @@ def map_outcome_id(
     Args:
         gtr_data (pd.DataFrame): DataFrame containing GTR data with columns 'outcome_id' and 'doi'.
         oa_data (pd.DataFrame): DataFrame containing OA data with columns 'id' and 'doi'.
-        rlu_outputs (pd.DataFrame): DataFrame containing RLU data with columns 'outcome_id', 'id', and 'doi'.
+        rlu_outputs (pd.DataFrame): DataFrame containing RLU data with columns 'outcome_id', 
+            'id', and 'doi'.
 
     Returns:
         pd.DataFrame: DataFrame containing the mapped outcome IDs, IDs, and DOIs.
