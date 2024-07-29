@@ -16,6 +16,7 @@ from joblib import Parallel, delayed
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
+from kedro.io import AbstractDataset
 
 
 logger = logging.getLogger(__name__)
@@ -398,3 +399,38 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         pdfs = [pdf for pdf_batch in pdfs for pdf in pdf_batch]
         pdfs = [(filename, pdf) for filename, pdf in pdfs if isinstance(pdf, bytes)]
         yield {f"s{i}": pdfs}
+
+
+def compute_section_shares(loaders: AbstractDataset) -> pd.DataFrame:
+    """
+    Compute the section shares for each parent_id in the given loaders.
+
+    Parameters:
+    loaders (AbstractDataset): A dictionary-like object containing loaders.
+
+    Returns:
+    section_data (DataFrame): A DataFrame containing the computed section shares for
+        each parent_id.
+    """
+    section_data = []
+    for i, loader in enumerate(loaders.values()):
+        logger.info("Processing loader %d / %d", i, len(loaders))
+        data = loader()
+        data = data.drop_duplicates(subset=["parent_id", "doi", "main_section_heading"])
+
+        pivot_table = data.pivot_table(
+            index="parent_id",
+            columns="main_section_heading",
+            values="doi",
+            aggfunc="count",
+            fill_value=0,
+        ).reset_index()
+
+        pivot_table["total_sections"] = pivot_table.sum(axis=1)
+
+        section_data.append(pivot_table)
+
+    section_data = pd.concat(section_data, ignore_index=True)
+    section_data = section_data.groupby("parent_id").sum().reset_index()
+
+    return section_data

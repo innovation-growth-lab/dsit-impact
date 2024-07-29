@@ -4,7 +4,7 @@ generated using Kedro 0.19.6
 """
 
 from kedro.pipeline import Pipeline, pipeline, node
-from .nodes import get_citation_sections, preprocess_for_section_collection, get_browser_pdfs
+from .nodes import get_citation_sections, preprocess_for_section_collection, get_browser_pdfs, compute_section_shares
 
 
 def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=C0116, W0613
@@ -40,4 +40,16 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=C0116, W0613
         )
     ])
 
-    return direct_collection_pipeline + indirect_collection_pipeline
+    compute_section_shares_pipeline = pipeline([
+        node(
+            func=compute_section_shares,
+            inputs={
+                "section_details": "pdfs.section_details.raw",
+                "objects": "pdfs.objects.raw"
+            },
+            outputs="pdfs.section_shares.intermediate",
+            name="compute_section_shares"
+        )
+    ])
+
+    return direct_collection_pipeline + indirect_collection_pipeline + compute_section_shares_pipeline

@@ -170,6 +170,10 @@ pdfs.section_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_sections/
 
+pdfs.section_shares.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/pdfs/citation_sections/shares.parquet
+
 authors.oa_dataset.input:
   <<: *_oa_publications
   load_args:
