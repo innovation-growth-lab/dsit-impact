@@ -426,7 +426,9 @@ def compute_section_shares(section_details: AbstractDataset) -> pd.DataFrame:
             fill_value=0,
         ).reset_index()
 
-        pivot_table["total_sections"] = pivot_table.sum(axis=1)
+        pivot_table["total_sections"] = pivot_table[
+            [col for col in pivot_table.columns if col != "parent_id"]
+        ].sum(axis=1)
 
         section_data.append(pivot_table)
 
