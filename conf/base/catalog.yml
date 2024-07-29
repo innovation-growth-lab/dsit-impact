@@ -197,3 +197,11 @@ cwts.topics.input:
 "cwts.topics.{level}.distance_matrix":
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cwts/distance_matrices/{level}.parquet
+
+publications.paper_diversity_scores.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/paper_diversity_scores.parquet
+
+publications.coauthor_diversity_scores.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/coauthor_diversity_scores.parquet
