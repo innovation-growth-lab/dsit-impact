@@ -401,7 +401,7 @@ def get_browser_pdfs(dataset: pd.DataFrame):
         yield {f"s{i}": pdfs}
 
 
-def compute_section_shares(loaders: AbstractDataset) -> pd.DataFrame:
+def compute_section_shares(section_details: AbstractDataset) -> pd.DataFrame:
     """
     Compute the section shares for each parent_id in the given loaders.
 
@@ -413,8 +413,8 @@ def compute_section_shares(loaders: AbstractDataset) -> pd.DataFrame:
         each parent_id.
     """
     section_data = []
-    for i, loader in enumerate(loaders.values()):
-        logger.info("Processing loader %d / %d", i, len(loaders))
+    for i, loader in enumerate(section_details.values()):
+        logger.info("Processing loader %d / %d", i, len(section_details))
         data = loader()
         data = data.drop_duplicates(subset=["parent_id", "doi", "main_section_heading"])
 
