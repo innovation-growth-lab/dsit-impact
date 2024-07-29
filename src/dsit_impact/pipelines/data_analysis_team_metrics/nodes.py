@@ -354,6 +354,22 @@ def calculate_paper_diversity(
 def calculate_coauthor_diversity(
     publications: pd.DataFrame, authors: pd.DataFrame, disparity_matrix: pd.DataFrame
 ):
+    """
+    Calculate the coauthor diversity metrics for a given set of publications and authors.
+
+    Args:
+        publications (pd.DataFrame): DataFrame containing publication data, including 
+            columns 'id', 'authorships', and 'publication_date'.
+        authors (pd.DataFrame): DataFrame containing author data, including columns 
+            'author', 'year', and additional topic columns.
+        disparity_matrix (pd.DataFrame): DataFrame containing the disparity matrix 
+            used for diversity calculation.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the coauthor diversity metrics, including 
+            columns 'id', 'variety', 'evenness', and 'disparity'.
+    """
+
     paper_data = publications[["id", "authorships", "publication_date"]].copy()
     # get all author ids
     paper_data["authorships"] = paper_data["authorships"].apply(
@@ -386,9 +402,11 @@ def calculate_coauthor_diversity(
     aggregated_df.rename(columns={"id": "author"}, inplace=True)
 
     # Calculate diversity components
-    diversity_components = calculate_diversity_components(aggregated_df, disparity_matrix)
+    diversity_components = calculate_diversity_components(
+        aggregated_df, disparity_matrix
+    )
 
     # Rename author column to id
     diversity_components.rename(columns={"author": "id"}, inplace=True)
 
-    return diversity_components[['id', 'variety', 'evenness', 'disparity']]
+    return diversity_components[["id", "variety", "evenness", "disparity"]]
