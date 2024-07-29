@@ -7,9 +7,9 @@ from kedro.pipeline import Pipeline, pipeline, node
 from .nodes import compute_topic_embeddings, create_author_aggregates
 
 
-def create_pipeline(
+def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstring
     **kwargs,
-) -> Pipeline:  # pylint: disable=unused-argument, missing-function-docstring
+) -> Pipeline:
     embedding_generation_pipeline = pipeline(
         [
             node(
@@ -26,7 +26,7 @@ def create_pipeline(
         ]
     )
 
-    moving_average_topics = pipeline(
+    author_aggregates_pipeline = pipeline(
         [
             node(
                 func=create_author_aggregates,
@@ -39,7 +39,7 @@ def create_pipeline(
             )
             for level in ["topic", "subfield", "field", "domain"]
         ],
-        tags="moving_average",
+        tags="author_aggregates",
     )
 
-    return embedding_generation_pipeline + moving_average_topics
+    return embedding_generation_pipeline + author_aggregates_pipeline

@@ -126,6 +126,28 @@ def _filter_digits(topics, level):
     ]
 
 
+def _add_topic_columns(aggregated_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds columns for each unique topic in the 'topics' column of the aggregated DataFrame,
+    and populates each column with the count of occurrences of that topic.
+
+    Args:
+        aggregated_df (pd.DataFrame): DataFrame with 'author', 'year', and 'topics' columns.
+
+    Returns:
+        pd.DataFrame: DataFrame with additional columns for each unique topic.
+    """
+    unique_topics = set(
+        topic for topics_list in aggregated_df["topics"] for topic in topics_list
+    )
+    for topic in unique_topics:
+        aggregated_df[topic] = 0
+    for idx, row in aggregated_df.iterrows():
+        for topic in row["topics"]:
+            aggregated_df.at[idx, topic] += 1
+    return aggregated_df
+
+
 def aggregate_taxonomy_by_author_and_year(
     data: pd.DataFrame, level: int
 ) -> pd.DataFrame:
@@ -167,6 +189,12 @@ def aggregate_taxonomy_by_author_and_year(
     aggregated = pd.merge(aggregated, yearly_counts, on=["author", "year"], how="left")
     aggregated = pd.merge(aggregated, total_counts, on="author", how="left")
 
+    # create columns for each unique topic
+    aggregated = _add_topic_columns(aggregated)
+
+    # drop the 'topics' column
+    aggregated = aggregated.drop(columns=["topics"])
+
     return aggregated
 
 
@@ -182,15 +210,15 @@ def create_author_aggregates(authors_data: AbstractDataset, level: int) -> pd.Da
         pd.DataFrame: The aggregated author data.
 
     """
-    logger.info("Running parallel computation for all author data slices")
-    agg_author_data = Parallel(n_jobs=12, verbose=10)(
-        delayed(
-            lambda loader, i: aggregate_taxonomy_by_author_and_year(
-                data=loader(), level=level
-            )
-        )(loader, i)
-        for i, loader in enumerate(authors_data.values())
-    )
+    agg_author_data = []
+    for i, loader in enumerate(authors_data.values()):
+        data = loader()
+        logger.info("Loaded author data slice %d / %d", i + 1, len(authors_data))
+        agg_data = aggregate_taxonomy_by_author_and_year(data=data, level=level)
+        logger.info(
+            "Computed moving average for %d observations", agg_data["author"].nunique()
+        )
+        agg_author_data.append(agg_data)
 
     # concatenate slices
     agg_author_data = pd.concat(agg_author_data, ignore_index=True)
