@@ -237,3 +237,88 @@ def compute_moving_average(aggregated_data: pd.DataFrame) -> pd.DataFrame:
             lambda x: x.rolling(window=3, min_periods=1).mean()
         )
     return aggregated_data
+
+
+def calculate_diversity_components(
+    data: pd.DataFrame, disparity_matrix: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Calculate diversity components based on the given data and disparity matrix. The diversity
+    measure builds from Leydesdorff, Wagner, and Bornmann (2019) and consists of three components:
+
+    - Variety: The number of unique topics an author has published on.
+    - Evenness: The distribution of publications across topics.
+    - Disparity: The diversity of topics an author has published
+
+    The implementation follows Rousseau's (2023) suggestion to use the Kvålseth-Jost measure for
+    evenness, which is a generalisation of the Gini coefficient presented by Jost (2006) and
+    included in the meta discussion paper by Chao and Ricotta (2023).
+
+    Args:
+        data (pd.DataFrame): The input data containing the necessary columns.
+        disparity_matrix (pd.DataFrame): The disparity matrix used for calculating disparity.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the diversity components.
+
+    """
+    x_matrix = data.drop(
+        columns=[
+            "author",
+            "year",
+            "yearly_publication_count",
+            "total_publication_count",
+        ]
+    ).to_numpy()
+    disparity_matrix = disparity_matrix.to_numpy()
+
+    # compute variety
+    n = x_matrix.shape[1]
+    nx = np.count_nonzero(x_matrix, axis=1)
+    variety = nx / n
+
+    # compute eveness using the Kvålseth-Jost measure for each row
+    q = 2
+    with np.errstate(divide="ignore", invalid="ignore"):
+        p_matrix = x_matrix / np.sum(x_matrix, axis=1, keepdims=True)
+        evenness = np.sum(p_matrix**q, axis=1) ** (1 / (1 - q)) - 1
+        evenness = np.nan_to_num(evenness, nan=0.0) / (n - 1)
+
+    # compute disparity
+    disparity = np.array(
+        [calculate_disparity(row, disparity_matrix) for row in x_matrix]
+    )
+
+    # create a dataframe
+    diversity_components = data[
+        ["author", "year", "yearly_publication_count", "total_publication_count"]
+    ].copy()
+    diversity_components["variety"] = variety
+    diversity_components["evenness"] = evenness
+    diversity_components["disparity"] = disparity
+
+    return diversity_components
+
+
+def calculate_disparity(x_row: np.array, d: np.array) -> float:
+    """
+    Calculates the disparity between elements in the given array.
+
+    Args:
+        x_row (np.array): The input array.
+        d (np.array): The disparity matrix.
+
+    Returns:
+        float: The calculated disparity.
+
+    """
+    non_zero_indices = np.nonzero(x_row)[0]
+    num_non_zero = len(non_zero_indices)
+    if num_non_zero <= 1:
+        return 0.0
+
+    disparity_sum = 0.0
+    for i in range(num_non_zero):
+        for j in range(i + 1, num_non_zero):
+            disparity_sum += d[non_zero_indices[i], non_zero_indices[j]]
+    return disparity_sum

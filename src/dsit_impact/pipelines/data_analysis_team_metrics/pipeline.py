@@ -4,7 +4,7 @@ generated using Kedro 0.19.6
 """
 
 from kedro.pipeline import Pipeline, pipeline, node
-from .nodes import compute_topic_embeddings, create_author_aggregates, compute_moving_average
+from .nodes import compute_topic_embeddings, create_author_aggregates, compute_moving_average, calculate_diversity_components
 
 
 def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstring
@@ -52,4 +52,20 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
         tags="author_aggregates",
     )
 
-    return embedding_generation_pipeline + author_aggregates_pipeline
+    calculate_components_pipeline = pipeline(
+        [
+            node(
+                func=calculate_diversity_components,
+                inputs={
+                    "data": f"authors.{level}.aggregates.intermediate",
+                    "disparity_matrix": f"cwts.topics.{level}.distance_matrix",
+                },
+                outputs=f"authors.{level}.diversity_components.intermediate",
+                name=f"calculate_diversity_components_{level}",
+            )
+            for level in ["topic", "subfield", "field", "domain"]
+        ],   
+    )
+
+
+    return embedding_generation_pipeline + author_aggregates_pipeline + calculate_components_pipeline
