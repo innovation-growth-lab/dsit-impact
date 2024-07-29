@@ -8,7 +8,6 @@ from typing import Tuple
 import re
 import pandas as pd
 import numpy as np
-from joblib import Parallel, delayed
 from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import pdist, squareform
 from kedro.io import AbstractDataset
@@ -321,4 +320,75 @@ def calculate_disparity(x_row: np.array, d: np.array) -> float:
     for i in range(num_non_zero):
         for j in range(i + 1, num_non_zero):
             disparity_sum += d[non_zero_indices[i], non_zero_indices[j]]
-    return disparity_sum
+    return disparity_sum / ((num_non_zero * (num_non_zero - 1)) / 2)
+
+
+def calculate_paper_diversity(
+    publications: pd.DataFrame, disparity_matrix: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Calculate the diversity metrics for a given set of publications.
+
+    Args:
+        publications (pd.DataFrame): A DataFrame containing information about the publications.
+            It should have columns 'id', 'topics', and 'publication_date'.
+        disparity_matrix (pd.DataFrame): A DataFrame representing the disparity matrix.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the diversity metrics for each author.
+            It includes columns 'id', 'variety', 'evenness', and 'disparity'.
+    """
+    data = publications.copy()
+    data = data[["id", "topics", "publication_date"]]
+    data["author"] = data["id"]
+
+    data = aggregate_taxonomy_by_author_and_year(data=data, level=4)
+
+    div_metrics = calculate_diversity_components(data, disparity_matrix)
+
+    div_metrics.rename(columns={"author": "id"}, inplace=True)
+
+    return div_metrics[["id", "variety", "evenness", "disparity"]]
+
+
+def calculate_coauthor_diversity(
+    publications: pd.DataFrame, authors: pd.DataFrame, disparity_matrix: pd.DataFrame
+):
+    paper_data = publications[["id", "authorships", "publication_date"]].copy()
+    # get all author ids
+    paper_data["authorships"] = paper_data["authorships"].apply(
+        lambda x: [author[0] for author in x] if x is not None else None
+    )
+
+    # prepare data for merge
+    paper_data = paper_data.explode("authorships")
+    paper_data["publication_date"] = pd.to_datetime(
+        paper_data["publication_date"]
+    ).dt.year
+    paper_data.rename(
+        columns={"authorships": "author", "publication_date": "year"}, inplace=True
+    )
+
+    # Merge publications with authors on author ID
+    merged_df = paper_data.merge(authors, on=["author", "year"], how="left")
+
+    # fillna with 0
+    merged_df.fillna(0, inplace=True)
+
+    # Aggregate topic columns and year
+    topic_columns = [col for col in authors.columns if col not in ["author", "year"]]
+    aggregated_df = (
+        merged_df.groupby("id")
+        .agg({**{col: "sum" for col in topic_columns}, "year": "first"})
+        .reset_index()
+    )
+
+    aggregated_df.rename(columns={"id": "author"}, inplace=True)
+
+    # Calculate diversity components
+    diversity_components = calculate_diversity_components(aggregated_df, disparity_matrix)
+
+    # Rename author column to id
+    diversity_components.rename(columns={"author": "id"}, inplace=True)
+
+    return diversity_components[['id', 'variety', 'evenness', 'disparity']]

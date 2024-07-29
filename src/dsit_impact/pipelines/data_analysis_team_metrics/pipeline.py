@@ -4,7 +4,14 @@ generated using Kedro 0.19.6
 """
 
 from kedro.pipeline import Pipeline, pipeline, node
-from .nodes import compute_topic_embeddings, create_author_aggregates, compute_moving_average, calculate_diversity_components
+from .nodes import (
+    compute_topic_embeddings,
+    create_author_aggregates,
+    compute_moving_average,
+    calculate_diversity_components,
+    calculate_paper_diversity,
+    calculate_coauthor_diversity
+)
 
 
 def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstring
@@ -38,12 +45,11 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 name=f"create_author_aggregates_{level}",
             )
             for level in ["topic", "subfield", "field", "domain"]
-        ] + [
+        ]
+        + [
             node(
                 func=compute_moving_average,
-                inputs={
-                    "aggregated_data": f"authors.{level}.aggregates.intermediate"
-                },
+                inputs={"aggregated_data": f"authors.{level}.aggregates.intermediate"},
                 outputs=f"authors.{level}.moving_average.intermediate",
                 name=f"compute_moving_average_{level}",
             )
@@ -64,8 +70,36 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 name=f"calculate_diversity_components_{level}",
             )
             for level in ["topic", "subfield", "field", "domain"]
-        ],   
+        ],
     )
 
+    calculate_diversity_scores_pipeline = pipeline(
+        [
+            node(
+                func=calculate_paper_diversity,
+                inputs={
+                    "publications": "oa.publications.gtr.primary",
+                    "disparity_matrix": "cwts.topics.field.distance_matrix",
+                },
+                outputs="publications.paper_diversity_scores.intermediate",
+                name="calculate_paper_diversity",
+            ),
+            node(
+                func=calculate_coauthor_diversity,
+                inputs={
+                    "publications": "oa.publications.gtr.primary",
+                    "authors": "authors.field.aggregates.intermediate",
+                    "disparity_matrix": "cwts.topics.field.distance_matrix",
+                },
+                outputs="publications.coauthor_diversity_scores.intermediate",
+                name="calculate_coauthor_diversity",
+            ),
+        ],
+    )
 
-    return embedding_generation_pipeline + author_aggregates_pipeline + calculate_components_pipeline
+    return (
+        embedding_generation_pipeline
+        + author_aggregates_pipeline
+        + calculate_components_pipeline
+        + calculate_diversity_scores_pipeline
+    )
