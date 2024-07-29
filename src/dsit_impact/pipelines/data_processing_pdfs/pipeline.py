@@ -45,7 +45,6 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=C0116, W0613
             func=compute_section_shares,
             inputs={
                 "section_details": "pdfs.section_details.raw",
-                "objects": "pdfs.objects.raw"
             },
             outputs="pdfs.section_shares.intermediate",
             name="compute_section_shares"
