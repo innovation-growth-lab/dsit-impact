@@ -137,14 +137,11 @@ def _add_topic_columns(aggregated_df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with additional columns for each unique topic.
     """
-    unique_topics = set(
-        topic for topics_list in aggregated_df["topics"] for topic in topics_list
-    )
-    for topic in unique_topics:
-        aggregated_df[topic] = 0
-    for idx, row in aggregated_df.iterrows():
-        for topic in row["topics"]:
-            aggregated_df.at[idx, topic] += 1
+    exploded_df = aggregated_df.explode('topics')
+    topic_dummies = pd.get_dummies(exploded_df['topics'])
+    topic_counts = topic_dummies.groupby(exploded_df.index).sum()
+    aggregated_df = pd.concat([aggregated_df, topic_counts], axis=1)
+    aggregated_df = aggregated_df.drop(columns=["topics"])
     return aggregated_df
 
 
@@ -191,9 +188,6 @@ def aggregate_taxonomy_by_author_and_year(
 
     # create columns for each unique topic
     aggregated = _add_topic_columns(aggregated)
-
-    # drop the 'topics' column
-    aggregated = aggregated.drop(columns=["topics"])
 
     return aggregated
 
