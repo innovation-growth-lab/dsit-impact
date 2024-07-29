@@ -136,7 +136,7 @@ def get_pdf_content(
     ).tolist()
 
     # get paper sections
-    sections = Parallel(n_jobs=12, verbose=10)(
+    sections = Parallel(n_jobs=8, verbose=10)(
         delayed(parse_pdf)(*input, main_sections=main_sections) for input in inputs
     )
 
@@ -167,7 +167,7 @@ def parse_pdf(
         main_sections (Sequence[str]): A sequence of main sections to extract from the PDF.
 
     Returns:
-        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the 
+        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the
             extracted section.
 
     """
@@ -253,7 +253,9 @@ def parent_section_extraction(
         for i, section in enumerate(article_dict.get("sections", [])):
             section_heading = str(section.get("heading", ""))
             for typical_section in main_sections:
-                score = fuzz.token_sort_ratio(typical_section.lower(), section_heading.lower())
+                score = fuzz.token_sort_ratio(
+                    typical_section.lower(), section_heading.lower()
+                )
                 if score > 75:
                     general_sections.append((typical_section, i))
                     break
@@ -278,9 +280,7 @@ def parent_section_extraction(
             ):
                 section.append("Not Found")
             else:
-                section_idx = np.argmax(
-                    section_differences[section_differences <= 0]
-                )
+                section_idx = np.argmax(section_differences[section_differences <= 0])
                 section.append(general_sections[section_idx][0])
 
         logger.info("Found %d sections for %s", len(sections), parent_title)

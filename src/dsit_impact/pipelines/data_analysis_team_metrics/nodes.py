@@ -110,3 +110,38 @@ def aggregate_embeddings_and_compute_matrix(
     aggregated_embeddings = grouped_data.tolist()
     ids = grouped_data.index.tolist()
     return compute_distance_matrix(np.array(aggregated_embeddings), ids)
+
+
+def aggregate_topics_by_author_and_year(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Aggregates topics by author and year, and adds publication counts.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame with columns 'id', 'author_id', 'publication_date',
+            and 'topics'.
+
+    Returns:
+        pd.DataFrame: DataFrame with 'author_id', 'year', 'topics', 'yearly_publication_count',
+            and 'total_publication_count' aggregated.
+    """
+    data["year"] = pd.to_datetime(data["publication_date"]).dt.year
+
+    aggregated = (
+        data.groupby(["author", "year"])["topics"]
+        .agg(lambda x: [item[0] for sublist in x for item in sublist])
+        .reset_index()
+    )
+    yearly_counts = (
+        data.groupby(["author", "year"])
+        .size()
+        .reset_index(name="yearly_publication_count")
+    )
+    total_counts = (
+        data.groupby("author").size().reset_index(name="total_publication_count")
+    )
+
+    # merge the counts with the aggregated DataFrame
+    aggregated = pd.merge(aggregated, yearly_counts, on=["author", "year"], how="left")
+    aggregated = pd.merge(aggregated, total_counts, on="author", how="left")
+
+    return aggregated
