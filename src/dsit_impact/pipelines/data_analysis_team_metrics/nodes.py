@@ -73,7 +73,7 @@ def compute_topic_embeddings(
 
 def compute_distance_matrix(embeddings: np.ndarray, ids: list) -> pd.DataFrame:
     """
-    Compute the distance matrix between embeddings and return a normalized matrix.
+    Compute the distance matrix between embeddings and return a normalised matrix.
 
     Parameters:
         embeddings (numpy.ndarray): An array of shape (n_samples, n_features) containing the
@@ -82,15 +82,15 @@ def compute_distance_matrix(embeddings: np.ndarray, ids: list) -> pd.DataFrame:
             embedding.
 
     Returns:
-        pd.DataFrame: A DataFrame of shape (n_samples, n_samples) containing the normalized
+        pd.DataFrame: A DataFrame of shape (n_samples, n_samples) containing the normalised
             distance matrix.
     """
     distance_matrix = squareform(pdist(embeddings, "euclidean"))
     min_value = np.min(distance_matrix[distance_matrix >= 0])
     max_value = np.max(distance_matrix)
-    normalized_matrix = (distance_matrix - min_value) / (max_value - min_value)
-    np.fill_diagonal(normalized_matrix, 0)
-    return pd.DataFrame(np.tril(normalized_matrix), index=ids, columns=ids)
+    normalised_matrix = (distance_matrix - min_value) / (max_value - min_value)
+    np.fill_diagonal(normalised_matrix, 0)
+    return pd.DataFrame(normalised_matrix, index=ids, columns=ids)
 
 
 def aggregate_embeddings_and_compute_matrix(
@@ -137,8 +137,8 @@ def _add_topic_columns(aggregated_df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with additional columns for each unique topic.
     """
-    exploded_df = aggregated_df.explode('topics')
-    topic_dummies = pd.get_dummies(exploded_df['topics'])
+    exploded_df = aggregated_df.explode("topics")
+    topic_dummies = pd.get_dummies(exploded_df["topics"])
     topic_counts = topic_dummies.groupby(exploded_df.index).sum()
     aggregated_df = pd.concat([aggregated_df, topic_counts], axis=1)
     aggregated_df = aggregated_df.drop(columns=["topics"])
@@ -210,10 +210,30 @@ def create_author_aggregates(authors_data: AbstractDataset, level: int) -> pd.Da
         logger.info("Loaded author data slice %d / %d", i + 1, len(authors_data))
         agg_data = aggregate_taxonomy_by_author_and_year(data=data, level=level)
         logger.info(
-            "Computed moving average for %d observations", agg_data["author"].nunique()
+            "Created annual values for %d observations", agg_data["author"].nunique()
         )
         agg_author_data.append(agg_data)
 
     # concatenate slices
     agg_author_data = pd.concat(agg_author_data, ignore_index=True)
     return agg_author_data
+
+
+def compute_moving_average(aggregated_data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute the moving average for each column in the given DataFrame.
+
+    Args:
+        data (pd.DataFrame): The input DataFrame containing the data.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the moving averages computed for each column.
+    """
+    aggregated_data = aggregated_data.sort_values(["author", "year"])
+    for col in aggregated_data.columns.difference(
+        ["author", "year", "yearly_publication_count", "total_publication_count"]
+    ):
+        aggregated_data[col] = aggregated_data.groupby("author")[col].transform(
+            lambda x: x.rolling(window=3, min_periods=1).mean()
+        )
+    return aggregated_data

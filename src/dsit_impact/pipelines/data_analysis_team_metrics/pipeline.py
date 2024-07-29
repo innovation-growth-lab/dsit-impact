@@ -4,7 +4,7 @@ generated using Kedro 0.19.6
 """
 
 from kedro.pipeline import Pipeline, pipeline, node
-from .nodes import compute_topic_embeddings, create_author_aggregates
+from .nodes import compute_topic_embeddings, create_author_aggregates, compute_moving_average
 
 
 def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstring
@@ -35,6 +35,16 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                     "level": f"params:tm.levels.{level}",
                 },
                 outputs=f"authors.{level}.aggregates.intermediate",
+                name=f"create_author_aggregates_{level}",
+            )
+            for level in ["topic", "subfield", "field", "domain"]
+        ] + [
+            node(
+                func=compute_moving_average,
+                inputs={
+                    "aggregated_data": f"authors.{level}.aggregates.intermediate"
+                },
+                outputs=f"authors.{level}.moving_average.intermediate",
                 name=f"compute_moving_average_{level}",
             )
             for level in ["topic", "subfield", "field", "domain"]
