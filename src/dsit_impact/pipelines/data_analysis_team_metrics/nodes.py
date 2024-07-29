@@ -5,10 +5,13 @@ generated using Kedro 0.19.6
 
 import logging
 from typing import Tuple
+import re
 import pandas as pd
 import numpy as np
+from joblib import Parallel, delayed
 from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import pdist, squareform
+from kedro.io import AbstractDataset
 
 
 logger = logging.getLogger(__name__)
@@ -112,13 +115,27 @@ def aggregate_embeddings_and_compute_matrix(
     return compute_distance_matrix(np.array(aggregated_embeddings), ids)
 
 
-def aggregate_topics_by_author_and_year(data: pd.DataFrame) -> pd.DataFrame:
+def _filter_digits(topics, level):
+    return [
+        digit
+        for sublist in topics
+        if sublist is not None
+        for item in sublist
+        if item is not None
+        for digit in re.findall(r"\d+", item[level])
+    ]
+
+
+def aggregate_taxonomy_by_author_and_year(
+    data: pd.DataFrame, level: int
+) -> pd.DataFrame:
     """
-    Aggregates topics by author and year, and adds publication counts.
+    Aggregates taxonomy level by author and year, and adds publication counts.
 
     Args:
-        df (pd.DataFrame): Input DataFrame with columns 'id', 'author_id', 'publication_date',
-            and 'topics'.
+        df (pd.DataFrame): Input DataFrame with columns 'id', 'author', 'publication_date',
+            and 'topics', where 'topics' is a list of dictionaries with keys 'topic', 'subfield',
+            'field', and 'domain'.
 
     Returns:
         pd.DataFrame: DataFrame with 'author_id', 'year', 'topics', 'yearly_publication_count',
@@ -126,11 +143,17 @@ def aggregate_topics_by_author_and_year(data: pd.DataFrame) -> pd.DataFrame:
     """
     data["year"] = pd.to_datetime(data["publication_date"]).dt.year
 
+    # drop duplicate id, author
+    data = data.drop_duplicates(subset=["id", "author"])
+
+    # aggregate topic level by author and year
     aggregated = (
         data.groupby(["author", "year"])["topics"]
-        .agg(lambda x: [item[0] for sublist in x for item in sublist])
+        .agg(lambda x: _filter_digits(x, level))
         .reset_index()
     )
+
+    # compute yearly publication counts and total publication counts
     yearly_counts = (
         data.groupby(["author", "year"])
         .size()
@@ -145,3 +168,30 @@ def aggregate_topics_by_author_and_year(data: pd.DataFrame) -> pd.DataFrame:
     aggregated = pd.merge(aggregated, total_counts, on="author", how="left")
 
     return aggregated
+
+
+def create_author_aggregates(authors_data: AbstractDataset, level: int) -> pd.DataFrame:
+    """
+    Create aggregates of author data based on a specified taxonomy level.
+
+    Args:
+        authors_data (AbstractDataset): A dataset containing author data.
+        level (int): The taxonomy level to aggregate the data on.
+
+    Returns:
+        pd.DataFrame: The aggregated author data.
+
+    """
+    logger.info("Running parallel computation for all author data slices")
+    agg_author_data = Parallel(n_jobs=12, verbose=10)(
+        delayed(
+            lambda loader, i: aggregate_taxonomy_by_author_and_year(
+                data=loader(), level=level
+            )
+        )(loader, i)
+        for i, loader in enumerate(authors_data.values())
+    )
+
+    # concatenate slices
+    agg_author_data = pd.concat(agg_author_data, ignore_index=True)
+    return agg_author_data

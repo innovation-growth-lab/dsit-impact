@@ -182,6 +182,10 @@ authors.oa_dataset.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/authors/past_publications/
 
+"authors.{level}.aggregates.intermediate":
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/aggregates/{level}.parquet
+
 cwts.topics.input:
   type: pandas.ExcelDataset
   filepath: s3://igl-dsit-impact/03_impact/data/01_raw/cwts/cwts_oa_topics.xlsx
