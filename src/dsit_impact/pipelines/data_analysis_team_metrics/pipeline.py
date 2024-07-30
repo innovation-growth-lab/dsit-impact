@@ -45,17 +45,7 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 name=f"create_author_aggregates_{level}",
             )
             for level in ["topic", "subfield", "field", "domain"]
-        ]
-        + [
-            node(
-                func=compute_moving_average,
-                inputs={"aggregated_data": f"authors.{level}.aggregates.intermediate"},
-                outputs=f"authors.{level}.moving_average.intermediate",
-                name=f"compute_moving_average_{level}",
-            )
-            for level in ["topic", "subfield", "field", "domain"]
         ],
-        tags="author_aggregates",
     )
 
     calculate_components_pipeline = pipeline(

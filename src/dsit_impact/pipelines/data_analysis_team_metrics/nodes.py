@@ -218,26 +218,6 @@ def create_author_aggregates(authors_data: AbstractDataset, level: int) -> pd.Da
     return agg_author_data
 
 
-def compute_moving_average(aggregated_data: pd.DataFrame) -> pd.DataFrame:
-    """
-    Compute the moving average for each column in the given DataFrame.
-
-    Args:
-        data (pd.DataFrame): The input DataFrame containing the data.
-
-    Returns:
-        pd.DataFrame: The DataFrame with the moving averages computed for each column.
-    """
-    aggregated_data = aggregated_data.sort_values(["author", "year"])
-    for col in aggregated_data.columns.difference(
-        ["author", "year", "yearly_publication_count", "total_publication_count"]
-    ):
-        aggregated_data[col] = aggregated_data.groupby("author")[col].transform(
-            lambda x: x.rolling(window=3, min_periods=1).mean()
-        )
-    return aggregated_data
-
-
 def calculate_diversity_components(
     data: pd.DataFrame, disparity_matrix: pd.DataFrame
 ) -> pd.DataFrame:
@@ -281,7 +261,7 @@ def calculate_diversity_components(
     with np.errstate(divide="ignore", invalid="ignore"):
         p_matrix = x_matrix / np.sum(x_matrix, axis=1, keepdims=True)
         evenness = np.sum(p_matrix**q, axis=1) ** (1 / (1 - q)) - 1
-        evenness = np.nan_to_num(evenness, nan=0.0) / (n - 1)
+        evenness = np.nan_to_num(evenness, nan=0.0)
 
     # compute disparity
     disparity = np.array(
@@ -358,15 +338,15 @@ def calculate_coauthor_diversity(
     Calculate the coauthor diversity metrics for a given set of publications and authors.
 
     Args:
-        publications (pd.DataFrame): DataFrame containing publication data, including 
+        publications (pd.DataFrame): DataFrame containing publication data, including
             columns 'id', 'authorships', and 'publication_date'.
-        authors (pd.DataFrame): DataFrame containing author data, including columns 
+        authors (pd.DataFrame): DataFrame containing author data, including columns
             'author', 'year', and additional topic columns.
-        disparity_matrix (pd.DataFrame): DataFrame containing the disparity matrix 
+        disparity_matrix (pd.DataFrame): DataFrame containing the disparity matrix
             used for diversity calculation.
 
     Returns:
-        pd.DataFrame: DataFrame containing the coauthor diversity metrics, including 
+        pd.DataFrame: DataFrame containing the coauthor diversity metrics, including
             columns 'id', 'variety', 'evenness', and 'disparity'.
     """
 
