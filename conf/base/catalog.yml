@@ -10,10 +10,6 @@ _pq: &_pq
   load_args:
     engine: pyarrow
 
-_pl_pq: &_pl_pq
-  type: dsit_impact.datasets.polars_dataset.ParquetDataset
-  credentials: s3_credentials
-
 _pq_ptd: &_pq_ptd
   type: partitions.PartitionedDataset
   dataset: 
@@ -192,7 +188,7 @@ authors.oa_dataset.raw:
 
 
 "authors.{level}.aggregates.intermediate":
-  <<: *_pl_pq
+  <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/aggregates/{level}.parquet
 
 # "authors.{level}.aggregates.intermediate":
