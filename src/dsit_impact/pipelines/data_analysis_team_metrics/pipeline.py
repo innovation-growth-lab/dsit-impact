@@ -87,7 +87,8 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 name=f"calculate_coauthor_diversity_{level}",
             )
             for level in ["topic", "subfield", "field", "domain"]
-        ]
+        ],
+        tags = ["data_analysis_team_metrics"]
     )
 
     return (
