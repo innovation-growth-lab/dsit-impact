@@ -261,7 +261,7 @@ def calculate_diversity_components(
     with np.errstate(divide="ignore", invalid="ignore"):
         p_matrix = x_matrix / np.sum(x_matrix, axis=1, keepdims=True)
         evenness = np.sum(p_matrix**q, axis=1) ** (1 / (1 - q)) - 1
-        evenness = np.nan_to_num(evenness, nan=0.0)
+        evenness = np.nan_to_num(evenness / (nx - 1), nan=0.0)
 
     # compute disparity
     disparity = np.array(
