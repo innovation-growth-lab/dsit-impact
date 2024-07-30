@@ -7,7 +7,6 @@ from kedro.pipeline import Pipeline, pipeline, node
 from .nodes import (
     compute_topic_embeddings,
     create_author_aggregates,
-    compute_moving_average,
     calculate_diversity_components,
     calculate_paper_diversity,
     calculate_coauthor_diversity
