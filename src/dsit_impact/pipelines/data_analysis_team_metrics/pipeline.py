@@ -9,7 +9,7 @@ from .nodes import (
     create_author_aggregates,
     calculate_diversity_components,
     calculate_paper_diversity,
-    calculate_coauthor_diversity
+    calculate_coauthor_diversity,
 )
 
 
@@ -68,22 +68,26 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 func=calculate_paper_diversity,
                 inputs={
                     "publications": "oa.publications.gtr.primary",
-                    "disparity_matrix": "cwts.topics.field.distance_matrix",
+                    "disparity_matrix": f"cwts.topics.{level}.distance_matrix",
                 },
-                outputs="publications.paper_diversity_scores.intermediate",
-                name="calculate_paper_diversity",
-            ),
+                outputs=f"publications.{level}.paper_diversity_scores.intermediate",
+                name=f"calculate_paper_diversity_{level}",
+            )
+            for level in ["field", "domain"]
+        ]
+        + [
             node(
                 func=calculate_coauthor_diversity,
                 inputs={
                     "publications": "oa.publications.gtr.primary",
-                    "authors": "authors.field.aggregates.intermediate",
-                    "disparity_matrix": "cwts.topics.field.distance_matrix",
+                    "authors": f"authors.{level}.aggregates.intermediate",
+                    "disparity_matrix": f"cwts.topics.{level}.distance_matrix",
                 },
-                outputs="publications.coauthor_diversity_scores.intermediate",
-                name="calculate_coauthor_diversity",
-            ),
-        ],
+                outputs=f"publications.{level}.coauthor_diversity_scores.intermediate",
+                name=f"calculate_coauthor_diversity_{level}",
+            )
+            for level in ["topic", "subfield", "field", "domain"]
+        ]
     )
 
     return (

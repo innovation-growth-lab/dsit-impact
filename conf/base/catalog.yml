@@ -10,6 +10,10 @@ _pq: &_pq
   load_args:
     engine: pyarrow
 
+_pl_pq: &_pl_pq
+  type: dsit_impact.datasets.polars_dataset.ParquetDataset
+  credentials: s3_credentials
+
 _pq_ptd: &_pq_ptd
   type: partitions.PartitionedDataset
   dataset: 
@@ -186,9 +190,14 @@ authors.oa_dataset.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/authors/past_publications/
 
+
 "authors.{level}.aggregates.intermediate":
-  <<: *_pq
+  <<: *_pl_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/aggregates/{level}.parquet
+
+# "authors.{level}.aggregates.intermediate":
+#   <<: *_pq
+#   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/aggregates/{level}.parquet
 
 "authors.{level}.diversity_components.intermediate":
   <<: *_pq
@@ -202,10 +211,10 @@ cwts.topics.input:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cwts/distance_matrices/{level}.parquet
 
-publications.paper_diversity_scores.intermediate:
+"publications.{level}.paper_diversity_scores.intermediate":
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/paper_diversity_scores.parquet
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/paper_diversity_scores/{level}.parquet
 
-publications.coauthor_diversity_scores.intermediate:
+"publications.{level}.coauthor_diversity_scores.intermediate":
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/coauthor_diversity_scores.parquet
+  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/coauthor_diversity_scores/{level}.parquet
