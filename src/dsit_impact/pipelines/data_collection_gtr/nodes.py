@@ -1,10 +1,28 @@
 """
-This module contains functions for fetching and preprocessing data from the GtR API.
+This script provides functionality for preprocessing GtR (Gateway to Research)
+data. It includes a class `GtRDataPreprocessor` with methods to preprocess
+different types of GtR data such as organisations, funds, publications, and
+projects. Additionally, it includes utility functions for API configuration
+and data extraction.
+
+Classes:
+    GtRDataPreprocessor: A class for preprocessing various types of GtR data.
 
 Functions:
-    fetch_gtr_data: Fetches data from the GtR API based on the provided parameters.
-    preprocess_data_to_df: Preprocesses the fetched data to a DataFrame.
-    GtRDataPreprocessor: Class for preprocessing GtR data.
+    fetch_gtr_data(parameters, endpoint, **kwargs): Fetches data from the GtR
+        API and preprocesses it.
+    concatenate_endpoint(abstract_dict): Concatenates DataFrames from a single
+        endpoint into a single DataFrame.
+
+Dependencies:
+    - logging
+    - random
+    - time
+    - datetime
+    - numpy
+    - pandas
+    - requests
+    - kedro
 """
 
 import logging
@@ -207,14 +225,16 @@ def fetch_gtr_data(
             data = response.json()
             if "totalPages" in data and page == 1:
                 logger.info("Total pages: %s", data["totalPages"])
-                total_pages = 2 if kwargs.get("test_mode") is True else data["totalPages"]
+                total_pages = (
+                    2 if kwargs.get("test_mode") is True else data["totalPages"]
+                )
             if config["key"] in data:
                 items = data[config["key"]]
                 if not items:
                     logger.info("No more data to fetch. Exiting loop.")
                     break
                 for item in items:
-                    item["page_fetched_from"] = page # add page info
+                    item["page_fetched_from"] = page  # add page info
                     page_data.append(item)
             else:
                 logger.error("No '%s' key found in the response", config["key"])
@@ -234,7 +254,9 @@ def fetch_gtr_data(
         yield {f"p{page-1}": page_df}
 
 
-def concatenate_endpoint(abstract_dict: Union[AbstractDataset, Dict[str, pd.DataFrame]]) -> pd.DataFrame:
+def concatenate_endpoint(
+    abstract_dict: Union[AbstractDataset, Dict[str, pd.DataFrame]]
+) -> pd.DataFrame:
     """
     Concatenate DataFrames from a single endpoint into a single DataFrame.
 
@@ -248,14 +270,16 @@ def concatenate_endpoint(abstract_dict: Union[AbstractDataset, Dict[str, pd.Data
     """
     dataframes = []
     for i, (key, load_function) in enumerate(abstract_dict.items()):
-        logger.info("Adding DataFrame for %s. Number: %s / %s", key, i, len(abstract_dict))
+        logger.info(
+            "Adding DataFrame for %s. Number: %s / %s", key, i, len(abstract_dict)
+        )
         try:
             try:
                 df = load_function()
             except TypeError:
                 df = load_function
             dataframes.append(df)
-        except Exception as e: # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             print(f"Failed to load DataFrame for {key}: {e}")
 
     # concatenate all DataFrames into a single DataFrame

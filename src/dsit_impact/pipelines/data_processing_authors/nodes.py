@@ -1,6 +1,18 @@
 """
-This is a boilerplate pipeline 'data_processing_authors'
-generated using Kedro 0.19.6
+This script defines functions for creating author lists, fetching author papers,
+and postprocessing results from the OpenAlex API.
+
+Functions:
+    - create_author_list: Creates a list of authors from the author column.
+    - fetch_author_papers: Fetches papers for a given list of authors.
+    - _postprocess_results: Adds author and topic information to the dataframe.
+
+Dependencies:
+    - pandas
+    - joblib
+    - logging
+    - typing
+    - fetch_papers_for_id
 """
 
 import logging
@@ -80,12 +92,12 @@ def fetch_author_papers(
             author_df.append(pd.DataFrame(paper_group))
         author_df = pd.concat(author_df, ignore_index=True)
 
-        author_df = postprocess_results(author_df, author_batch)
+        author_df = _postprocess_results(author_df, author_batch)
 
         yield {f"s{i}": author_df}
 
 
-def postprocess_results(
+def _postprocess_results(
     dataframe: pd.DataFrame, input_authors: Sequence[str]
 ) -> pd.DataFrame:
     """

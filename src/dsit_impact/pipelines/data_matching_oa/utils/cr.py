@@ -1,3 +1,28 @@
+"""
+This script provides utility functions for processing and matching publication 
+data using the Crossref API. It includes functions for processing individual 
+items, setting up HTTP requests with retries, and calculating fuzzy matching 
+scores for titles, authors, and journals.
+
+Functions:
+    _process_item(item: Dict[str, Union[str, Dict[str, str]]], title: str, 
+                  author: str, journal: str, publication_date: str) 
+                  -> Union[Dict[str, Union[str, int, float]], None]:
+        Processes an item and returns a dictionary containing relevant information 
+        if the item meets certain criteria.
+    setup_requests_with_retries(retries: int, backoff_factor: float) -> requests.Session:
+        Sets up an HTTP session with retry logic for handling transient errors.
+    calculate_fuzzy_scores(title: str, author: str, journal: str, item: Dict[str, Union[str, Dict[str, str]]]) 
+                           -> Dict[str, Union[str, int, float]]:
+        Calculates fuzzy matching scores for the title, author, and journal of an item.
+
+Dependencies:
+    - logging
+    - requests
+    - thefuzz
+    - html
+"""
+
 import logging
 from typing import List, Dict, Union
 from html import unescape

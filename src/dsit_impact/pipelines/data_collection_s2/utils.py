@@ -1,3 +1,45 @@
+"""
+This module provides utility functions for processing and retrieving citation
+and paper details from an OpenAlex (OA) dataset. The main functionalities
+include fetching citation details, processing citation outputs, and retrieving
+paper details.
+
+Functions:
+    get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        Retrieves the intent data from the given OA dataset and returns a
+        DataFrame with processed intent citations.
+
+    iterate_citation_detail_points(oa: str, doi: str, mag_id: str, pmid: str,
+        direction: str, **kwargs) -> Dict[str, Union[str, Sequence[Dict[str, Any]]]]:
+        Iterates over citation detail points and fetches citation details based
+        on the provided parameters.
+
+    fetch_citation_details(work_id: str, base_url: str, direction: str,
+        fields: Sequence[str], api_key: str, perpage: int = 500) -> Sequence[Dict[str, str]]:
+        Fetches citation details for a given work ID.
+
+    process_citations(citation_outputs: Dict[str, Sequence[Dict[str, Any]]]) -> List:
+        Processes citation outputs and extracts relevant information.
+
+    get_paper_details(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        Retrieves paper details for a given dataset and returns a DataFrame
+        with processed paper details.
+
+    iterate_paper_detail_points(oa: str, doi: str, mag_id: str, pmid: str,
+        **kwargs) -> Dict[str, Union[str, Sequence[Dict[str, Any]]]]:
+        Iterates over paper detail points and fetches paper details based on
+        the provided parameters.
+
+Dependencies:
+    - logging
+    - typing
+    - pandas
+    - requests
+    - requests.adapters.HTTPAdapter
+    - requests.adapters.Retry
+    - joblib
+"""
+
 import logging
 from typing import Sequence, Dict, Union, List, Any
 import pandas as pd
@@ -243,7 +285,7 @@ def get_paper_details(oa_dataset: pd.DataFrame, **kwargs):
 
     s2_dict = dict(list(zip(oa_dataset["id"], s2_outputs)))
 
-    processed_details = process_paper_details(s2_dict)
+    processed_details = _process_paper_details(s2_dict)
 
     return pd.DataFrame(
         processed_details,
@@ -272,7 +314,7 @@ def iterate_paper_detail_points(
         doi (str): The DOI of the current paper.
         mag_id (str): The MAG ID of the current paper.
         pmid (str): The PubMed ID of the current paper.
-        **kwargs: Additional keyword arguments to pass to the fetch_paper_details
+        **kwargs: Additional keyword arguments to pass to the _fetch_paper_details
             function.
 
     Returns:
@@ -287,7 +329,7 @@ def iterate_paper_detail_points(
             continue
         work_id = f"{prefix}{id_}"
         try:
-            data = fetch_paper_details(work_id=work_id, **kwargs)
+            data = _fetch_paper_details(work_id=work_id, **kwargs)
             logger.info("%s: Found paper details using %s", oa, work_id)
             return data
         except requests.exceptions.HTTPError as errh:
@@ -308,7 +350,7 @@ def iterate_paper_detail_points(
     return {}
 
 
-def fetch_paper_details(
+def _fetch_paper_details(
     work_id: str,
     base_url: str,
     fields: Sequence[str],
@@ -346,7 +388,7 @@ def fetch_paper_details(
     return response.json()
 
 
-def process_paper_details(paper_details: Dict[str, Sequence[Dict[str, Any]]]) -> List:
+def _process_paper_details(paper_details: Dict[str, Sequence[Dict[str, Any]]]) -> List:
     """
     Process paper details and extract relevant information.
 

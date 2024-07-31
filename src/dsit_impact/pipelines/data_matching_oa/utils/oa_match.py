@@ -1,5 +1,38 @@
 """
-Utilities for data collection from OpenAlex.
+This script provides functions to process and match Open Access (OA) 
+publications based on various criteria such as title, author, and 
+publication date. It includes utilities for cleaning HTML entities, 
+performing fuzzy matching of author names, and retrieving OA matches 
+from an external API.
+
+Functions:
+    - _process_string(s: str) -> Union[str, list]:
+        Processes a string by removing non-alphanumeric characters and 
+        splitting it based on specified delimiters.
+    - clean_html_entities_for_oa(input_record: Dict[str, Union[str, int, float]]) 
+      -> Dict[str, Union[str, int, float, Dict[str, str]]]:
+        Cleans HTML entities in the input record and processes strings 
+        containing specific delimiters.
+    - get_oa_match(outcome_id: str, title: Union[str, List[str]], 
+      chapter_title: str, author: str, publication_date: str, 
+      config: Dict[str, str], session: requests.Session) -> List[Dict[str, str]]:
+        Retrieves OA matches based on the provided parameters.
+    - author_fuzzy_match(author: str, candidate_author: List[Dict[str, Union[str, 
+      Dict[str, str]]]]) -> Union[Dict[str, Union[str, Dict[str, str]]], None]:
+        Performs a fuzzy matching between the given author name and a 
+        candidate author name.
+    - get_best_match(group: pd.Series.groupby) -> pd.DataFrame:
+        Returns the best match from a group of records based on the 
+        'title_gtr' column.
+
+Dependencies:
+    - logging
+    - typing
+    - re
+    - html
+    - requests
+    - pandas
+    - thefuzz
 """
 
 import logging

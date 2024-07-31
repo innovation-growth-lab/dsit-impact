@@ -1,6 +1,25 @@
 """
-This is a boilerplate pipeline 'data_processing_authors'
-generated using Kedro 0.19.6
+This script defines a Kedro pipeline for collecting author data and fetching
+author papers from the OpenAlex API.
+
+Pipelines:
+    - author_collection_pipeline: Fetches papers for a list of authors.
+
+Dependencies:
+    - kedro: For creating and managing data pipelines.
+    - pandas: For data manipulation and analysis.
+    - logging: For logging information.
+    - typing: For type hinting.
+    - fetch_papers_for_id: Utility function for fetching papers from OpenAlex.
+
+Usage:
+    Import the `create_pipeline` function and call it to create the pipeline.
+    The pipeline can then be run using Kedro's execution commands.
+
+Command Line Example:
+    ```
+    kedro run --pipeline author_collection_pipeline
+    ```
 """
 
 from kedro.pipeline import Pipeline, pipeline, node

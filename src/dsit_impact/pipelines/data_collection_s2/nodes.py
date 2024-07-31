@@ -1,3 +1,23 @@
+"""
+This script provides functionality for retrieving and processing citation
+intent data from the GtR-OpenAlex dataset using the Semantic Scholar API.
+It includes functions to fetch citation and paper data, and to concatenate
+partitioned datasets.
+
+Functions:
+    get_citation_data(oa_dataset, base_url, fields, api_key, perpage=500):
+        Retrieves citation intent data from the GtR-OpenAlex dataset.
+    get_paper_data(oa_dataset, base_url, fields, api_key):
+        Retrieves paper data from the Open Access dataset.
+    concatenate_partitions(partitioned_dataset):
+        Concatenates the partitions from the given inputs.
+
+Dependencies:
+    - logging
+    - pandas
+    - requests
+    - kedro
+"""
 import logging
 from typing import Sequence, Generator, Dict
 import pandas as pd

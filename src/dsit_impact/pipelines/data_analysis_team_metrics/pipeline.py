@@ -1,6 +1,38 @@
 """
-This is a boilerplate pipeline 'data_analysis_team_metrics'
-generated using Kedro 0.19.6
+This pipeline is designed to compute topic embeddings, author aggregates, diversity 
+components, and diversity scores for a given dataset.
+
+Pipelines:
+    - embedding_generation_pipeline:
+        Computes topic embeddings and distance matrices for topics, subfields, fields, 
+        and domains.
+    - author_aggregates_pipeline:
+        Creates aggregates of author data based on specified taxonomy levels.
+    - calculate_components_pipeline:
+        Calculates diversity components based on the given data and disparity matrix.
+    - calculate_diversity_scores_pipeline:
+        Calculates paper and coauthor diversity scores for publications.
+
+Dependencies:
+    - Kedro
+    - pandas
+    - numpy
+    - scipy
+    - sentence-transformers
+    - logging
+
+Usage:
+    Import the necessary functions and call them with appropriate arguments to compute 
+    embeddings, distance matrices, and diversity components for your dataset.
+
+Command Line Example:
+    ```
+    kedro run --pipeline data_analysis_team_metrics -e base
+    ```
+    or
+    ```
+    kedro run --nodes compute_topic_embeddings,create_author_aggregates -e base
+    ```
 """
 
 from kedro.pipeline import Pipeline, pipeline, node
@@ -73,7 +105,7 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 outputs=f"publications.{level}.paper_diversity_scores.intermediate",
                 name=f"calculate_paper_diversity_{level}",
             )
-            for level in ["field", "domain"]
+            for level in ["subfield", "field", "domain"]
         ]
         + [
             node(
@@ -86,9 +118,9 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 outputs=f"publications.{level}.coauthor_diversity_scores.intermediate",
                 name=f"calculate_coauthor_diversity_{level}",
             )
-            for level in ["topic", "subfield", "field", "domain"]
+            for level in ["subfield", "field", "domain"]
         ],
-        tags = ["data_analysis_team_metrics"]
+        tags=["data_analysis_team_metrics"],
     )
 
     return (

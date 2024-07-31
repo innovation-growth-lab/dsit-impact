@@ -2,10 +2,15 @@
 Utility functions for the GtR data collection pipeline.
 
 Functions:
-    api_config: Constructs the API configuration dictionary for a given endpoint.
-    extract_main_address: Extracts the main address from the addresses list.
-    extract_value_from_nested_dict: Extracts a value from a nested dictionary.
-    transform_nested_dict: Transforms a column containing nested dictionaries.
+    api_config(parameters, endpoint): Constructs the API configuration dictionary.
+    extract_main_address(addresses): Extracts the main address from the addresses list.
+    extract_value_from_nested_dict(data, outer_key, inner_key, inner_value, extract_key): 
+        Extracts a value from a nested dictionary.
+    transform_nested_dict(df, parent_col, inner_keys): Transforms a column containing nested
+        dictionaries.
+
+Dependencies:
+    - pandas
 """
 
 from typing import Dict, List, Any
