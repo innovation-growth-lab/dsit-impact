@@ -1,3 +1,44 @@
+"""
+OpenAlex Reverse Lookup Script
+
+This script provides functions to interact with the OpenAlex API for reverse 
+lookup of works based on various criteria. It includes functionalities to 
+preprocess IDs, generate works from the API, parse the API responses, and load 
+the data into a pandas DataFrame.
+
+Functions:
+    - _revert_abstract_index(abstract_inverted_index: Dict[str, Sequence[int]]) 
+        -> str:
+        Reverts the abstract inverted index to the original text.
+    - _parse_results(response: List[Dict], keys_to_include: Optional[List[str]] = 
+        None) -> List[Dict]:
+        Parses OpenAlex API response to retain specified keys or all if 
+        keys_to_include is None.
+    - preprocess_ids(ids: Union[str, List[str], Dict[str, str]], grouped: bool = 
+        True) -> List[str]:
+        Preprocesses ids to ensure they are in the correct format.
+    - _chunk_oa_ids(ids: List[str], chunk_size: int = 50) -> Generator[str, None, 
+        None]:
+        Yield successive chunk_size-sized chunks from ids.
+    - _works_generator(mailto: str, perpage: str, oa_id: Union[str, List[str]], 
+        filter_criteria: Union[str, List[str]], session: requests.Session, 
+        sample_size: int = -1) -> Iterator[list]:
+        Creates a generator that yields a list of works from the OpenAlex API 
+        based on a given work ID.
+    - fetch_papers_for_id(oa_id: Union[str, List[str]], mailto: str, perpage: str, 
+        filter_criteria: Union[str, List[str]], **kwargs) -> List[dict]:
+        Fetches all papers cited by a specific work ID.
+    - json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
+        Load JSON data, transform it into a DataFrame, and wrangle data.
+
+Dependencies:
+    - logging
+    - requests
+    - pandas
+    - typing
+    - time
+"""
+
 import logging
 from typing import Iterator, List, Dict, Sequence, Union, Generator, Optional
 import time

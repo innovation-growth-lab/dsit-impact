@@ -1,5 +1,22 @@
+"""
+This script provides functions to handle and merge Open Access (OA) and 
+CrossRef (CR) records based on various criteria such as title similarity, 
+DOI presence, and source preference. It includes utilities for breaking 
+ties between matching records.
+
+Functions:
+    - break_ties(group: pd.DataFrame) -> pd.DataFrame:
+        Breaks ties between matching records based on similarity scores, 
+        DOI presence, and source preference.
+
+Dependencies:
+    - pandas
+    - thefuzz
+"""
+
 import pandas as pd
-from thefuzz import fuzz  # pylint: disable=import-error
+from thefuzz import fuzz
+
 
 def break_ties(group: pd.DataFrame) -> pd.DataFrame:
     """
@@ -39,8 +56,7 @@ def break_ties(group: pd.DataFrame) -> pd.DataFrame:
             best_match = group_sorted[group_sorted["source"] == "oa"].head(1)
         else:
             # Else, select the one with a DOI
-            best_match = group_sorted[pd.notnull(
-                group_sorted["doi"])].head(1)
+            best_match = group_sorted[pd.notnull(group_sorted["doi"])].head(1)
     else:
         # Else, select the top one
         best_match = group_sorted.head(1)

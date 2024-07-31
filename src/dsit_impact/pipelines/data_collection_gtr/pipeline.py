@@ -1,18 +1,32 @@
-"""Pipeline for data collection.
+"""
+This pipeline fetches data from the GtR API and preprocesses it into a format
+that can be used by the rest of the project.
 
-This pipeline fetches data from the GtR API and preprocesses it into a
-format that can be used by the rest of the project. To run this pipeline,
-use the following command:
+Pipelines:
+    - data_collection_gtr:
+        Fetches and preprocesses data from the GtR API.
 
-    $ kedro run --pipeline data_collection_gtr
+Dependencies:
+    - Kedro
+    - pandas
+    - requests
+    - logging
 
-Alternatively, you can run this pipeline for a single endpoint:
+Usage:
+    Run the pipeline to fetch and preprocess data from the GtR API.
 
-    $ kedro run --pipeline data_collection_gtr --tags projects
+Command Line Example:
+    ```
+    kedro run --pipeline data_collection_gtr
+    ```
+    Alternatively, you can run this pipeline for a single endpoint:
+    ```
+    kedro run --pipeline data_collection_gtr --tags projects
+    ```
 
-In regards to the use of namespaces, note that these are appended as
-prefixes to the outputs of the nodes in the pipeline. 
-
+Note:
+    In regards to the use of namespaces, note that these are appended as
+    prefixes to the outputs of the nodes in the pipeline.
 """
 
 from kedro.pipeline import Pipeline, node, pipeline

@@ -1,6 +1,42 @@
 """
-This is a boilerplate pipeline 'data_matching_oa'
-generated using Kedro 0.19.6
+This script performs matching between Gateway to Research (GtR) data and OpenAlex 
+data using reverse lookup approaches with both OpenAlex and Crossref APIs. It 
+includes functions for preprocessing DOIs, creating lists of DOIs, fetching papers, 
+concatenating datasets, and matching DOIs.
+
+Functions:
+    preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
+        Preprocesses the GtR publication data to include DOI values compatible 
+        with the OA filter module.
+    create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
+        Creates a list of DOI values from the GtR publication data.
+    fetch_papers(ids: Union[List[str], List[List[str]]], mailto: str, perpage: int, 
+                 filter_criteria: Union[str, List[str]], parallel_jobs: int = 8) 
+                 -> Dict[str, List[Callable]]:
+        Fetches papers based on the provided processed IDs, mailto, perpage, 
+        filter criteria, and parallel jobs.
+    concatenate_openalex(data: Dict[str, AbstractDataset]) -> pd.DataFrame:
+        Loads and concatenates partitioned JSON datasets.
+    crossref_doi_match(oa_data: pd.DataFrame, gtr_data: pd.DataFrame, mailto: str) 
+                       -> Generator[Dict[str, pd.DataFrame], None, None]:
+        Matches DOI values between two DataFrames using the Crossref API.
+    oa_search_match(oa_data: pd.DataFrame, gtr_data: pd.DataFrame, 
+                    config: Dict[str, Union[str, Dict[str, str]]]) 
+                    -> Generator[Dict[str, pd.DataFrame], None, None]:
+        Performs OA search and matching for GtR data.
+    concatenate_matches(data: Dict[str, AbstractDataset]) -> pd.DataFrame:
+        Loads and concatenates partitioned JSON datasets.
+    oa_filter(data: pd.DataFrame) -> pd.DataFrame:
+        Filters the DataFrame based on 'outcome_id' and returns the best match.
+
+Dependencies:
+    - logging
+    - pandas
+    - joblib
+    - requests
+    - re
+    - json
+    - kedro
 """
 
 import logging
@@ -41,8 +77,7 @@ def create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
     Returns:
         list: A list of doi values.
     """
-    doi_singleton_list = df[df["doi"].notnull(
-    )]["doi"].drop_duplicates().tolist()
+    doi_singleton_list = df[df["doi"].notnull()]["doi"].drop_duplicates().tolist()
 
     # concatenate doi values to create group querise
     doi_list = preprocess_ids(doi_singleton_list, kwargs.get("grouped", True))
@@ -74,12 +109,11 @@ def fetch_papers(
 
     """
     # slice oa_ids
-    oa_id_chunks = [ids[i: i + 80] for i in range(0, len(ids), 80)]
+    oa_id_chunks = [ids[i : i + 80] for i in range(0, len(ids), 80)]
     logger.info("Slicing data. Number of oa_id_chunks: %s", len(oa_id_chunks))
     return {
         f"s{str(i)}": lambda chunk=chunk: Parallel(n_jobs=parallel_jobs, verbose=10)(
-            delayed(fetch_papers_for_id)(
-                oa_id, mailto, perpage, filter_criteria)
+            delayed(fetch_papers_for_id)(oa_id, mailto, perpage, filter_criteria)
             for oa_id in chunk
         )
         for i, chunk in enumerate(oa_id_chunks)
@@ -136,7 +170,7 @@ def crossref_doi_match(
 
     # create a number of batches from inputs
     input_batches = [
-        cleaned_inputs[i: i + 250] for i in range(0, len(cleaned_inputs), 250)
+        cleaned_inputs[i : i + 250] for i in range(0, len(cleaned_inputs), 250)
     ]
 
     for i, batch in enumerate(input_batches):
@@ -198,7 +232,7 @@ def oa_search_match(
     cleaned_inputs = [clean_html_entities_for_oa(record) for record in inputs]
 
     input_batches = [
-        cleaned_inputs[i: i + 250] for i in range(0, len(cleaned_inputs), 250)
+        cleaned_inputs[i : i + 250] for i in range(0, len(cleaned_inputs), 250)
     ]
 
     for i, batch in enumerate(input_batches):
@@ -300,10 +334,7 @@ def select_better_match(crossref: pd.DataFrame, openalex: pd.DataFrame) -> pd.Da
 
     # rename columns pre-concat
     crossref.rename(
-        columns={
-            "title_cr": "title_match",
-            "author_cr": "author_match"
-        },
+        columns={"title_cr": "title_match", "author_cr": "author_match"},
         inplace=True,
     )
     openalex.rename(
@@ -325,8 +356,7 @@ def select_better_match(crossref: pd.DataFrame, openalex: pd.DataFrame) -> pd.Da
     results = []
     for i, outcome_id in enumerate(match_data["outcome_id"].unique(), start=1):
         logger.info("Processing outcome %s / %s", i + 1, total_unique_outcomes)
-        results.append(break_ties(
-            match_data[match_data["outcome_id"] == outcome_id]))
+        results.append(break_ties(match_data[match_data["outcome_id"] == outcome_id]))
 
     return pd.concat(results, ignore_index=True)
 
@@ -340,8 +370,9 @@ def create_list_oa_inputs(df: pd.DataFrame, **kwargs) -> list:
     Returns:
         list: A list of oa values.
     """
-    oa_singleton_list = df[(df["id"].notnull()) & (
-        df["doi"].isnull())]["id"].drop_duplicates().tolist()
+    oa_singleton_list = (
+        df[(df["id"].notnull()) & (df["doi"].isnull())]["id"].drop_duplicates().tolist()
+    )
 
     # concatenate doi values to create group querise
     doi_list = preprocess_ids(oa_singleton_list, kwargs.get("grouped", True))
@@ -379,7 +410,7 @@ def map_outcome_id(
     Args:
         gtr_data (pd.DataFrame): DataFrame containing GTR data with columns 'outcome_id' and 'doi'.
         oa_data (pd.DataFrame): DataFrame containing OA data with columns 'id' and 'doi'.
-        rlu_outputs (pd.DataFrame): DataFrame containing RLU data with columns 'outcome_id', 
+        rlu_outputs (pd.DataFrame): DataFrame containing RLU data with columns 'outcome_id',
             'id', and 'doi'.
 
     Returns:
@@ -390,8 +421,7 @@ def map_outcome_id(
     gtr_data = gtr_data[["outcome_id", "doi"]]
     rlu_outputs = rlu_outputs[["outcome_id", "id", "doi"]]
     oa_data["doi"] = oa_data["doi"].str.lower().str.extract(r"(10\..+)")
-    oa_data = oa_data.drop_duplicates(subset=["doi"])[
-        ["id", "doi"]]
+    oa_data = oa_data.drop_duplicates(subset=["doi"])[["id", "doi"]]
 
     logger.info("matching to original OpenAlex data")
     gtr_matches = gtr_data.merge(oa_data, on="doi", how="inner")
@@ -399,17 +429,20 @@ def map_outcome_id(
 
     logger.info("matching to RLU data based on DOI")
     rlu_matches_doi = rlu_outputs[["outcome_id", "doi"]].merge(
-        oa_data, left_on="doi", right_on="doi", how="inner")
+        oa_data, left_on="doi", right_on="doi", how="inner"
+    )
     rlu_matches_doi = rlu_matches_doi.dropna(subset=["doi"])
 
     logger.info("matching to RLU data based on ID")
     rlu_matches_id = rlu_outputs[["outcome_id", "id"]].merge(
-        oa_data, left_on="id", right_on="id", how="inner")
+        oa_data, left_on="id", right_on="id", how="inner"
+    )
     rlu_matches_id = rlu_matches_id.dropna(subset=["id"])
 
     # concatenate all matches and drop duplicates to ensure unique assignment
-    all_matches = pd.concat([gtr_matches, rlu_matches_doi, rlu_matches_id]).drop_duplicates(
-        subset=["outcome_id"], keep="first")
+    all_matches = pd.concat(
+        [gtr_matches, rlu_matches_doi, rlu_matches_id]
+    ).drop_duplicates(subset=["outcome_id"], keep="first")
     all_matches = all_matches[["outcome_id", "id", "doi"]].reset_index(drop=True)
 
     return all_matches
