@@ -133,7 +133,7 @@ The project leverages the Kedro framework to create modular and reusable data pi
 
 # How the Project Ties to the Code Pipelines
 
-This section details how the conceptual approach of the **dsit-impact** project is implemented within the codebase using specific pipelines. Each project narrative is closely linked to one or more code pipelines, which collectively process, analyze, and generate the required data and insights.
+This section details how the conceptual approach of the **dsit-impact** project is implemented within the codebase using specific pipelines. Each project narrative is closely linked to one or more code pipelines, which collectively process, analyse, and generate the required data and insights.
 
 ## DOI Labeling and Dataset Matching
 
@@ -144,14 +144,14 @@ The section revolves around linking Gateway to Research (GtR) publication data w
   - **Nodes**: These include utilities for connecting to the GtR API, parsing responses, and storing the collected data.
 - **`data_matching_oa`**: This pipeline deals with matching the GtR data with OpenAlex entries. It involves generating potential matches using metadata and refining these matches using techniques like cosine similarity.
   - **`utils`**: Includes modules like `oa_cr_merge.py`, `oa_match.py`, `cr.py`, and `oa.py` that perform the matching operations and merge results.
-  - **Nodes**: Implement the matching logic and decision-making processes to handle ties and finalize DOI assignments.
+  - **Nodes**: Implement the matching logic and decision-making processes to handle ties and finalise DOI assignments.
 
 ## Citation Intent and Section Identification
 
-The section project aims to provide insights into how UKRI-funded research influences subsequent studies by analyzing citation intent and section context from publications that cite UKRI-linked papers. This involves collecting and processing citation context data from Semantic Scholar and open-access full-text publications.
+The section project aims to provide insights into how UKRI-funded research influences subsequent studies by analysing citation intent and section context from publications that cite UKRI-linked papers. This involves collecting and processing citation context data from Semantic Scholar and open-access full-text publications.
 
 **Relevant Pipelines**:
-- **`data_collection_s2`**: This pipeline is designed to collect citation context data from Semantic Scholar (S2). It gathers information on onward and backward citations, categorizing each based on its intent (e.g., background, methodology, results).
+- **`data_collection_s2`**: This pipeline is designed to collect citation context data from Semantic Scholar (S2). It gathers information on onward and backward citations, categorising each based on its intent (e.g., background, methodology, results).
   - **Nodes**: Handle the API calls to Semantic Scholar, parsing and storing the citation context data.
 - **`data_processing_pdfs`**: This pipeline processes open-access full-text publications to identify where in the text UKRI-linked papers are cited. It also extracts adjacent text to the citation, which can be used to train a model for identifying citation intent.
   - **Nodes**: Implement text extraction and processing techniques to identify citation sections and contexts within PDFs.
@@ -164,11 +164,11 @@ The section evaluates the interdisciplinary nature of research teams involved in
 - **`data_processing_authors`**: This pipeline processes author-related data, linking authors to their respective disciplines and identifying patterns in their publication history. This data serves as the basis for computing the interdisciplinary metrics.
   - **Nodes**: Include functions for parsing author data, mapping them to disciplines using the Leiden CWTS topics taxonomy, and preparing the data for analysis.
 - **`data_analysis_team_metrics`**: This pipeline implements the methodology proposed by Leydesdorff, Wagner, and Bornmann (2019) to calculate interdisciplinary metrics for research teams. It brings together the variety of disciplines, balance of publishing behavior, and disparity between disciplines.
-  - **Nodes**: Perform the calculations for the interdisciplinary metrics, analyze the data, and generate insights into the collaborative nature of UKRI-funded projects.
+  - **Nodes**: Perform the calculations for the interdisciplinary metrics, analyse the data, and generate insights into the collaborative nature of UKRI-funded projects.
 
 ## Data Generation
 
-After all data has been collected, processed, and analyzed, the final datasets are generated for further analysis or reporting. This stage consolidates the outputs of the various pipelines.
+After all data has been collected, processed, and analysed, the final datasets are generated for further analysis or reporting. This stage consolidates the outputs of the various pipelines.
 
 **Relevant Pipeline**:
 - **`data_generation`**: This pipeline is responsible for generating the final datasets by integrating the outputs from the other pipelines. It prepares the data for subsequent analysis or reporting.
