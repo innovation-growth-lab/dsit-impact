@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_base_data(
+    gtr_to_oa_map: pd.DataFrame,
     oa: pd.DataFrame,
     s2_papers: pd.DataFrame,
     s2_citations: pd.DataFrame,
@@ -52,6 +53,9 @@ def create_base_data(
     base_data = base_data.merge(section_details, on="id", how="left")
     base_data.fillna({"total_sections": 0}, inplace=True)
     base_data["total_sections"] = base_data["total_sections"].astype(int)
+    base_data["section_counts"] = base_data["section_counts"].apply(
+        lambda x: x if isinstance(x, list) else []
+    )
 
     logger.info("Merging diversity scores.")
     base_data = base_data.merge(coauthor_diversity, on="id", how="left")
@@ -73,6 +77,11 @@ def create_base_data(
         },
         inplace=True,
     )
+
+    logger.info("Merging GtR data.")
+    gtr_oa_list = gtr_to_oa_map.groupby("id")["outcome_id"].apply(list).reset_index()
+    base_data = base_data.merge(gtr_oa_list, on="id", how="left")
+    base_data = base_data[base_data["outcome_id"].notnull()]
 
     return base_data
 
@@ -128,9 +137,9 @@ def _aggregate_citation_sections(section_details: pd.DataFrame) -> pd.DataFrame:
     )
 
     # create a list of tuples
-    section_details["section_shares"] = section_details.apply(
+    section_details["section_counts"] = section_details.apply(
         lambda x: [
-            (col, x[col])
+            [col, str(x[col])]
             for col in section_details.columns
             if col not in ["parent_id", "total_sections"] and x[col] != 0
         ],
@@ -140,4 +149,4 @@ def _aggregate_citation_sections(section_details: pd.DataFrame) -> pd.DataFrame:
     # change parent_id to id
     section_details = section_details.rename(columns={"parent_id": "id"})
 
-    return section_details[["id", "total_sections", "section_shares"]]
+    return section_details[["id", "total_sections", "section_counts"]]

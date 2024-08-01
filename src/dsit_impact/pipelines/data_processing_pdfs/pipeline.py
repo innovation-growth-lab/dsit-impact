@@ -25,6 +25,7 @@ Usage:
 Command Line Example:
     ```
     kedro run --pipeline data_processing_pdfs
+    kedro run --nodes preprocess_for_section_collection -e base
     ```
 """
 

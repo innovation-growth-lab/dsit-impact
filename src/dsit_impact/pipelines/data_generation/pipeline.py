@@ -15,6 +15,7 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
             node(
                 create_base_data,
                 inputs={
+                    "gtr_to_oa_map": "oa.publications.gtr.map.primary",
                     "oa": "oa.publications.gtr.primary",
                     "s2_papers": "s2.paper_details.intermediate",
                     "s2_citations": "s2.citation_details.intermediate",
@@ -22,8 +23,10 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                     "coauthor_diversity": "publications.field.coauthor_diversity_scores.intermediate",
                     "paper_diversity": "publications.field.paper_diversity_scores.intermediate",
                 },
-                outputs="base_data",
+                outputs="oa.publications.gtr.base.data",
                 name="create_base_data_node",
             )
         ]
     )
+
+# pending → map back to GtR publications.

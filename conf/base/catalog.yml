@@ -315,3 +315,7 @@ cwts.topics.input:
 "publications.{level}.coauthor_diversity_scores.intermediate":
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/coauthor_diversity_scores/{level}.parquet
+
+oa.publications.gtr.base.data:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_impact/data/04_output/oa/base_data.parquet
