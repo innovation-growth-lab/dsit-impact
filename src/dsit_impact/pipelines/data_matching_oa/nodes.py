@@ -145,7 +145,7 @@ def crossref_doi_match(
     oa_data: pd.DataFrame, gtr_data: pd.DataFrame, mailto: str
 ) -> Generator[Dict[str, pd.DataFrame], None, None]:
     """
-    Matches DOI values between two DataFrames using Crossref API.
+    Matches to a DOI value in CrossRef from the anti-set of GtR and first-step OA matches.
 
     Args:
         oa_data (pd.DataFrame): DataFrame containing Open Access data.

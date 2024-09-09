@@ -1,106 +1,125 @@
 # Catalog Entries:
-
+#
+# #### Matching OA to GTR ####
+#
 # 1. GTR Data Collection:
-#     1.1. Raw Publications:
+#     1.1. Raw Publications - Pipeline: data_collection_gtr:
 #         - gtr.data_collection.publications.raw
-#     1.2. Intermediate Publications:
+#     1.2. Intermediate Publications - Pipeline: data_collection_gtr:
 #         - gtr.data_collection.publications.intermediate
-
+#
 # 2. OA Data Matching:
-#     2.1. GTR Input:
+#     2.1. GTR Input - Pipeline: data_matching_oa:
 #         - oa.data_matching.gtr.input
-#     2.2. GTR DOI:
+#     2.2. OA data using GTR DOIs - Pipeline: data_matching_oa:
 #         - Raw:
 #             - oa.data_matching.gtr.doi.raw
 #         - Intermediate:
 #             - oa.data_matching.gtr.doi.intermediate
-#     2.3. Combined DOI:
-#         - Raw:
-#             - oa.data_matching.gtr.combined.doi.raw
-#         - Intermediate:
-#             - oa.data_matching.gtr.combined.doi.intermediate
-#     2.4. Combined ID:
-#         - Raw:
-#             - oa.data_matching.gtr.combined.id.raw
-#         - Intermediate:
-#             - oa.data_matching.gtr.combined.id.intermediate
-
+#
 # 3. CR Data Matching:
-#     3.1. GTR DOI:
+#     3.1. CR DOI matches - Pipeline: data_matching_oa:
 #         - Raw:
 #             - cr.data_matching.gtr.doi.raw
 #         - Intermediate:
 #             - cr.data_matching.gtr.doi.intermediate
-
-# 4. OA Search Data Matching:
-#     4.1. GTR DOI:
+#
+# 4. OA Search (Reverse Lookup) Data Matching:
+#     4.1. Search non-DOI GTR publications - Pipeline: data_matching_oa:
 #         - Raw:
 #             - oa_search.data_matching.gtr.doi.raw
 #         - Intermediate:
 #             - oa_search.data_matching.gtr.doi.intermediate
-#     4.2. Best Match Intermediate:
-#         - oa_search.data_matching.gtr.doi.best_match.intermediate
-#     4.3. Combined Intermediate:
-#         - oa_search.data_matching.gtr.doi.combined.intermediate
-
-# 5. OA Publications:
-#     5.1. Primary:
+#         - Best Match:
+#             - oa_search.data_matching.gtr.doi.best_match.intermediate
+#
+# 5. Combine non-DOI matches (CR and OA Search):
+#     5.1. Combined DOI matches - Pipeline: data_matching_oa:
+#         - Intermediate:
+#             - oa_search.data_matching.gtr.doi.combined.intermediate
+#
+# 6. OA Data Collection using DOI (CR) and OA ID (OA):
+#     6.1. Collection using DOI - Pipeline: data_matching_oa:
+#         - Raw:
+#             - oa.data_matching.gtr.combined.doi.raw
+#         - Intermediate:
+#             - oa.data_matching.gtr.combined.doi.intermediate
+#     6.2. Collection using OA ID - Pipeline: data_matching_oa:
+#         - Raw:
+#             - oa.data_matching.gtr.combined.id.raw
+#         - Intermediate:
+#             - oa.data_matching.gtr.combined.id.intermediate
+#
+# 7. OA Publications:
+#     7.1. Primary - Pipeline: data_matching_oa:
 #         - oa.publications.gtr.primary
-#     5.2. Map Primary:
+#     7.2. Map back to GTR Publications - Pipeline: data_matching_oa:
 #         - oa.publications.gtr.map.primary
-
-# 6. S2 Data:
-#     6.1. Raw:
+#
+# #### Intent Metrics ####
+#
+# 8. S2 Intent Data:
+#     8.1. Raw - Pipeline: data_collection_s2:
 #         - Citation Details:
 #             - s2.citation_details.raw
 #         - Paper Details:
 #             - s2.paper_details.raw
-#     6.2. Intermediate:
+#     8.2. Intermediate - Pipeline: data_collection_s2:
 #         - Citation Details:
 #             - s2.citation_details.intermediate
 #         - Paper Details:
 #             - s2.paper_details.intermediate
-
-# 7. PDFs:
-#     7.1. OA Dataset Input:
+#
+# 9. PDFs:
+#     9.1. OA Dataset Input - Pipeline: data_collection_pdfs:
 #         - pdfs.oa_dataset.input
-#     7.2. S2 Dataset Input:
+#     9.2. S2 Dataset Input - Pipeline: data_collection_pdfs:
 #         - pdfs.s2_dataset.input
-#     7.3. Section Details:
+#     9.3. Section Details - Pipeline: data_collection_pdfs:
 #         - Input:
 #             - pdfs.section_details.input
 #         - Raw:
 #             - pdfs.section_details.raw
 #         - Intermediate:
 #             - pdfs.section_shares.intermediate
-#     7.4. Objects Raw:
+#     9.4. Objects Raw - Pipeline: data_collection_pdfs:
 #         - pdfs.objects.raw
-
-# 8. Authors:
-#     8.1. OA Dataset:
+#
+# #### Team Science Metrics ####
+#
+# 10. Authors publication records:
+#     10.1. OA Collection - Pipeline: data_processing_authors:
 #         - Input:
 #             - authors.oa_dataset.input
 #         - Raw:
 #             - authors.oa_dataset.raw
-#     8.2. Aggregates Intermediate:
+#     10.2. Aggregates Intermediate - Pipeline: data_processing_authors:
 #         - authors.{level}.aggregates.intermediate
-#     8.3. Diversity Components Intermediate:
+#     10.3. Diversity Components Intermediate - Pipeline: data_processing_authors:
 #         - authors.{level}.diversity_components.intermediate
-
-# 9. CWTS Topics:
-#     9.1. Input:
+#
+# 11. CWTS Topics:
+#     11.1. Input - Pipeline: data_analysis_team_metrics:
 #         - cwts.topics.input
-#     9.2. Distance Matrix:
+#     11.2. Distance Matrix - Pipeline: data_analysis_team_metrics:
 #         - cwts.topics.{level}.distance_matrix
-
-# 10. Publications:
-#     10.1. Paper Diversity Scores Intermediate:
+#
+# 12. Team Metric Scores:
+#     12.1. Paper Diversity Scores Intermediate - Pipeline: data_analysis_team_metrics:
 #         - publications.{level}.paper_diversity_scores.intermediate
-#     10.2. Coauthor Diversity Scores Intermediate:
+#     12.2. Coauthor Diversity Scores Intermediate - Pipeline: data_analysis_team_metrics:
 #         - publications.{level}.coauthor_diversity_scores.intermediate
-
+#
+# 13. OA Final Data:
+#     13.1. Base Data - Pipeline: data_generation:
+#         - oa.publications.gtr.base.data
+#
+#
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/data/data_catalog.html
+
+
+# -> 0. Global catalog variables:
 _js: &_js
   type: json.JSONDataset
   credentials: s3_credentials
@@ -154,6 +173,7 @@ _csv_ptd: &_csv_ptd
   filename_suffix: '.csv'
   credentials: s3_credentials
 
+# -> 1. GTR Data Collection:
 gtr.data_collection.publications.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/gtr/publications/
@@ -162,6 +182,7 @@ gtr.data_collection.publications.intermediate: &gtr_input_publications
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/gtr/publications/main.parquet
 
+# -> 2. OA Data Matching:
 oa.data_matching.gtr.input:
   <<: *gtr_input_publications
 
@@ -173,6 +194,7 @@ oa.data_matching.gtr.doi.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/doi/main.parquet
   
+# -> 3. CR Data Matching:
 cr.data_matching.gtr.doi.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/cr/matches/
@@ -181,6 +203,7 @@ cr.data_matching.gtr.doi.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cr/matches/main.parquet
 
+# -> 4. OA Search Data Matching:
 oa_search.data_matching.gtr.doi.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa_search/matches/
@@ -193,10 +216,12 @@ oa_search.data_matching.gtr.doi.best_match.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/best_match/main.parquet
 
+# -> 5. Combine non-DOI matches (CR and OA Search):
 oa_search.data_matching.gtr.doi.combined.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/combined/main.parquet
 
+# -> 6. OA Data Collection using DOI (CR) and OA ID (OA):
 oa.data_matching.gtr.combined.doi.raw:
   <<: *_js_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/combined/doi/
@@ -213,6 +238,7 @@ oa.data_matching.gtr.combined.id.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/combined/id/main.parquet
 
+# -> 7. OA Publications:
 oa.publications.gtr.primary: &_oa_publications
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/publications/main.parquet
@@ -221,6 +247,7 @@ oa.publications.gtr.map.primary:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/map/main.parquet
 
+# -> 8. S2 Intent Data:
 s2.citation_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/s2/citation_details/
@@ -237,6 +264,7 @@ s2.paper_details.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/paper_details/main.parquet
 
+# -> 9. PDFs:
 pdfs.oa_dataset.input: 
   <<: *_oa_publications
   load_args:
@@ -275,6 +303,7 @@ pdfs.section_shares.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/pdfs/citation_sections/shares.parquet
 
+# -> 10. Authors publication records:
 authors.oa_dataset.input:
   <<: *_oa_publications
   load_args:
@@ -287,19 +316,15 @@ authors.oa_dataset.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/authors/past_publications/
 
-
 "authors.{level}.aggregates.intermediate":
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/aggregates/{level}.parquet
-
-# "authors.{level}.aggregates.intermediate":
-#   <<: *_pq
-#   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/aggregates/{level}.parquet
 
 "authors.{level}.diversity_components.intermediate":
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/diversity_components/{level}.parquet
 
+# -> 11. CWTS Topics:
 cwts.topics.input:
   type: pandas.ExcelDataset
   filepath: s3://igl-dsit-impact/03_impact/data/01_raw/cwts/cwts_oa_topics.xlsx
@@ -308,6 +333,7 @@ cwts.topics.input:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cwts/distance_matrices/{level}.parquet
 
+# -> 12. Team Metric Scores:
 "publications.{level}.paper_diversity_scores.intermediate":
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/paper_diversity_scores/{level}.parquet
@@ -316,6 +342,7 @@ cwts.topics.input:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/coauthor_diversity_scores/{level}.parquet
 
+# -> 13. OA Final Data:
 oa.publications.gtr.base.data:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_impact/data/04_output/oa/base_data.parquet
