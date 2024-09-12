@@ -176,11 +176,11 @@ _csv_ptd: &_csv_ptd
 # -> 1. GTR Data Collection:
 gtr.data_collection.publications.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/gtr/publications/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/gtr/publications/
 
 gtr.data_collection.publications.intermediate: &gtr_input_publications
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/gtr/publications/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/gtr/publications/main.parquet
 
 # -> 2. OA Data Matching:
 oa.data_matching.gtr.input:
@@ -188,81 +188,81 @@ oa.data_matching.gtr.input:
 
 oa.data_matching.gtr.doi.raw:
   <<: *_js_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/doi/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/gtr/doi/
 
 oa.data_matching.gtr.doi.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/doi/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/oa/gtr/doi/main.parquet
   
 # -> 3. CR Data Matching:
 cr.data_matching.gtr.doi.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/cr/matches/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/cr/matches/
 
 cr.data_matching.gtr.doi.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cr/matches/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/cr/matches/main.parquet
 
 # -> 4. OA Search Data Matching:
 oa_search.data_matching.gtr.doi.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa_search/matches/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa_search/matches/
 
 oa_search.data_matching.gtr.doi.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/matches/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/oa_search/matches/main.parquet
 
 oa_search.data_matching.gtr.doi.best_match.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/best_match/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/oa_search/best_match/main.parquet
 
 # -> 5. Combine non-DOI matches (CR and OA Search):
 oa_search.data_matching.gtr.doi.combined.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa_search/combined/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/oa_search/combined/main.parquet
 
 # -> 6. OA Data Collection using DOI (CR) and OA ID (OA):
 oa.data_matching.gtr.combined.doi.raw:
   <<: *_js_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/combined/doi/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/gtr/combined/doi/
 
 oa.data_matching.gtr.combined.doi.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/combined/doi/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/oa/gtr/combined/doi/main.parquet
 
 oa.data_matching.gtr.combined.id.raw:
   <<: *_js_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/gtr/combined/id/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/gtr/combined/id/
 
 oa.data_matching.gtr.combined.id.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/oa/gtr/combined/id/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/oa/gtr/combined/id/main.parquet
 
 # -> 7. OA Publications:
 oa.publications.gtr.primary: &_oa_publications
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/publications/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/publications/main.parquet
 
 oa.publications.gtr.map.primary:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/03_primary/oa/gtr/map/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/map/main.parquet
 
 # -> 8. S2 Intent Data:
 s2.citation_details.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/s2/citation_details/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/citation_details/
 
 s2.paper_details.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/s2/paper_details/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/paper_details/
 
 s2.citation_details.intermediate: &_s2_citation_details
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/citation_details/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/s2/citation_details/main.parquet
 
 s2.paper_details.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/s2/paper_details/main.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/s2/paper_details/main.parquet
 
 # -> 9. PDFs:
 pdfs.oa_dataset.input: 
@@ -287,21 +287,21 @@ pdfs.s2_dataset.input:
 
 pdfs.section_details.input:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_details/section_inputs.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/pdfs/citation_details/section_inputs.parquet
 
 pdfs.objects.raw:
   type: partitions.PartitionedDataset
   dataset: dsit_impact.datasets.pdf_dataset.PdfDataset
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/objects/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/pdfs/objects/
   credentials: s3_credentials
 
 pdfs.section_details.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/pdfs/citation_sections/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/pdfs/citation_sections/
 
 pdfs.section_shares.intermediate:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/pdfs/citation_sections/shares.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/pdfs/citation_sections/shares.parquet
 
 # -> 10. Authors publication records:
 authors.oa_dataset.input:
@@ -314,35 +314,35 @@ authors.oa_dataset.input:
 
 authors.oa_dataset.raw:
   <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_impact/data/01_raw/oa/authors/past_publications/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/authors/past_publications/
 
 "authors.{level}.aggregates.intermediate":
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/aggregates/{level}.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/authors/aggregates/{level}.parquet
 
 "authors.{level}.diversity_components.intermediate":
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/authors/diversity_components/{level}.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/authors/diversity_components/{level}.parquet
 
 # -> 11. CWTS Topics:
 cwts.topics.input:
   type: pandas.ExcelDataset
-  filepath: s3://igl-dsit-impact/03_impact/data/01_raw/cwts/cwts_oa_topics.xlsx
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/cwts/cwts_oa_topics.xlsx
 
 "cwts.topics.{level}.distance_matrix":
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/cwts/distance_matrices/{level}.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/cwts/distance_matrices/{level}.parquet
 
 # -> 12. Team Metric Scores:
 "publications.{level}.paper_diversity_scores.intermediate":
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/paper_diversity_scores/{level}.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/publications/paper_diversity_scores/{level}.parquet
 
 "publications.{level}.coauthor_diversity_scores.intermediate":
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/02_intermediate/publications/coauthor_diversity_scores/{level}.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/publications/coauthor_diversity_scores/{level}.parquet
 
 # -> 13. OA Final Data:
 oa.publications.gtr.base.data:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_impact/data/04_output/oa/base_data.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/04_output/oa/base_data.parquet
