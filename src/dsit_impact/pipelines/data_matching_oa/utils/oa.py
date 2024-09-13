@@ -269,8 +269,7 @@ def fetch_papers_for_id(
             page,
             len(papers_for_id),
         )
-
-    return papers_for_id
+    return {paper["id"]: paper for paper in papers_for_id}
 
 
 def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
@@ -284,150 +283,14 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
         pandas.DataFrame: The transformed DataFrame.
 
     """
-    output = []
-
-    for batch in data:
-        json_data = [
-            {
-                k: v
-                for k, v in item.items()
-                if k
-                in [
-                    "id",
-                    "ids",
-                    "doi",
-                    "title",
-                    "publication_date",
-                    "cited_by_count",
-                    "counts_by_year",
-                    "authorships",
-                    "topics",
-                    "concepts",
-                    "grants",
-                ]
-            }
-            for item in batch
-        ]
-
-        df = pd.DataFrame(json_data)
-        if df.empty:
-            continue
-
-        df["pmid"] = df["ids"].apply(
-            lambda x: (
-                x.get("pmid").replace("https://pubmed.ncbi.nlm.nih.gov/", "")
-                if x and x.get("pmid")
-                else None
-            )
-        )
-
-        df["mag_id"] = df["ids"].apply(
-            lambda x: (x.get("mag") if x and x.get("mag") else None)
-        )
-
-        # break atuhorship nested dictionary jsons, create triplets of authorship
-        df["authorships"] = df["authorships"].apply(
-            lambda x: (
-                [
-                    (
-                        (
-                            author["author"]["id"].replace(
-                                "https://openalex.org/", ""),
-                            inst["id"].replace("https://openalex.org/", ""),
-                            inst["country_code"],
-                            author["author_position"],
-                        )
-                        if author["institutions"]
-                        else [
-                            author["author"]["id"].replace(
-                                "https://openalex.org/", ""),
-                            "",
-                            "",
-                            author["author_position"],
-                        ]
-                    )
-                    for author in x
-                    for inst in author["institutions"] or [{}]
-                ]
-                if x
-                else None
-            )
-        )
-
-        # create tuples from counts by year, if available
-        df["counts_by_year"] = df["counts_by_year"].apply(
-            lambda x: (
-                [
-                    (year["year"], year["cited_by_count"])
-                    for year in x
-                ]
-                if x
-                else None
-            )
-        )
-
-        # create a list of topics
-        df["topics"] = df["topics"].apply(
-            lambda x: (
-                [
-                    (
-                        topic["id"].replace("https://openalex.org/", ""),
-                        topic["display_name"],
-                        topic["subfield"]["id"].replace(
-                            "https://openalex.org/", ""),
-                        topic["subfield"]["display_name"],
-                        topic["field"]["id"].replace(
-                            "https://openalex.org/", ""),
-                        topic["field"]["display_name"],
-                        topic["domain"]["id"].replace(
-                            "https://openalex.org/", ""),
-                        topic["domain"]["display_name"],
-                    )
-                    for topic in x
-                ]
-                if x
-                else None
-            )
-        )
-
-        # extract concepts
-        df["concepts"] = df["concepts"].apply(
-            lambda x: (
-                [
-                    (
-                        concept["id"].replace("https://openalex.org/", ""),
-                        concept["display_name"],
-                    )
-                    for concept in x
-                ]
-                if x
-                else None
-            )
-        )
-
-        # process grants, getting triplets out of "funder", "funder_display_name", and "award_id"
-        df["grants"] = df["grants"].apply(
-            lambda x: (
-                [
-                    (
-                        grant.get("funder", {})
-                        # .get("id", "")
-                        .replace("https://openalex.org/", ""),
-                        grant.get("funder_display_name"),
-                        grant.get("award_id"),
-                    )
-                    for grant in x
-                ]
-                if x
-                else None
-            )
-        )
-
-        df = df[[
+    json_data = [{
+        k: v
+        for k, v in item.items()
+        if k
+        in [
             "id",
+            "ids",
             "doi",
-            "pmid",
-            "mag_id",
             "title",
             "publication_date",
             "cited_by_count",
@@ -436,11 +299,137 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
             "topics",
             "concepts",
             "grants",
-        ]]
+        ]
+    } for item in data
+    ]
 
-        # append to output
-        output.append(df)
+    df = pd.DataFrame(json_data)
+    if df.empty:
+        return None
 
-    df = pd.concat(output)
+    df["pmid"] = df["ids"].apply(
+        lambda x: (
+            x.get("pmid").replace("https://pubmed.ncbi.nlm.nih.gov/", "")
+            if x and x.get("pmid")
+            else None
+        )
+    )
+
+    df["mag_id"] = df["ids"].apply(
+        lambda x: (x.get("mag") if x and x.get("mag") else None)
+    )
+
+    # break atuhorship nested dictionary jsons, create triplets of authorship
+    df["authorships"] = df["authorships"].apply(
+        lambda x: (
+            [
+                (
+                    (
+                        author["author"]["id"].replace(
+                            "https://openalex.org/", ""),
+                        inst["id"].replace("https://openalex.org/", ""),
+                        inst["country_code"],
+                        author["author_position"],
+                    )
+                    if author["institutions"]
+                    else [
+                        author["author"]["id"].replace(
+                            "https://openalex.org/", ""),
+                        "",
+                        "",
+                        author["author_position"],
+                    ]
+                )
+                for author in x
+                for inst in author["institutions"] or [{}]
+            ]
+            if x
+            else None
+        )
+    )
+
+    # create tuples from counts by year, if available
+    df["counts_by_year"] = df["counts_by_year"].apply(
+        lambda x: (
+            [
+                (year["year"], year["cited_by_count"])
+                for year in x
+            ]
+            if x
+            else None
+        )
+    )
+
+    # create a list of topics
+    df["topics"] = df["topics"].apply(
+        lambda x: (
+            [
+                (
+                    topic["id"].replace("https://openalex.org/", ""),
+                    topic["display_name"],
+                    topic["subfield"]["id"].replace(
+                        "https://openalex.org/", ""),
+                    topic["subfield"]["display_name"],
+                    topic["field"]["id"].replace(
+                        "https://openalex.org/", ""),
+                    topic["field"]["display_name"],
+                    topic["domain"]["id"].replace(
+                        "https://openalex.org/", ""),
+                    topic["domain"]["display_name"],
+                )
+                for topic in x
+            ]
+            if x
+            else None
+        )
+    )
+
+    # extract concepts
+    df["concepts"] = df["concepts"].apply(
+        lambda x: (
+            [
+                (
+                    concept["id"].replace("https://openalex.org/", ""),
+                    concept["display_name"],
+                )
+                for concept in x
+            ]
+            if x
+            else None
+        )
+    )
+
+    # process grants, getting triplets out of "funder", "funder_display_name", and "award_id"
+    df["grants"] = df["grants"].apply(
+        lambda x: (
+            [
+                (
+                    grant.get("funder", {})
+                    # .get("id", "")
+                    .replace("https://openalex.org/", ""),
+                    grant.get("funder_display_name"),
+                    grant.get("award_id"),
+                )
+                for grant in x
+            ]
+            if x
+            else None
+        )
+    )
+
+    df = df[[
+        "id",
+        "doi",
+        "pmid",
+        "mag_id",
+        "title",
+        "publication_date",
+        "cited_by_count",
+        "counts_by_year",
+        "authorships",
+        "topics",
+        "concepts",
+        "grants",
+    ]]
 
     return df

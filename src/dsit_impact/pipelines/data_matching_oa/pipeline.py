@@ -32,7 +32,6 @@ Command Line Example:
 from kedro.pipeline import Pipeline, pipeline, node
 from .nodes import (
     preprocess_publication_doi,
-    create_list_doi_inputs,
     fetch_papers,
     concatenate_openalex,
     crossref_doi_match,
@@ -61,15 +60,13 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
         [
             node(
                 func=preprocess_publication_doi,
-                inputs="input",
-                outputs="preproc",
-                name="preprocess_publication_doi",
-            ),
-            node(
-                func=create_list_doi_inputs,
-                inputs="preproc",
+                inputs={
+                    "input_df": "input",
+                    "processed_df": "processed_df",
+                    "process_all": "params:process_all"
+                },
                 outputs="doi_list",
-                name="create_nested_doi_list",
+                name="preprocess_publication_doi",
             ),
             node(
                 func=fetch_papers,
@@ -158,8 +155,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
     oa_doi_collection_pipeline = pipeline(
         [
             node(
-                func=create_list_doi_inputs,
-                inputs="oa_search.data_matching.gtr.doi.combined.intermediate",
+                func=preprocess_publication_doi,
+                inputs={
+                    "input_df": "oa_search.data_matching.gtr.doi.combined.intermediate",
+                    "processed_df": "oa_search.data_matching.gtr.doi.combined.processed_df",
+                    "process_all": "params:process_all"
+                },
                 outputs="doi_list",
                 name="create_second_doi_list",
             ),

@@ -1,3 +1,4 @@
 test:
   _true: True
   _false: False
+process_all: False

@@ -53,7 +53,12 @@ from .utils.oa_cr_merge import break_ties
 logger = logging.getLogger(__name__)
 
 
-def preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_publication_doi(
+    input_df: pd.DataFrame,
+    processed_df: pd.DataFrame,
+    process_all: bool = True,
+    **kwargs,
+) -> pd.DataFrame:
     """Preprocess the Gateway to Research publication data to include
     doi values that are compatible with OA filter module.
 
@@ -63,26 +68,22 @@ def preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The preprocessed publication data.
     """
-    if "doi" in df.columns:
-        df["doi"] = df["doi"].str.extract(r"(10\..+)")
-    return df
-
-
-def create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
-    """Create a list of doi values from the Gateway to Research publication data.
-
-    Args:
-        df (pd.DataFrame): The Gateway to Research publication data.
-
-    Returns:
-        list: A list of doi values.
-    """
-    doi_singleton_list = df[df["doi"].notnull()]["doi"].drop_duplicates().tolist()
-
-    # concatenate doi values to create group querise
-    doi_list = preprocess_ids(doi_singleton_list, kwargs.get("grouped", True))
-
-    return doi_list
+    input_df["doi"] = input_df["doi"].str.extract(r"(10\..+)")
+    input_df.dropna(subset=["doi"], inplace=True)
+    if not process_all:
+        processed_doi = (
+            processed_df["doi"]
+            .str.extract(r"(10\..+)")
+            .dropna()
+            .drop_duplicates()
+            .iloc[:, 0]
+            .tolist()
+        )
+        input_df = input_df[~input_df["doi"].isin(processed_doi)]
+    doi_singleton_list = (
+        input_df[input_df["doi"].notnull()]["doi"].drop_duplicates().tolist()
+    )
+    return preprocess_ids(doi_singleton_list, kwargs.get("grouped", True))
 
 
 def fetch_papers(
@@ -91,7 +92,7 @@ def fetch_papers(
     perpage: int,
     filter_criteria: Union[str, List[str]],
     parallel_jobs: int = 8,
-) -> Dict[str, List[Callable]]:
+) -> Generator[Dict[str, List[Callable]], None, None]:
     """
     Fetches papers based on the provided processed_ids, mailto, perpage,
     filter_criteria, and parallel_jobs.
@@ -108,16 +109,17 @@ def fetch_papers(
         Dict[str, List[Callable]]: A dictionary containing the fetched papers, grouped by chunks.
 
     """
-    # slice oa_ids
     oa_id_chunks = [ids[i : i + 80] for i in range(0, len(ids), 80)]
     logger.info("Slicing data. Number of oa_id_chunks: %s", len(oa_id_chunks))
-    return {
-        f"s{str(i)}": lambda chunk=chunk: Parallel(n_jobs=parallel_jobs, verbose=10)(
+
+    for i, chunk in enumerate(oa_id_chunks):
+        logger.info("Processing chunk %s / %s", i + 1, len(oa_id_chunks))
+        results = Parallel(n_jobs=parallel_jobs, verbose=10)(
             delayed(fetch_papers_for_id)(oa_id, mailto, perpage, filter_criteria)
             for oa_id in chunk
         )
-        for i, chunk in enumerate(oa_id_chunks)
-    }
+        # create single dictionary from list of dictionaries
+        yield {**{k: v for r in results for k, v in r.items()}}
 
 
 def concatenate_openalex(
@@ -135,10 +137,9 @@ def concatenate_openalex(
     outputs = []
     for i, (key, batch_loader) in enumerate(data.items()):
         data_batch = batch_loader()
-        df_batch = json_loader(data_batch)
-        outputs.append(df_batch)
+        outputs.append(data_batch)
         logger.info("Loaded %s. Progress: %s/%s", key, i + 1, len(data))
-    return pd.concat(outputs)
+    return json_loader(outputs)
 
 
 def crossref_doi_match(

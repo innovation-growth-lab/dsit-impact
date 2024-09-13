@@ -188,7 +188,7 @@ oa.data_matching.gtr.input:
 
 oa.data_matching.gtr.doi.raw:
   <<: *_js_ptd
-  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/gtr/doi/
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/gtr/doi_js/
 
 oa.data_matching.gtr.doi.intermediate:
   <<: *_pq
@@ -346,3 +346,23 @@ cwts.topics.input:
 oa.publications.gtr.base.data:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/04_output/oa/base_data.parquet
+
+
+
+
+# Additional datasets for upserts
+oa.data_matching.gtr.processed_df: 
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/publications/main2.parquet
+  load_args:
+    engine: pyarrow
+    columns:
+      - 'doi'
+
+oa_search.data_matching.gtr.doi.combined.processed_df: 
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/publications/main2.parquet
+  load_args:
+    engine: pyarrow
+    columns:
+      - 'doi'
