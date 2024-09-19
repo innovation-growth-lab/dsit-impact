@@ -30,7 +30,6 @@ import random
 import time
 import datetime
 from typing import Dict, Union, Generator
-from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
 import requests
@@ -252,33 +251,11 @@ def fetch_gtr_data(
         page_df = pd.DataFrame(page_data)
         preprocessor = GtRDataPreprocessor()
         page_df = preprocessor.methods[endpoint.split("/")[-1]](page_df)
-        yield _json_obj(page_df)
-
-def _json_obj(dataframe: pd.DataFrame) -> Dict[str, Dict[str, pd.DataFrame]]:
-    """
-    Converts a DataFrame into a nested dictionary where the keys are created by 
-    joining all columns with an "_id" suffix, and the values are dictionaries 
-    of column names and row values.
-    Args:
-        dataframe (pd.DataFrame): The input DataFrame to be converted.
-    Returns:
-        Dict[str, Dict[str, pd.DataFrame]]: A nested dictionary with keys 
-        formed by concatenating "_id" suffixed columns and values as dictionaries 
-        of the row data.
-    """
-
-    yield_obj = {}
-    for _, row in dataframe.iterrows():
-        # create the key by joining all columns with "_id" suffix
-        key = "/".join(str(row[col]) for col in dataframe.columns if col.endswith("_id"))
-        # create the value as a dictionary of column names and row values
-        value = row.to_dict()
-        yield_obj[key] = value
-    return yield_obj
+        yield {f"p{page-1}": page_df}
 
 
 def concatenate_endpoint(
-    abstract_dict: Union[AbstractDataset, Dict[str, Dict[str, str]]]
+    abstract_dict: Union[AbstractDataset, Dict[str, pd.DataFrame]]
 ) -> pd.DataFrame:
     """
     Concatenate DataFrames from a single endpoint into a single DataFrame.
@@ -286,34 +263,26 @@ def concatenate_endpoint(
     Args:
         abstract_dict (AbstractDataset): A dictionary where the keys are
             the endpoint names and the values are functions that load the
-            JSON dictionaries for each endpoint.
+            DataFrames for each endpoint.
 
     Returns:
         pd.DataFrame: The concatenated DataFrame.
     """
-    publications = Parallel(n_jobs=-1, verbose=10)(
-        delayed(_load_publication)(key, load_function)
-        for key, load_function in abstract_dict.items()
-    )
-
-    # check if publications is a list of dictionary entries
-    if all(isinstance(item, dict) for item in publications):
-        # create a dataframe directly from the list of dictionaries
-        publication_data = pd.DataFrame(publications)
-    else:
-        # concatenate all dataframes into a single dataframe
-        publication_data = pd.concat(publications, ignore_index=True)
-
-    return publication_data
-
-
-def _load_publication(key, load_function):
-    try:
+    dataframes = []
+    for i, (key, load_function) in enumerate(abstract_dict.items()):
+        logger.info(
+            "Adding DataFrame for %s. Number: %s / %s", key, i, len(abstract_dict)
+        )
         try:
-            df = load_function()
-        except TypeError:
-            df = load_function
-        return df
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error("Failed to load DataFrame for %s: %s", key, e)
-        return None
+            try:
+                df = load_function()
+            except TypeError:
+                df = load_function
+            dataframes.append(df)
+        except Exception as e:  # pylint: disable=broad-except
+            print(f"Failed to load DataFrame for {key}: {e}")
+
+    # concatenate all DataFrames into a single DataFrame
+    concatenated_df = pd.concat(dataframes, ignore_index=True)
+
+    return concatenated_df

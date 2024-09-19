@@ -167,8 +167,8 @@ _csv_ptd: &_csv_ptd
 
 # -> 1. GTR Data Collection:
 gtr.data_collection.publications.raw:
-  <<: *_js_ptd
-  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/gtr/publications_js/
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/gtr/publications/
 
 gtr.data_collection.publications.intermediate:
   <<: *_pq

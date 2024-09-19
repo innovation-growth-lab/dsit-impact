@@ -65,6 +65,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     pipelines = [
         pipeline(
             template_pipeline,
+            namespace="gtr.data_collection.publications",
             tags=["publications", "gtr"],
         )
     ]
