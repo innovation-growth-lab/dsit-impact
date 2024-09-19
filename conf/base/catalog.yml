@@ -9,9 +9,7 @@
 #         - gtr.data_collection.publications.intermediate
 #
 # 2. OA Data Matching:
-#     2.1. GTR Input - Pipeline: data_matching_oa:
-#         - oa.data_matching.gtr.input
-#     2.2. OA data using GTR DOIs - Pipeline: data_matching_oa:
+#     2.1. OA data using GTR DOIs - Pipeline: data_matching_oa:
 #         - Raw:
 #             - oa.data_matching.gtr.doi.raw
 #         - Intermediate:
@@ -71,26 +69,20 @@
 #             - s2.paper_details.intermediate
 #
 # 9. PDFs:
-#     9.1. OA Dataset Input - Pipeline: data_collection_pdfs:
-#         - pdfs.oa_dataset.input
-#     9.2. S2 Dataset Input - Pipeline: data_collection_pdfs:
-#         - pdfs.s2_dataset.input
-#     9.3. Section Details - Pipeline: data_collection_pdfs:
-#         - Input:
-#             - pdfs.section_details.input
+#     9.1. Section Details - Pipeline: data_collection_pdfs:
+#         - preprocessed:
+#             - pdfs.section_details.preprocessed
 #         - Raw:
 #             - pdfs.section_details.raw
 #         - Intermediate:
 #             - pdfs.section_shares.intermediate
-#     9.4. Objects Raw - Pipeline: data_collection_pdfs:
+#     9.2. Objects Raw - Pipeline: data_collection_pdfs:
 #         - pdfs.objects.raw
 #
 # #### Team Science Metrics ####
 #
 # 10. Authors publication records:
 #     10.1. OA Collection - Pipeline: data_processing_authors:
-#         - Input:
-#             - authors.oa_dataset.input
 #         - Raw:
 #             - authors.oa_dataset.raw
 #     10.2. Aggregates Intermediate - Pipeline: data_processing_authors:
@@ -178,14 +170,11 @@ gtr.data_collection.publications.raw:
   <<: *_js_ptd
   path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/gtr/publications_js/
 
-gtr.data_collection.publications.intermediate: &gtr_input_publications
+gtr.data_collection.publications.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/gtr/publications/main.parquet
 
 # -> 2. OA Data Matching:
-oa.data_matching.gtr.input:
-  <<: *gtr_input_publications
-
 oa.data_matching.gtr.doi.raw:
   <<: *_js_ptd
   path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/gtr/doi/
@@ -239,9 +228,15 @@ oa.data_matching.gtr.combined.id.intermediate:
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/oa/gtr/combined/id/main.parquet
 
 # -> 7. OA Publications:
-oa.publications.gtr.primary: &_oa_publications
+oa.publications.gtr.primary:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/publications/main.parquet
+  load_args:
+    engine: pyarrow
+    columns:
+      - 'id'
+      - 'title'
+      - 'authorships'
 
 oa.publications.gtr.map.primary:
   <<: *_pq
@@ -259,22 +254,6 @@ s2.paper_details.raw:
 s2.citation_details.intermediate: &_s2_citation_details
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/s2/citation_details/main.parquet
-
-s2.paper_details.intermediate:
-  <<: *_pq
-  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/s2/paper_details/main.parquet
-
-# -> 9. PDFs:
-pdfs.oa_dataset.input: 
-  <<: *_oa_publications
-  load_args:
-    engine: pyarrow
-    columns:
-      - 'id'
-      - 'title'
-
-pdfs.s2_dataset.input:
-  <<: *_s2_citation_details
   load_args:
     engine: pyarrow
     columns:
@@ -285,7 +264,12 @@ pdfs.s2_dataset.input:
       - 'mag_id'
       - 'pmid'
 
-pdfs.section_details.input:
+s2.paper_details.intermediate:
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/s2/paper_details/main.parquet
+
+# -> 9. PDFs:
+pdfs.section_details.preprocessed:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/pdfs/citation_details/section_inputs.parquet
 
@@ -304,14 +288,6 @@ pdfs.section_shares.intermediate:
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/pdfs/citation_sections/shares.parquet
 
 # -> 10. Authors publication records:
-authors.oa_dataset.input:
-  <<: *_oa_publications
-  load_args:
-    engine: pyarrow
-    columns:
-      - 'id'
-      - 'authorships'
-
 authors.oa_dataset.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/oa/authors/past_publications/

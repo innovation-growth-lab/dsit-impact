@@ -31,7 +31,7 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument, mi
         [
             node(
                 func=create_author_list,
-                inputs={"input_df": "authors.oa_dataset.input"},
+                inputs={"input_df": "oa.publications.gtr.primary"},
                 outputs="author_list",
                 name="create_author_list",
             ),

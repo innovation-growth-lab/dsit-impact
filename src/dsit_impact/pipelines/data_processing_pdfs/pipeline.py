@@ -44,16 +44,16 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
             node(
                 func=preprocess_for_section_collection,
                 inputs={
-                    "oa_dataset": "pdfs.oa_dataset.input",
-                    "s2_dataset": "pdfs.s2_dataset.input",
+                    "oa_dataset": "oa.publications.gtr.primary",
+                    "s2_dataset": "s2.citation_details.intermediate",
                 },
-                outputs="pdfs.section_details.input",
+                outputs="pdfs.section_details.preprocessed",
                 name="preprocess_for_section_collection",
             ),
             node(
                 func=get_citation_sections,
                 inputs={
-                    "dataset": "pdfs.section_details.input",
+                    "dataset": "pdfs.section_details.preprocessed",
                     "main_sections": "params:pdfs.data_collection.main_sections",
                 },
                 outputs="pdfs.section_details.raw",
@@ -62,11 +62,11 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
         ]
     )
 
-    indirect_collection_pipeline = pipeline(
+    indirect_collection_pipeline = pipeline( # pylint: disable=unused-variable
         [
             node(
                 func=get_browser_pdfs,
-                inputs={"dataset": "pdfs.section_details.input"},
+                inputs={"dataset": "pdfs.section_details.preprocessed"},
                 outputs="pdfs.objects.raw",
                 name="get_browser_pdfs",
             )
@@ -88,6 +88,6 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
 
     return (
         direct_collection_pipeline
-        + indirect_collection_pipeline
+        # + indirect_collection_pipeline
         + compute_section_shares_pipeline
     )

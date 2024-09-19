@@ -61,36 +61,35 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
         [
             node(
                 func=preprocess_publication_doi,
-                inputs="input",
-                outputs="preproc",
-                name="preprocess_publication_doi",
+                inputs="gtr.data_collection.publications.intermediate",
+                outputs="oa.data_matching.gtr.preproc",
+                name="oa.data_matching.gtr.preprocess_publication_doi",
             ),
             node(
                 func=create_list_doi_inputs,
-                inputs="preproc",
-                outputs="doi_list",
-                name="create_nested_doi_list",
+                inputs="oa.data_matching.gtr.preproc",
+                outputs="oa.data_matching.gtr.doi_list",
+                name="oa.data_matching.gtr.create_nested_doi_list",
             ),
             node(
                 func=fetch_papers,
                 inputs={
-                    "mailto": "params:api.mailto",
-                    "perpage": "params:api.perpage",
-                    "ids": "doi_list",
-                    "filter_criteria": "params:filter_doi",
-                    "parallel_jobs": "params:n_jobs",
+                    "mailto": "params:oa.data_matching.gtr.api.mailto",
+                    "perpage": "params:oa.data_matching.gtr.api.perpage",
+                    "ids": "oa.data_matching.gtr.doi_list",
+                    "filter_criteria": "params:oa.data_matching.gtr.filter_doi",
+                    "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
                 },
-                outputs="doi.raw",
-                name="fetch_papers",
+                outputs="oa.data_matching.gtr.doi.raw",
+                name="oa.data_matching.gtr.fetch_papers",
             ),
             node(
                 func=concatenate_openalex,
-                inputs={"data": "doi.raw"},
-                outputs="doi.intermediate",
-                name="concatenate_openalex",
+                inputs={"data": "oa.data_matching.gtr.doi.raw"},
+                outputs="oa.data_matching.gtr.doi.intermediate",
+                name="oa.data_matching.gtr.concatenate_openalex",
             ),
         ],
-        namespace="oa.data_matching.gtr",
     )
 
     cross_ref_matcher_pipeline = pipeline(
@@ -99,7 +98,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 func=crossref_doi_match,
                 inputs={
                     "oa_data": "oa.data_matching.gtr.doi.intermediate",
-                    "gtr_data": "oa.data_matching.gtr.input",
+                    "gtr_data": "gtr.data_collection.publications.intermediate",
                     "mailto": "params:crossref.doi_matching.gtr.api.mailto",
                 },
                 outputs="cr.data_matching.gtr.doi.raw",
@@ -120,7 +119,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 func=oa_search_match,
                 inputs={
                     "oa_data": "oa.data_matching.gtr.doi.intermediate",
-                    "gtr_data": "oa.data_matching.gtr.input",
+                    "gtr_data": "gtr.data_collection.publications.intermediate",
                     "config": "params:oa.data_matching.gtr.api",
                 },
                 outputs="oa_search.data_matching.gtr.doi.raw",
@@ -230,7 +229,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
             node(
                 func=map_outcome_id,
                 inputs={
-                    "gtr_data": "oa.data_matching.gtr.input",
+                    "gtr_data": "gtr.data_collection.publications.intermediate",
                     "oa_data": "oa.publications.gtr.primary",
                     "rlu_outputs": "oa_search.data_matching.gtr.doi.combined.intermediate",
                 },
