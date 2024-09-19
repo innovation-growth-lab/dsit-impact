@@ -30,8 +30,6 @@ Note:
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-
-from dsit_impact import settings
 from .nodes import fetch_gtr_data, concatenate_endpoint
 
 
