@@ -39,7 +39,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     Returns:
         Pipeline: The data collection pipeline.
     """
-    template_pipeline = pipeline(
+    publication_pipeline = pipeline(
         [
             node(
                 func=fetch_gtr_data,
@@ -60,19 +60,4 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
         ]
     )
 
-    pipelines = [
-        pipeline(
-            template_pipeline,
-            namespace="gtr.data_collection.publications",
-            tags=["publications", "gtr"],
-        )
-    ]
-    # pipelines = [
-    #     pipeline(
-    #         template_pipeline,
-    #         namespace=f"gtr.data_collection.{label}",
-    #         tags=[label, "gtr"],
-    #     )
-    #     for label in settings.GTR_ENDPOINTS
-    # ]
-    return sum(pipelines)
+    return publication_pipeline
