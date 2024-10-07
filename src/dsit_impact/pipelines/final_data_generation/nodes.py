@@ -1,6 +1,28 @@
 """
-This is a boilerplate pipeline 'data_generation'
-generated using Kedro 0.19.6
+This module contains functions for creating and processing datasets related to 
+Open Access (OA) publications, Semantic Scholar (S2) papers, citations, PDF 
+sectional data, and diversity scores. The main function, `create_final_dataset`, 
+merges various dataframes to create a comprehensive base dataset.
+
+Functions:
+    create_final_dataset(gtr_to_oa_map, oa, s2_papers, s2_citations, section_details, ...):
+        Creates the base data by merging various dataframes.
+    
+    _aggregate_citations(citations):
+        Aggregates citation data based on specified criteria.
+    
+    _aggregate_citation_sections(section_details):
+        Aggregates PDF sectional data into a list of tuples.
+
+Modules:
+    logging: Provides logging capabilities.
+    pandas: Provides data structures and data analysis tools for Python.
+
+Usage:
+    This module is intended to be used as part of a data processing pipeline. 
+    The `create_final_dataset` function is the main entry point, which takes 
+    multiple dataframes as input and returns a merged dataframe containing the 
+    base data.
 """
 
 import logging
@@ -9,7 +31,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def create_base_data(
+def create_final_dataset(
     gtr_to_oa_map: pd.DataFrame,
     oa: pd.DataFrame,
     s2_papers: pd.DataFrame,
@@ -19,7 +41,7 @@ def create_base_data(
     paper_diversity: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Creates the base data by merging various dataframes.
+    Creates the final data by merging various dataframes.
 
     Args:
         oa (pd.DataFrame): The dataframe containing OA data.
@@ -34,10 +56,10 @@ def create_base_data(
     """
 
     logger.info("Merging S2 data.")
-    base_data = oa.merge(s2_papers, on="id", how="left")
+    final_data = oa.merge(s2_papers, on="id", how="left")
     aggregated_s2_citations = _aggregate_citations(s2_citations)
-    base_data = base_data.merge(aggregated_s2_citations, on="id", how="left")
-    base_data = base_data.copy()
+    final_data = final_data.merge(aggregated_s2_citations, on="id", how="left")
+    final_data = final_data.copy()
     for column in [
         "s2_citation_count",
         "methodology_count",
@@ -45,22 +67,22 @@ def create_base_data(
         "background_count",
         "open_access_count",
     ]:
-        base_data.fillna({column: 0}, inplace=True)
-        base_data[column] = base_data[column].astype(int)
+        final_data.fillna({column: 0}, inplace=True)
+        final_data[column] = final_data[column].astype(int)
 
     logger.info("Merging PDF sectional data.")
     section_details = _aggregate_citation_sections(section_details)
-    base_data = base_data.merge(section_details, on="id", how="left")
-    base_data.fillna({"total_sections": 0}, inplace=True)
-    base_data["total_sections"] = base_data["total_sections"].astype(int)
-    base_data["section_counts"] = base_data["section_counts"].apply(
+    final_data = final_data.merge(section_details, on="id", how="left")
+    final_data.fillna({"total_sections": 0}, inplace=True)
+    final_data["total_sections"] = final_data["total_sections"].astype(int)
+    final_data["section_counts"] = final_data["section_counts"].apply(
         lambda x: x if isinstance(x, list) else []
     )
 
     logger.info("Merging diversity scores.")
-    base_data = base_data.merge(coauthor_diversity, on="id", how="left")
+    final_data = final_data.merge(coauthor_diversity, on="id", how="left")
     # relabel evenness to coauthor_evenness, same with variety, disparity
-    base_data.rename(
+    final_data.rename(
         columns={
             "evenness": "coauthor_evenness",
             "variety": "coauthor_variety",
@@ -68,8 +90,8 @@ def create_base_data(
         },
         inplace=True,
     )
-    base_data = base_data.merge(paper_diversity, on="id", how="left")
-    base_data.rename(
+    final_data = final_data.merge(paper_diversity, on="id", how="left")
+    final_data.rename(
         columns={
             "evenness": "paper_evenness",
             "variety": "paper_variety",
@@ -80,10 +102,10 @@ def create_base_data(
 
     logger.info("Merging GtR data.")
     gtr_oa_list = gtr_to_oa_map.groupby("id")["outcome_id"].apply(list).reset_index()
-    base_data = base_data.merge(gtr_oa_list, on="id", how="left")
-    base_data = base_data[base_data["outcome_id"].notnull()]
+    final_data = final_data.merge(gtr_oa_list, on="id", how="left")
+    final_data = final_data[final_data["outcome_id"].notnull()]
 
-    return base_data
+    return final_data
 
 
 def _aggregate_citations(citations: pd.DataFrame) -> pd.DataFrame:
