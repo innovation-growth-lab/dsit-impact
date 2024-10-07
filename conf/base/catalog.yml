@@ -231,15 +231,6 @@ oa.data_matching.gtr.combined.id.intermediate:
 oa.publications.gtr.primary:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/publications/main.parquet
-  load_args:
-    engine: pyarrow
-    columns:
-      - 'id'
-      - 'title'
-      - 'authorships'
-      - 'doi'
-      - 'cited_by_count'
-      - 'counts_by_year'
 
 oa.publications.gtr.map.primary:
   <<: *_pq
