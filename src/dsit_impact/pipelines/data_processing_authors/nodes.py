@@ -20,7 +20,7 @@ from typing import Sequence, Dict, Generator, Union
 import pandas as pd
 from joblib import Parallel, delayed
 
-from ..data_matching_oa.utils.oa import fetch_papers_for_id
+from ..data_collection_oa.utils.oa import fetch_papers_for_id
 
 
 logger = logging.getLogger(__name__)

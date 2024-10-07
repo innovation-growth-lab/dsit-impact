@@ -24,9 +24,12 @@ Usage:
 
 Command Line Example:
     ```
-    kedro run --pipeline data_matching_oa
+    kedro run --pipeline data_collection_oa
     ```
-
+    or
+    ```
+    kedro run --pipeline data_collection_oa --tags=first_search
+    ```
 """
 
 from kedro.pipeline import Pipeline, pipeline, node

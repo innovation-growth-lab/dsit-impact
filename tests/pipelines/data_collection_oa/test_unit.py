@@ -9,14 +9,14 @@ import pytest
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
-from dsit_impact.pipelines.data_matching_oa.nodes import (
+from dsit_impact.pipelines.data_collection_oa.nodes import (
     preprocess_publication_doi,
     create_list_doi_inputs,
     fetch_papers,
     concatenate_openalex
 )
 
-from dsit_impact.pipelines.data_matching_oa.utils.cr import get_doi
+from dsit_impact.pipelines.data_collection_oa.utils.cr import get_doi
 
 
 @pytest.fixture

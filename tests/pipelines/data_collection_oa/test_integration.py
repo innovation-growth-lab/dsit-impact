@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 import pytest
 
-from dsit_impact.pipelines.data_matching_oa.pipeline import (
+from dsit_impact.pipelines.data_collection_oa.pipeline import (
     create_pipeline as create_gtr_matching_oa_pipeline,
 )
 

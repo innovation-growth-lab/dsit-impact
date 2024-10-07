@@ -29,7 +29,7 @@ We evaluate the interdisciplinary nature of research teams using the methodology
 
 We use the Leiden CWTS topics taxonomy for discipline classification.
 
-## Expected Outcomes
+## Outcomes
 
 The project delivers:
 
@@ -52,7 +52,7 @@ In addition, environment variables are required to use S3 file repositories. See
 
 ### Getting started 
 
-Execute the desired pipeline using the command `kedro run --pipeline <pipeline_name>`. Replace `<pipeline_name>` with the name of the pipeline you want to run (e.g., `data_collection_gtr`).
+Execute the desired pipeline using the command `kedro run --pipeline <pipeline_name> -e base`. Replace `<pipeline_name>` with the name of the pipeline you want to run (e.g., `data_collection_gtr`).
 
 ## Project Structure
 
@@ -75,12 +75,12 @@ The `conf/` directory contains configuration files that define the parameters an
 - **conf/base/**: Contains the base configuration files for different data processing tasks.
   - **parameters_global.yml**: Global parameters shared across different pipelines.
   - **parameters_data_processing_authors.yml**: Configuration for processing author data.
-  - **parameters_data_analysis_team_metrics.yml**: Configuration for analysing team metrics.
   - **parameters_data_collection_gtr.yml**: Configuration for collecting data from GtR.
-  - **parameters_data_matching_oa.yml**: Configuration for matching datasets with OpenAlex.
+  - **parameters_data_collection_oa.yml**: Configuration for matching datasets with OpenAlex.
   - **parameters_data_collection_s2.yml**: Configuration for collecting data from Semantic Scholar.
-  - **catalog.yml**: Catalog file defining the data sources, datasets, and their respective locations.
   - **parameters_data_processing_pdfs.yml**: Configuration for processing PDF documents.
+  - **parameters_data_results_team_metrics.yml**: Configuration for analysing team metrics.
+  - **catalog.yml**: Catalog file defining the data sources, datasets, and their respective locations.
 
 ### Source Code Directory (`src/`)
 
@@ -89,37 +89,33 @@ The `src/` directory contains the core codebase of the project, organised into s
 - **dsit_impact/**: Main package containing the implementation of the data pipelines and utilities.
   - **pipeline_registry.py**: Registers and manages the data pipelines within the project.
   - **settings.py**: Configurations and settings for the Kedro project.
-  - **\_\_init\_\_.py** and **\_\_main\_\_.py**: Initialisation files for the package.
 
   #### Submodules:
 
   - **datasets/**: Contains modules for handling different types of datasets.
     - **pdf_dataset.py**: Module for processing PDF datasets.
-    - **\_\_init\_\_.py**: Initialisation file for the datasets package.
 
   - **pipelines/**: Contains the different data processing pipelines.
-    - **data_analysis_team_metrics/**: Pipeline for analysing interdisciplinary team metrics.
-      - **utils.py**, **pipeline.py**, **nodes.py**: Modules containing utilities, pipeline definitions, and data processing nodes.
-      - **\_\_pycache\_\_/**: Compiled Python files for performance optimisation.
-    
-    - **data_generation/**: Pipeline for generating final datasets for analysis.
-      - **pipeline.py**, **nodes.py**, **\_\_init\_\_.py**: Modules defining the data generation process.
-
     - **data_collection_gtr/**: Pipeline for collecting data from the Gateway to Research (GtR) API.
       - **utils.py**, **pipeline.py**, **nodes.py**: Modules defining the GtR data collection process.
 
-    - **data_matching_oa/**: Pipeline for matching datasets with OpenAlex.
-      - **utils/**: Utilities for matching OpenAlex datasets.
-      - **\_\_pycache\_\_/**: Compiled Python files.
-
-    - **data_processing_authors/**: Pipeline for processing author-related data.
-      - **pipeline.py**, **nodes.py**, **\_\_init\_\_.py**: Modules defining the data processing steps for author data.
+    - **data_collection_oa/**: Pipeline for matching datasets with OpenAlex.
+      - **utils/**, **pipeline.py**, **nodes.py**: Modules containing utilities, pipeline definitions, and data processing nodes.
 
     - **data_collection_s2/**: Pipeline for collecting data from Semantic Scholar (S2).
       - **utils.py**, **pipeline.py**, **nodes.py**: Modules defining the data collection process from S2.
 
+    - **data_processing_authors/**: Pipeline for processing author-related data.
+      - **pipeline.py**, **nodes.py**: Modules defining the data processing steps for author data.
+
     - **data_processing_pdfs/**: Pipeline for processing PDF documents.
       - **utils.py**, **pipeline.py**, **nodes.py**: Modules defining the PDF data processing steps.
+    
+    - **data_results_team_metrics/**: Pipeline for analysing interdisciplinary team metrics.
+      - **utils.py**, **pipeline.py**, **nodes.py**: Modules containing utilities, pipeline definitions, and data processing nodes.
+    
+    - **final_data_generation/**: Pipeline for generating final datasets for analysis.
+      - **pipeline.py**, **nodes.py**: Modules defining the data generation process.
 
 ### Kedro Framework Context
 

@@ -19,7 +19,7 @@ Usage:
 
 Command Line Example:
     ```
-    kedro run --pipeline data_analysis_team_metrics -e base
+    kedro run --pipeline data_results_team_metrics -e base
     ```
     or
     ```
