@@ -237,6 +237,7 @@ oa.publications.gtr.primary:
       - 'id'
       - 'title'
       - 'authorships'
+      - 'doi'
 
 oa.publications.gtr.map.primary:
   <<: *_pq

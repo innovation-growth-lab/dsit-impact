@@ -90,6 +90,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 name="oa.data_matching.gtr.concatenate_openalex",
             ),
         ],
+        tags="first_search",
     )
 
     cross_ref_matcher_pipeline = pipeline(
@@ -111,6 +112,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 name="concatenate_crossref",
             ),
         ],
+        tags="second_search",
     )
 
     oa_search_matcher_pipeline = pipeline(
@@ -138,6 +140,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 name="get_best_oa_match",
             ),
         ],
+        tags="second_search",
     )
 
     merge_pipeline = pipeline(
@@ -152,6 +155,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 name="select_better_match",
             )
         ],
+        tags="second_search",
     )
 
     oa_doi_collection_pipeline = pipeline(
@@ -224,7 +228,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                     "oa": "oa.data_matching.gtr.combined.id.intermediate",
                 },
                 outputs="oa.publications.gtr.primary",
-                name="concatenate_datasets",
+                name="generate_primary_gtr_oa_data",
             ),
             node(
                 func=map_outcome_id,
@@ -234,10 +238,10 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                     "rlu_outputs": "oa_search.data_matching.gtr.doi.combined.intermediate",
                 },
                 outputs="oa.publications.gtr.map.primary",
-                name="map_outcome_id",
+                name="map_outcome_ids_to_oa_papers",
             ),
         ],
-        tags=["second_search", "primary"],
+        tags=["primary_results"],
     )
 
     return (

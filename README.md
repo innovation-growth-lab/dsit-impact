@@ -21,7 +21,7 @@ Using Semantic Scholar’s API, we collect contextual citation information and c
 
 ### Development and Implementation of Interdisciplinary Metrics
 
-We evaluate the interdisciplinary nature of research teams using the methodology from Leydesdorff, Wagner, and Bornmann (2019). This includes:
+We evaluate the interdisciplinary nature of research teams using the methodology from Leydesdorff, Wagner, and Bornmann (2019, 2022b). This includes:
 
 - **Variety of Disciplines:** The diversity of disciplines the authors publish in.
 - **Balance:** The publishing behavior for each discipline.
@@ -46,7 +46,7 @@ In order to work with this package, you will need to clone it using git, and ins
 pip install -e .
 ```
 
-`requirements.txt` should contain all necessary libraries, but note that scipdf requires some changes in the source code, namely in the `parser.py` file to enable URL requests with no ".pdf" suffix. Note that scipdf requires both a spaCy language library as well as an instance of grobid to be running. See scipdf's [repository](https://github.com/titipata/scipdf_parser/tree/master) for instructions on how to do this.
+`requirements.txt` should contain all necessary libraries, but **note that** `scipdf` **requires some changes in the source code**, namely in the `parser.py` file to enable URL requests with no ".pdf" suffix. Additionally, `scipdf` requires both a spaCy language library as well as an instance of `grobid` to be running. See scipdf's [repository](https://github.com/titipata/scipdf_parser/tree/master) for instructions on how to do this.
 
 In addition, environment variables are required to use S3 file repositories. See kedro [documentation](https://docs.kedro.org/en/stable/configuration/credentials.html) for how to make a `credentials.yml` file.
 

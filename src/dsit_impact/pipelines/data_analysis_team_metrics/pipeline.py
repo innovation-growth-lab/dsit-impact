@@ -13,14 +13,6 @@ Pipelines:
     - calculate_diversity_scores_pipeline:
         Calculates paper and coauthor diversity scores for publications.
 
-Dependencies:
-    - Kedro
-    - pandas
-    - numpy
-    - scipy
-    - sentence-transformers
-    - logging
-
 Usage:
     Import the necessary functions and call them with appropriate arguments to compute 
     embeddings, distance matrices, and diversity components for your dataset.
@@ -61,7 +53,8 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 ],
                 name="compute_topic_embeddings",
             ),
-        ]
+        ],
+        tags="calculate_discipline_diversity_metrics",
     )
 
     author_aggregates_pipeline = pipeline(
@@ -77,6 +70,7 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
             )
             for level in ["topic", "subfield", "field", "domain"]
         ],
+        tags="calculate_discipline_diversity_metrics",
     )
 
     calculate_components_pipeline = pipeline(
@@ -92,6 +86,7 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
             )
             for level in ["topic", "subfield", "field", "domain"]
         ],
+        tags="calculate_discipline_diversity_metrics",
     )
 
     calculate_diversity_scores_pipeline = pipeline(
@@ -120,7 +115,7 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
             )
             for level in ["subfield", "field", "domain"]
         ],
-        tags=["data_analysis_team_metrics"],
+        tags="calculate_discipline_diversity_metrics",
     )
 
     return (

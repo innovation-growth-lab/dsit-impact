@@ -70,5 +70,6 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 outputs="s2.paper_details.intermediate",
                 name="concatenate_paper_partitions",
             ),
-        ]
+        ],
+        tags="enrich_s2_intent"
     )

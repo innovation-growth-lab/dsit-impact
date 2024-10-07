@@ -59,7 +59,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
                 outputs="pdfs.section_details.raw",
                 name="get_citation_sections",
             ),
-        ]
+        ],
+        tags="browser_pdf_citation_collection"
     )
 
     indirect_collection_pipeline = pipeline( # pylint: disable=unused-variable
@@ -70,7 +71,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
                 outputs="pdfs.objects.raw",
                 name="get_browser_pdfs",
             )
-        ]
+        ],
+        tags="discontinued_download_and_collect"
     )
 
     compute_section_shares_pipeline = pipeline(
@@ -83,7 +85,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
                 outputs="pdfs.section_shares.intermediate",
                 name="compute_section_shares",
             )
-        ]
+        ],
+        tags="browser_pdf_citation_collection"
     )
 
     return (
