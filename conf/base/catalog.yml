@@ -238,6 +238,8 @@ oa.publications.gtr.primary:
       - 'title'
       - 'authorships'
       - 'doi'
+      - 'cited_by_count'
+      - 'counts_by_year'
 
 oa.publications.gtr.map.primary:
   <<: *_pq
@@ -264,6 +266,8 @@ s2.citation_details.intermediate: &_s2_citation_details
       - 'doi'
       - 'mag_id'
       - 'pmid'
+      - 'intent'
+      - "is_open_access"
 
 s2.paper_details.intermediate:
   <<: *_pq

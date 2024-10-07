@@ -395,7 +395,7 @@ def concatenate_oa_datasets(**kwargs) -> pd.DataFrame:
     for df in kwargs.values():
         assert isinstance(df, pd.DataFrame), "All inputs must be dataframes"
     datasets = pd.concat([df for df in kwargs.values()], ignore_index=True)
-    datasets.drop_duplicates(subset=["id", "doi", "title"])
+    datasets.drop_duplicates(subset=["id", "doi", "title"], inplace=True)
     return datasets
 
 
