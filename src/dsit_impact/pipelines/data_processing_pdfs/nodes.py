@@ -191,6 +191,11 @@ def compute_section_shares(section_details: AbstractDataset) -> pd.DataFrame:
             [col for col in pivot_table.columns if col != "parent_id"]
         ].sum(axis=1)
 
+        # add the number of unique doi per parent_id
+        pivot_table["unique_dois"] = (
+            data.groupby("parent_id")["doi"].nunique().reset_index()["doi"]
+        )
+
         section_data.append(pivot_table)
 
     section_data = pd.concat(section_data, ignore_index=True)

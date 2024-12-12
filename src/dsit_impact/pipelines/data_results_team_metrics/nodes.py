@@ -236,23 +236,23 @@ def calculate_coauthor_diversity(
             columns 'id', 'variety', 'evenness', and 'disparity'.
     """
 
-    paper_data = publications[["id", "authorships", "publication_date"]].copy()
+    publications = publications[["id", "authorships", "publication_date"]].copy()
     # get all author ids
-    paper_data["authorships"] = paper_data["authorships"].apply(
+    publications["authorships"] = publications["authorships"].apply(
         lambda x: [author[0] for author in x] if x is not None else None
     )
 
     # prepare data for merge
-    paper_data = paper_data.explode("authorships")
-    paper_data["publication_date"] = pd.to_datetime(
-        paper_data["publication_date"]
+    publications = publications.explode("authorships")
+    publications["publication_date"] = pd.to_datetime(
+        publications["publication_date"]
     ).dt.year
-    paper_data.rename(
+    publications.rename(
         columns={"authorships": "author", "publication_date": "year"}, inplace=True
     )
 
     # Merge publications with authors on author ID
-    merged_df = paper_data.merge(authors, on=["author", "year"], how="left")
+    merged_df = publications.merge(authors, on=["author", "year"], how="left")
 
     # fillna with 0
     merged_df.fillna(0, inplace=True)
