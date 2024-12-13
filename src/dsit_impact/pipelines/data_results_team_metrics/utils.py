@@ -1,21 +1,27 @@
 """
-This script provides util functions to compute topic embeddings, distance matrices, and 
-diversity components for a given dataset.
+This script provides utility functions for computing topic embeddings, distance 
+matrices, and diversity components for a given dataset.
 
 Functions:
     - compute_distance_matrix(embeddings: np.ndarray, ids: list) -> pd.DataFrame:
-        Computes the distance matrix between embeddings and returns a normalised matrix.
-    - aggregate_embeddings_and_compute_matrix(data: pd.DataFrame, group_by_col: str, 
-        embeddings_col: str) -> pd.DataFrame:
-        Aggregates embeddings and computes a distance matrix based on the aggregated embeddings.
-    - _filter_digits(topics, level):
-        Filters digits from the topics based on the specified level.
-    - add_topic_columns(aggregated_df: pd.DataFrame) -> pd.DataFrame:
-        Adds columns for each unique topic in the 'topics' column of the aggregated DataFrame.
-    - aggregate_taxonomy_by_author_and_year(data: pd.DataFrame, level: int) -> pd.DataFrame:
-        Aggregates taxonomy level by author and year, and adds publication counts.
+        Computes the pairwise distance matrix between embeddings and normalises 
+        the matrix.
+    - aggregate_embeddings_and_compute_matrix(data: pd.DataFrame, group_by_col: 
+        str, embeddings_col: str) -> pd.DataFrame:
+        Groups data by a specified column, aggregates embeddings, and computes 
+        a distance matrix.
+    - _filter_single_list(topic, level):
+        Extracts the specified level from a nested list of topics.
+    - _compute_frequency_arrays(topic_counts: pd.DataFrame, author_counts: 
+        pd.DataFrame, topic_to_col: dict, n_topics: int) -> list:
+        Efficiently computes topic frequency arrays for author-year combinations.
+    - create_author_and_year_frequency(data: pd.DataFrame, level: int, cwts_data: 
+        pd.DataFrame) -> pd.DataFrame:
+        Aggregates taxonomy data by author and year and creates topic frequency 
+        arrays.
     - calculate_disparity(x_row: np.array, d: np.array) -> float:
-        Calculates the disparity between elements in the given array.
+        Calculates disparity as the average distance between elements in the 
+        given array based on a disparity matrix.
 
 Dependencies:
     - pandas
@@ -27,6 +33,7 @@ import re
 import pandas as pd
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
+
 
 def compute_distance_matrix(embeddings: np.ndarray, ids: list) -> pd.DataFrame:
     """
@@ -72,38 +79,49 @@ def aggregate_embeddings_and_compute_matrix(
     return compute_distance_matrix(np.array(aggregated_embeddings), ids)
 
 
-def _filter_digits(topics, level):
-    return [
-        digit
-        for sublist in topics
-        if sublist is not None
-        for item in sublist
-        if item is not None
-        for digit in re.findall(r"\d+", item[level])
-    ]
+def _filter_single_list(topic, level):
+    """Util function to parse out the "level"th position of nested lists"""
+    matches = re.findall(r"\d+", topic[level])
+    return int(matches[0]) if matches else np.nan
 
 
-def _add_topic_columns(aggregated_df: pd.DataFrame) -> pd.DataFrame:
+def _compute_frequency_arrays(topic_counts, author_counts, topic_to_col, n_topics):
     """
-    Adds columns for each unique topic in the 'topics' column of the aggregated DataFrame,
-    and populates each column with the count of occurrences of that topic.
+    Efficiently compute (n_topics,) dimensional frequency arrays for all author-year combinations.
 
     Args:
-        aggregated_df (pd.DataFrame): DataFrame with 'author', 'year', and 'topics' columns.
+        topic_counts (pd.DataFrame): DataFrame with columns: author, year, topic_id, frequency.
+        author_counts (pd.DataFrame): DataFrame with columns: author, year.
+        topic_to_col (dict): Mapping of topic IDs to column indices.
+        n_topics (int): Total number of unique topics.
 
     Returns:
-        pd.DataFrame: DataFrame with additional columns for each unique topic.
+        np.ndarray: Array of shape (n_author_years, n_topics), where each row is a topic frequency array.
     """
-    exploded_df = aggregated_df.explode("topics")
-    topic_dummies = pd.get_dummies(exploded_df["topics"])
-    topic_counts = topic_dummies.groupby(exploded_df.index).sum()
-    aggregated_df = pd.concat([aggregated_df, topic_counts], axis=1)
-    aggregated_df = aggregated_df.drop(columns=["topics"])
-    return aggregated_df
+    # map author-year combinations to row indices
+    author_year_map = {
+        tuple(row): i for i, row in author_counts[["author", "year"]].iterrows()
+    }
+    topic_counts["row_index"] = topic_counts.apply(
+        lambda row: author_year_map[(row["author"], row["year"])], axis=1
+    )
+
+    # map topic IDs to column indices
+    topic_counts["col_index"] = topic_counts["topic_id"].map(topic_to_col)
+
+    # initialise an empty array for all frequencies
+    frequency_matrix = np.zeros((len(author_counts), n_topics), dtype=int)
+
+    # populate the matrix
+    for _, row in topic_counts.iterrows():
+        frequency_matrix[row["row_index"], row["col_index"]] += row["frequency"]
+
+    # convert each row into a list of frequencies
+    return list(frequency_matrix)
 
 
-def aggregate_taxonomy_by_author_and_year(
-    data: pd.DataFrame, level: int
+def create_author_and_year_frequency(
+    data: pd.DataFrame, level: int, cwts_data: pd.DataFrame
 ) -> pd.DataFrame:
     """
     Aggregates taxonomy level by author and year, and adds publication counts.
@@ -112,41 +130,44 @@ def aggregate_taxonomy_by_author_and_year(
         df (pd.DataFrame): Input DataFrame with columns 'id', 'author', 'publication_date',
             and 'topics', where 'topics' is a list of dictionaries with keys 'topic', 'subfield',
             'field', and 'domain'.
+        level (int): The taxonomy level to aggregate by (0 for topic, 2 for subfield, 4 for field,
+            and 6 for domain).
 
     Returns:
         pd.DataFrame: DataFrame with 'author_id', 'year', 'topics', 'yearly_publication_count',
             and 'total_publication_count' aggregated.
     """
+
+    topic_to_col = {topic: i for i, topic in enumerate(sorted(cwts_data))}
+
+    # extract year
     data["year"] = pd.to_datetime(data["publication_date"]).dt.year
 
-    # drop duplicate id, author
-    data = data.drop_duplicates(subset=["id", "author"])
-
-    # aggregate topic level by author and year
-    aggregated = (
-        data.groupby(["author", "year"])["topics"]
-        .agg(lambda x: _filter_digits(x, level))
-        .reset_index()
+    # aggregate counts for authors
+    author_counts = (
+        data.groupby(["author", "year"]).agg(publications=("id", "count")).reset_index()
     )
 
-    # compute yearly publication counts and total publication counts
-    yearly_counts = (
-        data.groupby(["author", "year"])
+    # flatten topics and create frequency arrays
+    flattened_topics = (
+        data[["author", "year", "topics"]].explode("topics").dropna(subset=["topics"])
+    )
+    flattened_topics["topic_id"] = flattened_topics["topics"].apply(
+        lambda x: _filter_single_list(x, level)
+    )
+    topic_counts = (
+        flattened_topics.groupby(["author", "year", "topic_id"])
         .size()
-        .reset_index(name="yearly_publication_count")
-    )
-    total_counts = (
-        data.groupby("author").size().reset_index(name="total_publication_count")
+        .reset_index(name="frequency")
     )
 
-    # merge the counts with the aggregated DataFrame
-    aggregated = pd.merge(aggregated, yearly_counts, on=["author", "year"], how="left")
-    aggregated = pd.merge(aggregated, total_counts, on="author", how="left")
+    # create (n_topics,) frequency arrays
+    frequency_arrays = _compute_frequency_arrays(
+        topic_counts, author_counts, topic_to_col, len(cwts_data)
+    )
+    author_counts["frequency"] = frequency_arrays
 
-    # create columns for each unique topic
-    aggregated = _add_topic_columns(aggregated)
-
-    return aggregated
+    return author_counts
 
 
 def calculate_disparity(x_row: np.array, d: np.array) -> float:
