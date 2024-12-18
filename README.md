@@ -10,20 +10,20 @@ This project aims to enhance the impact and team science metrics of UKRI-funded 
 
 The core of the project involves linking GtR publication data with OpenAlex entries, even in the absence of DOIs. Our approach includes:
 
-1. **CrossRef API Utilisation:** Generating potential DOI matches using publication metadata.
+1. **CrossRef API:** Generating potential DOI matches using publication metadata.
 2. **OpenAlex Query Searches:** Systematic API searches on OpenAlex using metadata combinations and cosine similarity measures.
 
-These methods ensure robust additional labelling, improving coverage for subsequent analysis.
+These methods provide additional labelling, improving coverage for subsequent analysis.
 
-### Citation Intent and Section Identification
+### Citation intent and Section identification
 
 Using Semantic Scholar’s API, we collect contextual citation information and categorise citations based on intent. We complement this with data from open-access full-text publications tagged by OpenAlex or available through CORE. A classification model will be trained to identify citation intent, enhancing our understanding of the influence of UKRI-funded research.
 
-### Development and Implementation of Interdisciplinary Metrics
+### Development and implementation of interdisciplinary metrics
 
 We evaluate the interdisciplinary nature of research teams using the methodology from Leydesdorff, Wagner, and Bornmann (2019, 2022b). This includes:
 
-- **Variety of Disciplines:** The diversity of disciplines the authors publish in.
+- **Variety:** The diversity of disciplines the authors publish in.
 - **Balance:** The publishing behavior for each discipline.
 - **Disparity:** How different the disciplines are from each other.
 
@@ -46,7 +46,7 @@ In order to work with this package, you will need to clone it using git, and ins
 pip install -e .
 ```
 
-`requirements.txt` should contain all necessary libraries, but **note that** `scipdf` **requires some changes in the source code**, namely in the `parser.py` file to enable URL requests with no ".pdf" suffix. Additionally, `scipdf` requires both a spaCy language library as well as an instance of `grobid` to be running. See scipdf's [repository](https://github.com/titipata/scipdf_parser/tree/master) for instructions on how to do this.
+`requirements.txt` should contain all necessary libraries. `scipdf` requires both a spaCy language library as well as an instance of `GROBID` to be running. See scipdf's [repository](https://github.com/titipata/scipdf_parser/tree/master) for instructions on how to do this. The recommended use of `GROBID` is via its [lightweight image](https://hub.docker.com/r/lfoppiano/grobid/) in Docker. See the `GROBID` [documentation](https://grobid.readthedocs.io/en/latest/Grobid-docker/) for more information on how to set up a container for it. 
 
 In addition, environment variables are required to use S3 file repositories. See kedro [documentation](https://docs.kedro.org/en/stable/configuration/credentials.html) for how to make a `credentials.yml` file.
 
@@ -114,7 +114,7 @@ The `src/` directory contains the core codebase of the project, organised into s
     - **data_results_team_metrics/**: Pipeline for analysing interdisciplinary team metrics.
       - **utils.py**, **pipeline.py**, **nodes.py**: Modules containing utilities, pipeline definitions, and data processing nodes.
     
-    - **final_data_generation/**: Pipeline for generating final datasets for analysis.
+    - **final_data_generation/**: Pipeline for generating final datasets.
       - **pipeline.py**, **nodes.py**: Modules defining the data generation process.
 
 ### Kedro Framework Context
