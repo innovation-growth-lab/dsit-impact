@@ -18,7 +18,6 @@ from dsit_impact.pipelines.data_collection_oa.nodes import (
 
 from dsit_impact.pipelines.data_collection_oa.utils.cr import get_doi
 
-
 @pytest.fixture
 def params(project_context):
     """Get the parameters for the GtR API."""
@@ -27,9 +26,8 @@ def params(project_context):
 
 @pytest.fixture(scope="function")
 def gtr_data(project_context):
-    gtr_input_data = project_context.catalog.load("oa.data_matching.gtr.input")
-    gtr_sample_data = gtr_input_data.sample(100, random_state=42)
-    return gtr_sample_data
+    gtr_input_data = project_context.catalog.load("gtr.data_collection.publications.intermediate")
+    return gtr_input_data.sample(10, random_state=42)
 
 @pytest.fixture(scope="function")
 def session():

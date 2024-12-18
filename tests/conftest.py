@@ -26,7 +26,7 @@ def project_context(config_loader):
         project_path=Path.cwd(),
         config_loader=config_loader,
         hook_manager=_create_hook_manager(),
-        env="base",
+        env="local",
     )
 
 
