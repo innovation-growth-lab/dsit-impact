@@ -140,6 +140,7 @@
 _pq: &_pq
   type: pandas.ParquetDataset
   credentials: s3_credentials
+  filepath: None
   load_args:
     engine: pyarrow
 
@@ -157,6 +158,7 @@ _pq_ptd: &_pq_ptd
 _csv: &_csv
   type: pandas.CSVDataset
   credentials: s3_credentials
+  filepath: None
 
 _js_ptd: &_js_ptd
   type: partitions.PartitionedDataset
@@ -236,13 +238,44 @@ oa.publications.gtr.map.primary:
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/map/main.parquet
 
 # -> 8. S2 Intent Data:
-s2.citation_details.dec24:
-  <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/citation_details/dec24/
+s2.citation_details.oracle:
+  type: dsit_impact.datasets.partitioned_dataset.DefaultablePartitionedDataset
+  dataset: 
+    type: pandas.ParquetDataset
+    save_args:
+      engine: pyarrow
+    load_args:
+      engine: pyarrow
+  schema: 
+    id: string
+    pmid: int64
+    doi: string
+    mag_id: int64
+    is_open_access: bool
+    pdf_url: string
+    influential: bool
+    intent: string
+    context: string
+  filename_suffix: '.parquet'
+  credentials: s3_credentials
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/citation_details/
 
-s2.paper_details.dec24:
-  <<: *_pq_ptd
-  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/paper_details/dec24/
+s2.paper_details.oracle:
+  type: dsit_impact.datasets.partitioned_dataset.DefaultablePartitionedDataset
+  dataset: 
+    type: pandas.ParquetDataset
+    save_args:
+      engine: pyarrow
+    load_args:
+      engine: pyarrow
+  schema: 
+    id: string
+    influential: int64
+    is_open_access: bool
+    pdf_url: string
+  filename_suffix: '.parquet'
+  credentials: s3_credentials
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/paper_details/
 
 s2.citation_details.raw:
   <<: *_pq_ptd
@@ -252,7 +285,7 @@ s2.paper_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/paper_details/
 
-s2.citation_details.intermediate: &_s2_citation_details
+s2.citation_details.intermediate:
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/s2/citation_details/main.parquet
   load_args:
@@ -281,6 +314,26 @@ pdfs.objects.raw:
   dataset: dsit_impact.datasets.pdf_dataset.PdfDataset
   path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/pdfs/objects/
   credentials: s3_credentials
+
+pdfs.section_details.oracle:
+  type: dsit_impact.datasets.partitioned_dataset.DefaultablePartitionedDataset
+  dataset: 
+    type: pandas.ParquetDataset
+    save_args:
+      engine: pyarrow
+    load_args:
+      engine: pyarrow
+  schema: 
+    parent_id: string
+    doi: string
+    mag_id: int64
+    pmid: int64
+    section_index: int64
+    section_heading: string
+    main_section_heading: string
+  filename_suffix: '.parquet'
+  credentials: s3_credentials
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/pdfs/citation_sections/
 
 pdfs.section_details.raw:
   <<: *_pq_ptd

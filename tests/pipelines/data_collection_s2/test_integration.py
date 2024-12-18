@@ -20,16 +20,28 @@ def oa_input_data(project_context):
     oa_input_data = project_context.catalog.load("oa.publications.gtr.primary")
     return oa_input_data.sample(10, random_state=42)
 
+@pytest.fixture(scope="function")
+def oracle_citation_data(project_context):
+    return project_context.catalog.load("s2.citation_details.oracle")
+
+@pytest.fixture(scope="function")
+def oracle_paper_data(project_context):
+    return project_context.catalog.load("s2.paper_details.oracle")
+
 
 @pytest.fixture(scope="function")
 def catalog_data(
     catalog,
     oa_input_data,
+    oracle_citation_data,
+    oracle_paper_data,
     params,
 ):
     catalog.add_feed_dict(
         {
             "oa.publications.gtr.primary": oa_input_data,
+            "s2.citation_details.oracle": oracle_citation_data,
+            "s2.paper_details.oracle": oracle_paper_data,
             "params:s2.data_collection.strength.api.base_url": params["strength"][
                 "api"
             ]["base_url"],
@@ -65,7 +77,7 @@ def test_citation_pipeline(caplog, seq_runner, catalog_data):
 
     pipeline = (
         create_s2_collection_pipeline()
-        .from_nodes("get_s2_citation_data")
+        .from_nodes("get_unmatched_citations")
         .to_nodes("get_s2_citation_data")
     )
 
@@ -102,7 +114,7 @@ def test_citation_pipeline(caplog, seq_runner, catalog_data):
 def test_paper_details_pipeline(caplog, seq_runner, catalog_data):
     pipeline = (
         create_s2_collection_pipeline()
-        .from_nodes("get_s2_paper_data")
+        .from_nodes("get_unmatched_papers")
         .to_nodes("get_s2_paper_data")
     )
 

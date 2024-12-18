@@ -34,6 +34,7 @@ from .nodes import (
     get_citation_sections,
     preprocess_for_section_collection,
     compute_section_shares,
+    get_unparsed_pdfs
 )
 
 
@@ -50,17 +51,29 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
                 name="preprocess_for_section_collection",
             ),
             node(
+                func=get_unparsed_pdfs,
+                inputs={
+                    "incoming_data": "pdfs.section_details.preprocessed",
+                    "section_details": "pdfs.section_details.oracle",
+                },
+                outputs="pdfs.section_details.unparsed",
+                name="get_unparsed_pdfs",
+                tags=["test"]
+            ),
+            node(
                 func=get_citation_sections,
                 inputs={
-                    "dataset": "pdfs.section_details.preprocessed",
+                    "dataset": "pdfs.section_details.unparsed",
                     "main_sections": "params:pdfs.data_collection.main_sections",
                 },
                 outputs="pdfs.section_details.raw",
                 name="get_citation_sections",
+                tags=["test"]
             ),
         ],
         tags="browser_pdf_citation_collection"
     )
+
     compute_section_shares_pipeline = pipeline(
         [
             node(

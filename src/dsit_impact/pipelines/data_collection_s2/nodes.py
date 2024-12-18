@@ -21,6 +21,7 @@ Dependencies:
 
 import re
 import logging
+from datetime import datetime
 from typing import Sequence, Generator, Dict
 import pandas as pd
 from kedro.io import AbstractDataset
@@ -57,6 +58,7 @@ def get_citation_data(
     oa_dataset = oa_dataset.copy()
     oa_dataset = oa_dataset.drop_duplicates(subset="id")
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
+    day_timestamp = str(datetime.now().strftime("%y%m%d"))
 
     if filter_date is not None:
         # for left-censored updates, filter out older OA publications
@@ -79,7 +81,7 @@ def get_citation_data(
             perpage=perpage,
         )
         logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
-        yield {f"s{i}": processed_df}
+        yield {f"{day_timestamp}/s{i}": processed_df}
 
 
 def get_paper_data(
@@ -106,6 +108,7 @@ def get_paper_data(
     oa_dataset = oa_dataset.copy()
     oa_dataset = oa_dataset.drop_duplicates(subset="id")
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
+    day_timestamp = str(datetime.now().strftime("%y%m%d"))
 
     if filter_date is not None:
         # for left-censored updates, filter out older OA publications
@@ -124,7 +127,7 @@ def get_paper_data(
             oa_dataset=chunk, base_url=base_url, fields=fields, api_key=api_key
         )
         logger.info("Processed chunk %d / %d", i, len(dataset_chunks))
-        yield {f"s{i}": processed_df}
+        yield {f"{day_timestamp}/s{i}": processed_df}
 
 
 def concatenate_partitions(
@@ -156,3 +159,38 @@ def concatenate_partitions(
     concat_data = concat_data.drop_duplicates(subset=cols_to_use_for_dup, keep="first")
 
     return concat_data
+
+
+def get_unmatched_papers(
+    incoming_data: pd.DataFrame, s2_data: AbstractDataset, only_unparsed: bool = True
+) -> pd.DataFrame:
+    """
+    Get the unparsed papers from the incoming data.
+
+    Args:
+        incoming_data (pd.DataFrame): The incoming data.
+        s2_data (AbstractDataset): The Semantic Scholar dataset.
+        only_unparsed (bool, optional): Whether to return only the unparsed papers.
+            Defaults to True.
+
+    Returns:
+        pd.DataFrame: The unparsed papers.
+    """
+    parsed_papers = []
+    for i, loader in enumerate(s2_data.values()):
+        logger.info("Processing loader %d / %d", i, len(s2_data))
+        data = loader()
+        data = data.drop_duplicates(subset=["id"])
+        parsed_papers.append(data)
+
+    parsed_papers = pd.concat(parsed_papers, ignore_index=True)
+
+    # get the unparsed PDFs
+    if only_unparsed:
+        unparsed_papers = incoming_data[
+            ~incoming_data["id"].isin(parsed_papers["id"])
+        ]
+
+        return unparsed_papers
+
+    return incoming_data

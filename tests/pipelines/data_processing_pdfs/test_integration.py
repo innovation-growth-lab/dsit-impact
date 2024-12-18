@@ -27,18 +27,24 @@ def oa_input_data(project_context, s2_input_data):
     oa_input_data = project_context.catalog.load("oa.publications.gtr.primary")
     return oa_input_data.loc[oa_input_data["id"].isin(s2_input_data["id"])]
 
+@pytest.fixture(scope="function")
+def oracle_data(project_context):
+    return project_context.catalog.load("pdfs.section_details.oracle")
+
 
 @pytest.fixture(scope="function")
 def catalog_data(
     catalog,
     s2_input_data,
     oa_input_data,
+    oracle_data,
     params,
 ):
     catalog.add_feed_dict(
         {
             "s2.citation_details.intermediate": s2_input_data,
             "oa.publications.gtr.primary": oa_input_data,
+            "pdfs.section_details.oracle": oracle_data,
             "params:pdfs.data_collection.main_sections": params["data_collection"][
                 "main_sections"
             ],

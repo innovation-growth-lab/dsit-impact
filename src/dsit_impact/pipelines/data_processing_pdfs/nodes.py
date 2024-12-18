@@ -21,6 +21,7 @@ Dependencies:
 """
 
 import logging
+from datetime import datetime
 from typing import Sequence, Dict, Generator
 import pandas as pd
 from kedro.io import AbstractDataset
@@ -92,6 +93,9 @@ def get_citation_sections(
         dataset.iloc[i : i + 1_000] for i in range(0, len(dataset), 1_000)
     ]
 
+    # get a day timestamp
+    day_timestamp = str(datetime.now().strftime("%y%m%d"))
+
     for i, chunk in enumerate(dataset_chunks):
         logger.info("Processing chunk %d / %d", i, len(dataset_chunks))
         # get the PDF content
@@ -114,7 +118,10 @@ def get_citation_sections(
             ],
         )
 
-        yield {f"s{i}": processed_df}
+        # add the day timestamp as a column
+        processed_df["day_timestamp"] = day_timestamp
+
+        yield {f"{day_timestamp}/s{i}": processed_df}
 
 
 def compute_section_shares(section_details: AbstractDataset) -> pd.DataFrame:
@@ -154,6 +161,41 @@ def compute_section_shares(section_details: AbstractDataset) -> pd.DataFrame:
         section_data.append(pivot_table)
 
     section_data = pd.concat(section_data, ignore_index=True)
+
+    # if day_timestamp not in the column names, drop it
+    if "day_timestamp" not in section_data.columns:
+        section_data["day_timestamp"] = None
+
+    section_data = section_data.drop_duplicates(subset=["parent_id", "day_timestamp"])
     section_data = section_data.groupby("parent_id").sum().reset_index()
 
     return section_data
+
+
+def get_unparsed_pdfs(
+    incoming_data: pd.DataFrame, section_details: AbstractDataset
+) -> pd.DataFrame:
+    """
+    Retrieves the content of PDF files based on the provided dataset.
+
+    Args:
+        data (pd.DataFrame): The dataset containing the PDF URLs.
+
+    Returns:
+        pd.DataFrame: The dataset with the parsed PDF content.
+    """
+    parsed_pdfs = []
+    for i, loader in enumerate(section_details.values()):
+        logger.info("Processing loader %d / %d", i, len(section_details))
+        data = loader()
+        data = data.drop_duplicates(subset=["parent_id", "doi", "pmid", "mag_id"])
+        parsed_pdfs.append(data)
+
+    parsed_pdfs = pd.concat(parsed_pdfs, ignore_index=True)
+
+    # get the unparsed PDFs
+    unparsed_pdfs = incoming_data[
+        ~incoming_data["doi"].isin(parsed_pdfs["doi"])
+    ]
+
+    return unparsed_pdfs

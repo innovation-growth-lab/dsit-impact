@@ -22,4 +22,4 @@ s2:
           - isOpenAccess
           - openAccessPdf
           - influentialCitationCount
-
+    only_unparsed: True

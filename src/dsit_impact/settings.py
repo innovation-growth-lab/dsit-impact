@@ -4,7 +4,7 @@ https://kedro.readthedocs.io/en/stable/kedro_project_setup/settings.html."""
 
 CONFIG_LOADER_ARGS = {
     "base_env": "base",
-    "default_run_env": "local",
+    "default_run_env": "base",
     "config_patterns": {
         "parameters": ["parameters*", "parameters*/**", "**/parameters*"],
     }
