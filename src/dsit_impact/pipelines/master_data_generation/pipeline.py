@@ -20,7 +20,7 @@ Inputs:
     - paper_diversity: "publications.field.paper_diversity_scores.intermediate"
 
 Outputs:
-    - oa.publications.gtr.base.data: The final enriched dataset.
+    - oa.publications.gtr.master.data: The final enriched dataset.
 """
 from kedro.pipeline import Pipeline, pipeline, node
 from .nodes import create_master_dataset
@@ -42,7 +42,7 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                     "coauthor_diversity": "publications.subfield.coauthor_diversity_scores.intermediate", # pylint: disable=line-too-long
                     "paper_diversity": "publications.subfield.paper_diversity_scores.intermediate",
                 },
-                outputs="oa.publications.gtr.base.data",
+                outputs="oa.publications.gtr.master.data",
                 name="generate_master_enriched_data",
             )
         ]
