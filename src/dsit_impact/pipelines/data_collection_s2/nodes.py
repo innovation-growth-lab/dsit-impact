@@ -19,7 +19,8 @@ Dependencies:
     - kedro
 """
 
-import logging, re
+import re
+import logging
 from typing import Sequence, Generator, Dict
 import pandas as pd
 from kedro.io import AbstractDataset
