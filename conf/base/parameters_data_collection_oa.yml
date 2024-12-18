@@ -6,9 +6,16 @@
 
 oa:
   data_matching:
-    # API configuration
     api: &api
-      mailto: innovationgrowthlab@nesta.org.uk
+      # API configuration
+      mails:
+        - "david.ampudia@nesta.org.uk"
+        - "data_analytics@nesta.org.uk"
+        - "david.ampudia@bse.eu"
+        - "david.ampudia@upf.edu"
+        - "george.richardson@nesta.org.uk"
+        - "yanyan.leung@nesta.org.uk"
+        - "innovationgrowthlab@nesta.org.uk"
       perpage: "200"
     gtr:
       api: *api

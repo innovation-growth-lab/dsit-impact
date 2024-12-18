@@ -36,6 +36,7 @@ Dependencies:
 """
 
 import logging
+import random
 from typing import List, Dict, Union
 import re
 from html import unescape
@@ -125,6 +126,8 @@ def get_oa_match(
 
     display_titles = title if not chapter_title else chapter_title
     mailto = config["mailto"]
+
+    mailto = random.choice(config["mails"])
     candidate_outputs = []
     for candidate_title in display_titles:
         logger.info("Processing title: %s", candidate_title)

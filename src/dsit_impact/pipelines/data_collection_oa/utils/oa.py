@@ -176,6 +176,18 @@ def _works_generator(
     else:
         filter_string = f"{filter_criteria}:{oa_id}"
 
+
+    MAIL_TO_CANDIDATES = [
+        "david.ampudia@nesta.org.uk",
+        "data_analytics@nesta.org.uk",
+        "david.ampudia@bse.eu",
+        "david.ampudia@upf.edu",
+        "george.richardson@nesta.org.uk",
+        "yanyan.leung@nesta.org.uk"
+    ]
+    import random
+    mailto = random.choice(MAIL_TO_CANDIDATES)
+        
     if sample_size == -1:
         cursor_url = (
             f"https://api.openalex.org/works?filter={filter_string}"
@@ -299,6 +311,8 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                     "title",
                     "publication_date",
                     "cited_by_count",
+                    "fwci",
+                    "citation_normalized_percentile",
                     "counts_by_year",
                     "authorships",
                     "topics",

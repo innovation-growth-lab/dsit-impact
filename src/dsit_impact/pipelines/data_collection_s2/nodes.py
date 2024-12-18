@@ -18,7 +18,8 @@ Dependencies:
     - requests
     - kedro
 """
-import logging
+
+import logging, re
 from typing import Sequence, Generator, Dict
 import pandas as pd
 from kedro.io import AbstractDataset
@@ -33,6 +34,7 @@ def get_citation_data(
     fields: Sequence[str],
     api_key: str,
     perpage: int = 500,
+    filter_date: str = None,
 ) -> Generator:
     """
     Retrieves citation intent data from the GtR-OpenAlex dataset.
@@ -43,13 +45,22 @@ def get_citation_data(
         fields (List[str]): The fields to fetch from the API.
         api_key (str): The API key to use.
         perpage (int, optional): The number of citations to fetch per page.
+            Defaults to 500.
+        filter_date (str, optional): The date to filter the dataset by.
+            Defaults to None.
 
     Yields:
         Dict: A dictionary containing the processed citation dataframe.
 
     """
+    oa_dataset = oa_dataset.copy()
     oa_dataset = oa_dataset.drop_duplicates(subset="id")
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
+
+    if filter_date is not None:
+        # for left-censored updates, filter out older OA publications
+        assert re.match(r"\d{4}-\d{2}-\d{2}", filter_date)
+        oa_dataset = oa_dataset[oa_dataset["publication_date"] >= filter_date]
 
     # split the dataset into chunks of 10_000
     dataset_chunks = [
@@ -75,6 +86,7 @@ def get_paper_data(
     base_url: str,
     fields: Sequence[str],
     api_key: str,
+    filter_date: str = None,
 ) -> Generator:
     """
     Retrieves paper data from the Open Access dataset.
@@ -84,12 +96,20 @@ def get_paper_data(
         base_url (str): The base URL for the API.
         fields (Sequence[str]): The fields to retrieve from the API.
         api_key (str): The API key for authentication.
+        filter_date (str, optional): The date to filter the dataset by.
+            Defaults to None.
 
     Yields:
         Dict: A dictionary containing the processed paper dataframe.
     """
+    oa_dataset = oa_dataset.copy()
     oa_dataset = oa_dataset.drop_duplicates(subset="id")
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
+
+    if filter_date is not None:
+        # for left-censored updates, filter out older OA publications
+        assert re.match(r"\d{4}-\d{2}-\d{2}", filter_date)
+        oa_dataset = oa_dataset[oa_dataset["publication_date"] >= filter_date]
 
     # split the dataset into chunks of 10_000
     dataset_chunks = [
@@ -122,4 +142,17 @@ def concatenate_partitions(
     for i, dataset in enumerate(partitioned_dataset.values()):
         logger.info("Concatenating partition %d / %d", i + 1, len(partitioned_dataset))
         datasets.append(dataset())
-    return pd.concat(datasets, ignore_index=True)
+        if i > 7:
+            break
+    concat_data = pd.concat(datasets, ignore_index=True)
+
+    # drop duplicates based on id, doi, context
+    cols_to_use_for_dup = [
+        col for col in concat_data.columns if col in ["id", "doi", "context"]
+    ]
+
+    # sort values by influential to keep most up-to-date paper detail data
+    concat_data = concat_data.sort_values(by="influential", ascending=False)
+    concat_data = concat_data.drop_duplicates(subset=cols_to_use_for_dup, keep="first")
+
+    return concat_data

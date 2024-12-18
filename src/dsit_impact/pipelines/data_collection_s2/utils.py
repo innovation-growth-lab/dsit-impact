@@ -39,7 +39,6 @@ Dependencies:
     - requests.adapters.Retry
     - joblib
 """
-
 import logging
 from typing import Sequence, Dict, Union, List, Any
 import pandas as pd
@@ -73,7 +72,7 @@ def get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
         axis=1,
     ).tolist()
 
-    s2_outputs = Parallel(n_jobs=4, verbose=10)(
+    s2_outputs = Parallel(n_jobs=8, verbose=10)(
         delayed(iterate_citation_detail_points)(*input, direction="citations", **kwargs)
         for input in inputs
     )
@@ -185,12 +184,12 @@ def fetch_citation_details(
         f"fields={','.join(fields)}&offset={offset}&limit={perpage}"
     )
 
-    headers = {"X-API-KEY": api_key}
+    headers = {"x-api-key": api_key}
 
     session = requests.Session()
     retries = Retry(
-        total=5,
-        backoff_factor=0.3,
+        total=2,
+        backoff_factor=0.5,
         status_forcelist=[429, 500, 502, 503, 504],
     )
     session.mount("https://", HTTPAdapter(max_retries=retries))
@@ -210,6 +209,8 @@ def fetch_citation_details(
             f"{base_url}/{work_id}/{direction}?"
             f"fields={','.join(fields)}&offset={offset}&limit={perpage}"
         )
+
+        # time.sleep(random.uniform(0.25, 0.75))
 
     return data_list
 

@@ -1,5 +1,6 @@
 s2:
   data_collection:
+    filter_date: None
     strength:
       api:
         key: 4xdrZY4Ukp2YvjViW2jiT1wIjKCme2AXvQGWQJJi
