@@ -129,9 +129,9 @@
 #
 # 13. OA Final Data:
 #    - Generating the final OA data for GTR publications.
-#     13.1. Base Data:
+#     13.1. master Data:
 #         - Pipeline: data_generation
-#         - Dataset: oa.publications.gtr.base.data
+#         - Dataset: oa.publications.gtr.master.data
 #
 # Documentation for this file format can be found in "The Data Catalog":
 # https://docs.kedro.org/en/stable/data/data_catalog.html
@@ -352,6 +352,6 @@ cwts.topics.input:
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/publications/coauthor_diversity_scores/{level}.parquet
 
 # -> 13. OA Final Data:
-oa.publications.gtr.base.data:
+oa.publications.gtr.master.data:
   <<: *_pq
-  filepath: s3://igl-dsit-impact/03_publication_metrics/data/04_output/oa/base_data.parquet
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/04_output/oa/master_data.parquet

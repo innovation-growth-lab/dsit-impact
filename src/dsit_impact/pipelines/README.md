@@ -54,6 +54,13 @@ Analyses topics, author aggregates, and diversity metrics for UKRI-supported out
   - `cwts.topics.subfield.distance_matrix`
   - `publications.subfield.paper_diversity_scores.intermediate`
 
+### 7. Final Dataset Pipeline
+Generates the final enriched dataset by integrating outputs from all other pipelines.
+
+- **Purpose:** Combine data from GtR, Semantic Scholar, OpenAlex, PDF citation sections, and diversity metrics into a master dataset.
+- **Key Outputs:**
+  - `oa.publications.gtr.master.data`
+
 ---
 
 ## Usage
@@ -66,4 +73,6 @@ Use tags or nodes for more granular control of the execution process.
 
 ---
 
-<img src="https://www.innovationgrowthlab.org/sites/default/files/igl_logo.png" alt="GtR" style="width:100%;"/>
+<div style="text-align: center;">
+    <img src="https://www.innovationgrowthlab.org/sites/default/files/igl_logo.png" alt="GtR" style="width:60%;"/>
+</div>
