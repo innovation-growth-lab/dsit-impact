@@ -37,7 +37,6 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from kedro.io import AbstractDataset
 from .utils import (
-    compute_distance_matrix,
     aggregate_embeddings_and_compute_matrix,
     create_author_and_year_frequency,
     calculate_disparity,
@@ -49,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 def compute_topic_embeddings(
     cwts_data: pd.DataFrame,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Compute topic embeddings and distance matrices for topics, subfields, fields, and domains.
 
@@ -75,12 +74,6 @@ def compute_topic_embeddings(
 
     logger.info("Computing embeddings for topics")
     cwts_data["topic_embeddings"] = cwts_data["string_to_encode"].apply(encoder.encode)
-    embeddings = np.array(cwts_data["topic_embeddings"].tolist())
-
-    logger.info("Computing distance matrices for topics")
-    topic_distance_matrix = compute_distance_matrix(
-        embeddings, cwts_data["topic_id"].tolist()
-    )
 
     logger.info("Computing distance matrices for subfields, fields, and domains")
     subfield_distance_matrix = aggregate_embeddings_and_compute_matrix(
@@ -94,7 +87,6 @@ def compute_topic_embeddings(
     )
 
     return (
-        topic_distance_matrix,
         subfield_distance_matrix,
         field_distance_matrix,
         domain_distance_matrix,

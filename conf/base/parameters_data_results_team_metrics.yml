@@ -4,3 +4,6 @@ tm:
     subfield: 2
     field: 4
     domain: 6
+cumulative:
+  "true": True
+  "false": False

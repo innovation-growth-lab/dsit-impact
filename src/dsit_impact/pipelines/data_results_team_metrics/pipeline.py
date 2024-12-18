@@ -47,7 +47,6 @@ def create_pipeline(  # pylint: disable=unused-argument, missing-function-docstr
                 func=compute_topic_embeddings,
                 inputs={"cwts_data": "cwts.topics.input"},
                 outputs=[
-                    "cwts.topics.topic.distance_matrix",
                     "cwts.topics.subfield.distance_matrix",
                     "cwts.topics.field.distance_matrix",
                     "cwts.topics.domain.distance_matrix",
