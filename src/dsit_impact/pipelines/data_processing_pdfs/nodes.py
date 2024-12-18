@@ -13,28 +13,18 @@ Functions:
       in the given loaders.
 
 Dependencies:
-    - pandas: For data manipulation and analysis.
-    - joblib: For parallel processing.
-    - logging: For logging information.
-    - typing: For type hinting.
-    - kedro: For creating and managing data pipelines.
-    - utils: Contains utility functions `get_pdf_content` and
-      `get_browser_pdf_object`.
-
-Usage:
-    Import the functions and use them to preprocess data, retrieve PDF content,
-    and compute section shares.
-
-Command Line Example:
-    python nodes.py
+    - pandas
+    - logging
+    - typing
+    - kedro
+    - utils
 """
 
 import logging
 from typing import Sequence, Dict, Generator
 import pandas as pd
-from joblib import Parallel, delayed
 from kedro.io import AbstractDataset
-from .utils import get_pdf_content, get_browser_pdf_object
+from .utils import get_pdf_content
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +44,7 @@ def preprocess_for_section_collection(
     """
 
     s2_dataset.dropna(subset=["pdf_url"], inplace=True)
-    oa_dataset = oa_dataset.drop_duplicates(subset=["id", "title"])
+    oa_dataset = oa_dataset.drop_duplicates(subset=["id", "title"])[["id", "title"]]
     merged_data = pd.merge(oa_dataset, s2_dataset, on="id", how="right")
 
     # first groupby creates lists of context
@@ -125,41 +115,6 @@ def get_citation_sections(
         )
 
         yield {f"s{i}": processed_df}
-
-
-def get_browser_pdfs(dataset: pd.DataFrame):
-    """
-    Retrieves the content of PDF files based on the provided dataset.
-
-    Args:
-        dataset (pd.DataFrame): The dataset containing 'id', 'pdf_url',
-            'title', and 'context' columns.
-
-    Returns:
-        list: A list of paper sections extracted from the PDF files.
-    """
-    dataset = dataset[["doi", "mag_id", "pmid", "pdf_url"]].drop_duplicates()
-    dataset["combined_id"] = (
-        dataset["doi"].astype(str)
-        + "_"
-        + dataset["mag_id"].astype(str)
-        + "_"
-        + dataset["pmid"].astype(str)
-    )
-    inputs = dataset.apply(lambda x: [x["combined_id"], x["pdf_url"]], axis=1).tolist()
-    input_inner_batches = [inputs[i : i + 50] for i in range(0, len(inputs), 50)]
-    input_batches = [
-        input_inner_batches[i : i + 15] for i in range(0, len(input_inner_batches), 15)
-    ]
-    for i, batch in enumerate(input_batches):
-        logger.info("Processing batch %d / %d", i, len(input_batches))
-        pdfs = Parallel(n_jobs=10, verbose=10)(
-            delayed(get_browser_pdf_object)(input) for input in batch
-        )
-        # flatten
-        pdfs = [pdf for pdf_batch in pdfs for pdf in pdf_batch]
-        pdfs = [(filename, pdf) for filename, pdf in pdfs if isinstance(pdf, bytes)]
-        yield {f"s{i}": pdfs}
 
 
 def compute_section_shares(section_details: AbstractDataset) -> pd.DataFrame:

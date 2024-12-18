@@ -20,29 +20,18 @@ Functions:
 Dependencies:
     - pandas
     - scipdf
-    - fuzzywuzzy
     - numpy
-    - selenium
-    - tempfile
-    - os
-    - time
     - logging
     - joblib
 """
 
-import os
 import logging
 from typing import Sequence, Tuple, Dict, Union
-import time
-import tempfile
 import scipdf
 import pandas as pd
 import numpy as np
 from thefuzz import fuzz
 from joblib import Parallel, delayed
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
 
 logger = logging.getLogger(__name__)
 
@@ -231,73 +220,3 @@ def _parent_section_extraction(
     except Exception as e:  # pylint: disable=broad-except
         logger.error("Error processing sections for %s: %s", parent_title, e)
         return [[doi, mag_id, pmid, -2, "Error", "Error"]]
-
-
-def get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
-    """
-    Downloads a PDF file from a given URL using a headless Chrome browser.
-
-    Args:
-        combined_id (str): The combined ID of the PDF file.
-        url (pd.DataFrame): The URL of the PDF file to download.
-
-    Returns:
-        list: A list containing the combined ID and the content of the downloaded PDF file.
-              If an error occurs during the download, an empty string is returned instead
-              of the PDF content.
-    """
-    article_outputs = []
-    with tempfile.TemporaryDirectory() as tmp_download_path:
-        chrome_options = Options()
-        chrome_options.add_experimental_option(
-            "prefs",
-            {
-                "download.default_directory": tmp_download_path,
-                "download.prompt_for_download": False,  # Disable download prompt
-                "download.directory_upgrade": True,
-                "plugins.always_open_pdf_externally": True,  # Disable PDF viewer
-            },
-        )
-
-        driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(10)
-
-        for combined_id, url in articles:
-            try:
-                initial_files = set(os.listdir(tmp_download_path))
-                driver.get(url)  # url navigate triggers download
-
-                WebDriverWait(driver, 5).until(
-                    lambda driver: len(os.listdir(tmp_download_path))
-                    > len(initial_files)  # pylint: disable=cell-var-from-loop
-                )
-
-                start_time = time.time()
-                while True:
-                    time.sleep(0.25)  # polling interval
-                    current_files = set(os.listdir(tmp_download_path))
-                    new_files = current_files - initial_files
-                    new_files = {
-                        file
-                        for file in new_files
-                        if not file.endswith(".crdownload")
-                        and "IDSCOC" not in file
-                        and "google.chrome" not in file
-                    }
-                    if new_files or time.time() - start_time > 5:
-                        break
-                if not new_files:
-                    logger.error("Download timed out or failed for %s.", combined_id)
-                    continue
-
-                new_file = next(iter(new_files))
-                downloaded_file_path = os.path.join(tmp_download_path, new_file)
-                logger.info("Downloaded file for %s: %s", combined_id, new_file)
-                with open(downloaded_file_path, "rb") as file:
-                    pdf_content = file.read()
-                article_outputs.append((combined_id, pdf_content))
-            except Exception as e:  # pylint: disable=broad-except
-                logger.error("Error downloading PDF for %s: %s", combined_id, e)
-                continue
-        driver.quit()
-    return article_outputs

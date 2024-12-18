@@ -86,7 +86,6 @@ def fetch_author_papers(
         )
 
         logger.info("Concatenating author papers")
-        logger.info("Creating author column")
         author_df = []
         for paper_group in author_papers:
             author_df.append(pd.DataFrame(paper_group))
@@ -199,4 +198,8 @@ def _postprocess_results(
 
     logger.info("Exploding matched authors")
     dataframe = dataframe.explode("author")
+
+    logger.info("Dropping duplicates")
+    dataframe = dataframe.drop_duplicates(subset=["id", "author"])
+
     return dataframe[["id", "author", "publication_date", "topics"]]

@@ -33,13 +33,12 @@ from kedro.pipeline import Pipeline, pipeline, node
 from .nodes import (
     get_citation_sections,
     preprocess_for_section_collection,
-    get_browser_pdfs,
     compute_section_shares,
 )
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
-    direct_collection_pipeline = pipeline(
+    pdf_collection_pipeline = pipeline(
         [
             node(
                 func=preprocess_for_section_collection,
@@ -62,19 +61,6 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
         ],
         tags="browser_pdf_citation_collection"
     )
-
-    indirect_collection_pipeline = pipeline( # pylint: disable=unused-variable
-        [
-            node(
-                func=get_browser_pdfs,
-                inputs={"dataset": "pdfs.section_details.preprocessed"},
-                outputs="pdfs.objects.raw",
-                name="get_browser_pdfs",
-            )
-        ],
-        tags="discontinued_download_and_collect"
-    )
-
     compute_section_shares_pipeline = pipeline(
         [
             node(
@@ -90,7 +76,6 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=C0116, W0613
     )
 
     return (
-        direct_collection_pipeline
-        # + indirect_collection_pipeline
+        pdf_collection_pipeline
         + compute_section_shares_pipeline
     )
