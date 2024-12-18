@@ -142,8 +142,7 @@ def concatenate_partitions(
     for i, dataset in enumerate(partitioned_dataset.values()):
         logger.info("Concatenating partition %d / %d", i + 1, len(partitioned_dataset))
         datasets.append(dataset())
-        if i > 7:
-            break
+
     concat_data = pd.concat(datasets, ignore_index=True)
 
     # drop duplicates based on id, doi, context
