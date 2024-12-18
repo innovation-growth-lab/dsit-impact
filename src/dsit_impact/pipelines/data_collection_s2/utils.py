@@ -73,7 +73,7 @@ def get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
         axis=1,
     ).tolist()
 
-    s2_outputs = Parallel(n_jobs=8, verbose=10)(
+    s2_outputs = Parallel(n_jobs=4, verbose=10)(
         delayed(iterate_citation_detail_points)(*input, direction="citations", **kwargs)
         for input in inputs
     )
@@ -279,7 +279,7 @@ def get_paper_details(oa_dataset: pd.DataFrame, **kwargs):
         axis=1,
     ).tolist()
 
-    s2_outputs = Parallel(n_jobs=8, verbose=10)(
+    s2_outputs = Parallel(n_jobs=6, verbose=10)(
         delayed(iterate_paper_detail_points)(*input, **kwargs) for input in inputs
     )
 

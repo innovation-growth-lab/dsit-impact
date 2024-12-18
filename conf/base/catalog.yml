@@ -3,113 +3,138 @@
 # #### Matching OA to GTR ####
 #
 # 1. GTR Data Collection:
-#     1.1. Raw Publications - Pipeline: data_collection_gtr:
-#         - gtr.data_collection.publications.raw
-#     1.2. Intermediate Publications - Pipeline: data_collection_gtr:
-#         - gtr.data_collection.publications.intermediate
+#    - Collection of publication data from GTR.
+#    - Pipelines for processing raw and intermediate publications data.
+#     1.1. Raw Publications:
+#         - Pipeline: data_collection_gtr
+#         - Dataset: gtr.data_collection.publications.raw
+#     1.2. Intermediate Publications:
+#         - Pipeline: data_collection_gtr
+#         - Dataset: gtr.data_collection.publications.intermediate
 #
 # 2. OA Data Matching:
-#     2.1. OA data using GTR DOIs - Pipeline: data_matching_oa:
+#    - Matching OA data to GTR using DOIs.
+#     2.1. OA data using GTR DOIs:
+#         - Pipeline: data_matching_oa
 #         - Raw:
-#             - oa.data_matching.gtr.doi.raw
+#             - Dataset: oa.data_matching.gtr.doi.raw
 #         - Intermediate:
-#             - oa.data_matching.gtr.doi.intermediate
+#             - Dataset: oa.data_matching.gtr.doi.intermediate
 #
 # 3. CR Data Matching:
-#     3.1. CR DOI matches - Pipeline: data_matching_oa:
+#    - Matching CR DOIs to GTR publications.
+#     3.1. CR DOI matches:
+#         - Pipeline: data_matching_oa
 #         - Raw:
-#             - cr.data_matching.gtr.doi.raw
+#             - Dataset: cr.data_matching.gtr.doi.raw
 #         - Intermediate:
-#             - cr.data_matching.gtr.doi.intermediate
+#             - Dataset: cr.data_matching.gtr.doi.intermediate
 #
 # 4. OA Search (Reverse Lookup) Data Matching:
-#     4.1. Search non-DOI GTR publications - Pipeline: data_matching_oa:
+#    - Performing reverse lookup for non-DOI GTR publications in OA Search.
+#     4.1. Search non-DOI GTR publications:
+#         - Pipeline: data_matching_oa
 #         - Raw:
-#             - oa_search.data_matching.gtr.doi.raw
+#             - Dataset: oa_search.data_matching.gtr.doi.raw
 #         - Intermediate:
-#             - oa_search.data_matching.gtr.doi.intermediate
+#             - Dataset: oa_search.data_matching.gtr.doi.intermediate
 #         - Best Match:
-#             - oa_search.data_matching.gtr.doi.best_match.intermediate
+#             - Dataset: oa_search.data_matching.gtr.doi.best_match.intermediate
 #
 # 5. Combine non-DOI matches (CR and OA Search):
-#     5.1. Combined DOI matches - Pipeline: data_matching_oa:
-#         - Intermediate:
-#             - oa_search.data_matching.gtr.doi.combined.intermediate
+#    - Combining DOI matches from CR and OA Search for non-DOI GTR publications.
+#     5.1. Combined DOI matches:
+#         - Pipeline: data_matching_oa
+#         - Dataset: oa_search.data_matching.gtr.doi.combined.intermediate
 #
 # 6. OA Data Collection using DOI (CR) and OA ID (OA):
-#     6.1. Collection using DOI - Pipeline: data_matching_oa:
+#    - Collecting OA data using DOIs and OA IDs from CR and OA.
+#     6.1. Collection using DOI:
+#         - Pipeline: data_matching_oa
 #         - Raw:
-#             - oa.data_matching.gtr.combined.doi.raw
+#             - Dataset: oa.data_matching.gtr.combined.doi.raw
 #         - Intermediate:
-#             - oa.data_matching.gtr.combined.doi.intermediate
-#     6.2. Collection using OA ID - Pipeline: data_matching_oa:
+#             - Dataset: oa.data_matching.gtr.combined.doi.intermediate
+#     6.2. Collection using OA ID:
+#         - Pipeline: data_matching_oa
 #         - Raw:
-#             - oa.data_matching.gtr.combined.id.raw
+#             - Dataset: oa.data_matching.gtr.combined.id.raw
 #         - Intermediate:
-#             - oa.data_matching.gtr.combined.id.intermediate
+#             - Dataset: oa.data_matching.gtr.combined.id.intermediate
 #
 # 7. OA Publications:
-#     7.1. Primary - Pipeline: data_matching_oa:
-#         - oa.publications.gtr.primary
-#     7.2. Map back to GTR Publications - Pipeline: data_matching_oa:
-#         - oa.publications.gtr.map.primary
+#    - Mapping GTR publications to OA publications.
+#     7.1. Primary Publications:
+#         - Pipeline: data_matching_oa
+#         - Dataset: oa.publications.gtr.primary
+#     7.2. Map back to GTR Publications:
+#         - Pipeline: data_matching_oa
+#         - Dataset: oa.publications.gtr.map.primary
 #
 # #### Intent Metrics ####
 #
 # 8. S2 Intent Data:
-#     8.1. Raw - Pipeline: data_collection_s2:
-#         - Citation Details:
-#             - s2.citation_details.raw
-#         - Paper Details:
-#             - s2.paper_details.raw
-#     8.2. Intermediate - Pipeline: data_collection_s2:
-#         - Citation Details:
-#             - s2.citation_details.intermediate
-#         - Paper Details:
-#             - s2.paper_details.intermediate
+#    - Collecting and processing intent metrics from S2.
+#     8.1. Raw Data:
+#         - Pipeline: data_collection_s2
+#         - Citation Details Dataset: s2.citation_details.raw
+#         - Paper Details Dataset: s2.paper_details.raw
+#     8.2. Intermediate Data:
+#         - Pipeline: data_collection_s2
+#         - Citation Details Dataset: s2.citation_details.intermediate
+#         - Paper Details Dataset: s2.paper_details.intermediate
 #
 # 9. PDFs:
-#     9.1. Section Details - Pipeline: data_collection_pdfs:
-#         - preprocessed:
-#             - pdfs.section_details.preprocessed
-#         - Raw:
-#             - pdfs.section_details.raw
-#         - Intermediate:
-#             - pdfs.section_shares.intermediate
-#     9.2. Objects Raw - Pipeline: data_collection_pdfs:
-#         - pdfs.objects.raw
+#    - Collecting and processing PDF data.
+#     9.1. Section Details:
+#         - Pipeline: data_collection_pdfs
+#         - Preprocessed: pdfs.section_details.preprocessed
+#         - Raw: pdfs.section_details.raw
+#         - Intermediate: pdfs.section_shares.intermediate
+#     9.2. PDF Objects:
+#         - Pipeline: data_collection_pdfs
+#         - Raw Dataset: pdfs.objects.raw
 #
 # #### Team Science Metrics ####
 #
-# 10. Authors publication records:
-#     10.1. OA Collection - Pipeline: data_processing_authors:
-#         - Raw:
-#             - authors.oa_dataset.raw
-#     10.2. Aggregates Intermediate - Pipeline: data_processing_authors:
-#         - authors.{level}.aggregates.intermediate
-#     10.3. Diversity Components Intermediate - Pipeline: data_processing_authors:
-#         - authors.{level}.diversity_components.intermediate
+# 10. Authors' Publication Records:
+#    - Processing authors' publication datasets for diversity and aggregates.
+#     10.1. OA Collection:
+#         - Pipeline: data_processing_authors
+#         - Raw Dataset: authors.oa_dataset.raw
+#     10.2. Aggregates Intermediate:
+#         - Pipeline: data_processing_authors
+#         - Dataset: authors.{level}.aggregates.intermediate
+#     10.3. Diversity Components Intermediate:
+#         - Pipeline: data_processing_authors
+#         - Dataset: authors.{level}.diversity_components.intermediate
 #
 # 11. CWTS Topics:
-#     11.1. Input - Pipeline: data_analysis_team_metrics:
-#         - cwts.topics.input
-#     11.2. Distance Matrix - Pipeline: data_analysis_team_metrics:
-#         - cwts.topics.{level}.distance_matrix
+#    - Analysing and calculating CWTS topics and distance matrices.
+#     11.1. Input Data:
+#         - Pipeline: data_analysis_team_metrics
+#         - Dataset: cwts.topics.input
+#     11.2. Distance Matrices:
+#         - Pipeline: data_analysis_team_metrics
+#         - Dataset: cwts.topics.{level}.distance_matrix
 #
 # 12. Team Metric Scores:
-#     12.1. Paper Diversity Scores Intermediate - Pipeline: data_analysis_team_metrics:
-#         - publications.{level}.paper_diversity_scores.intermediate
-#     12.2. Coauthor Diversity Scores Intermediate - Pipeline: data_analysis_team_metrics:
-#         - publications.{level}.coauthor_diversity_scores.intermediate
+#    - Generating diversity scores for publications and coauthors.
+#     12.1. Paper Diversity Scores:
+#         - Pipeline: data_analysis_team_metrics
+#         - Dataset: publications.{level}.paper_diversity_scores.intermediate
+#     12.2. Coauthor Diversity Scores:
+#         - Pipeline: data_analysis_team_metrics
+#         - Dataset: publications.{level}.coauthor_diversity_scores.intermediate
 #
 # 13. OA Final Data:
-#     13.1. Base Data - Pipeline: data_generation:
-#         - oa.publications.gtr.base.data
+#    - Generating the final OA data for GTR publications.
+#     13.1. Base Data:
+#         - Pipeline: data_generation
+#         - Dataset: oa.publications.gtr.base.data
 #
-#
-# Documentation for this file format can be found in "The Data Catalog"
-# Link: https://docs.kedro.org/en/stable/data/data_catalog.html
-
+# Documentation for this file format can be found in "The Data Catalog":
+# https://docs.kedro.org/en/stable/data/data_catalog.html
 
 # -> 0. Global catalog variables:
 _js: &_js
@@ -237,6 +262,14 @@ oa.publications.gtr.map.primary:
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/03_primary/oa/gtr/map/main.parquet
 
 # -> 8. S2 Intent Data:
+s2.citation_details.dec24:
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/citation_details/dec24/
+
+s2.paper_details.dec24:
+  <<: *_pq_ptd
+  path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/paper_details/dec24/
+
 s2.citation_details.raw:
   <<: *_pq_ptd
   path: s3://igl-dsit-impact/03_publication_metrics/data/01_raw/s2/citation_details/
@@ -291,6 +324,10 @@ authors.oa_dataset.raw:
 "authors.{level}.aggregates.intermediate":
   <<: *_pq
   filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/authors/aggregates/{level}.parquet
+
+"authors.{level}.cumulative_aggregates.intermediate":
+  <<: *_pq
+  filepath: s3://igl-dsit-impact/03_publication_metrics/data/02_intermediate/authors/cumulative_aggregates/{level}.parquet
 
 "authors.{level}.diversity_components.intermediate":
   <<: *_pq
