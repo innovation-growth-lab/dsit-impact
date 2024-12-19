@@ -2,9 +2,9 @@
 
 This project enhances the analysis of UKRI-funded research by linking publication data from the Gateway to Research (GtR) database to OpenAlex, even in the absence of DOIs. It enriches citation data with contextual information and evaluates the interdisciplinary nature of research teams.
 
-<div style="text-align: center;">
+<p align="center">
     <img src="notebooks/handover_notebook_files/dsit_proj3_diagram.svg" alt="Diagram" style="width:75%;"/>
-</div>
+</p>
 
 ## Methodology
 
