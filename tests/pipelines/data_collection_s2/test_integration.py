@@ -18,7 +18,7 @@ def params(project_context):
 @pytest.fixture(scope="function")
 def oa_input_data(project_context):
     oa_input_data = project_context.catalog.load("oa.publications.gtr.primary")
-    return oa_input_data.sample(10, random_state=42)
+    return oa_input_data.sample(50, random_state=42)
 
 @pytest.fixture(scope="function")
 def oracle_citation_data(project_context):
@@ -114,6 +114,7 @@ def test_citation_pipeline(caplog, seq_runner, catalog_data):
 
 @pytest.mark.integration
 def test_paper_details_pipeline(caplog, seq_runner, catalog_data):
+
     pipeline = (
         create_s2_collection_pipeline()
         .from_nodes("get_unmatched_papers")

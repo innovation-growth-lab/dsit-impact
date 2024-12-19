@@ -29,7 +29,7 @@ def catalog_data(
     catalog.add_feed_dict(
         {
             "oa.publications.gtr.primary": oa_input_data,
-            "params:authors.api.mailto": params["api"]["mailto"],
+            "params:authors.api.mails": params["api"]["mails"],
             "params:authors.api.perpage": params["api"]["perpage"],
             "params:authors.filter_criteria": params["filter_criteria"],
         }

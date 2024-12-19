@@ -39,7 +39,7 @@ def create_pipeline(**kwargs) -> Pipeline: # pylint: disable=unused-argument, mi
                 func=fetch_author_papers,
                 inputs={
                     "authors": "author_list",
-                    "mailto": "params:authors.api.mailto",
+                    "mails": "params:authors.api.mails",
                     "perpage": "params:authors.api.perpage",
                     "filter_criteria": "params:authors.filter_criteria",
                 },

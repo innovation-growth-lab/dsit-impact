@@ -47,7 +47,7 @@ def create_author_list(
 
 def fetch_author_papers(
     authors: Sequence[str],
-    mailto: str,
+    mails: str,
     perpage: int,
     filter_criteria: Union[str, Sequence[str]],
 ) -> Generator[Dict[str, pd.DataFrame], None, None]:
@@ -76,7 +76,7 @@ def fetch_author_papers(
         author_papers = Parallel(n_jobs=8, verbose=10)(
             delayed(fetch_papers_for_id)(
                 oa_id=[publication_date, author_list],
-                mailto=mailto,
+                mails=mails,
                 perpage=perpage,
                 filter_criteria=filter_criteria,
                 sample_size=100 * len(author_list.split("|")),

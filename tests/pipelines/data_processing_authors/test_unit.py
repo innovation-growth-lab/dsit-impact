@@ -52,7 +52,7 @@ def catalog_data(
 ):
     catalog.add_feed_dict(
         {
-            "params:authors.api.mailto": params["api"]["mailto"],
+            "params:authors.api.mails": params["api"]["mails"],
             "params:authors.api.perpage": params["api"]["perpage"],
             "params:authors.filter_criteria": params["filter_criteria"],
         }
@@ -71,7 +71,7 @@ def test_authors_collection(author_dataset, catalog_data):
 
     result = fetch_author_papers(
         authors=catalog_data.load("author_list"),
-        mailto=catalog_data.load("params:authors.api.mailto"),
+        mails=catalog_data.load("params:authors.api.mails"),
         perpage=catalog_data.load("params:authors.api.perpage"),
         filter_criteria=catalog_data.load("params:authors.filter_criteria"),
     )

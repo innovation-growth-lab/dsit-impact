@@ -6,7 +6,14 @@
 
 authors:
   api:
-    mailto: data_analytics@nesta.org.uk
+    mails:
+      - "david.ampudia@nesta.org.uk"
+      - "data_analytics@nesta.org.uk"
+      - "david.ampudia@bse.eu"
+      - "david.ampudia@upf.edu"
+      - "george.richardson@nesta.org.uk"
+      - "yanyan.leung@nesta.org.uk"
+      - "innovationgrowthlab@nesta.org.uk"
     perpage: "200"
   filter_criteria:
     - "from_publication_date"

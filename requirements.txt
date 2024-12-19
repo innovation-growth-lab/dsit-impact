@@ -2,10 +2,11 @@ ipython>=8.10
 jupyterlab_server>=2.11.1
 jupyterlab~=3.0
 jupyter~=1.0
-kedro==0.19.6
+kedro==0.19.10
 kedro-telemetry>=0.3.1
 notebook
-kedro-datasets[pandas.CSVDataset, pandas.ExcelDataset, pandas.ParquetDataset, plotly.PlotlyDataset, plotly.JSONDataset, matplotlib.MatplotlibWriter]>=1.0
+kedro-datasets[pandas.CSVDataset, pandas.ExcelDataset, pandas.ParquetDataset, plotly.PlotlyDataset, plotly.JSONDataset, matplotlib.MatplotlibWriter, duckdb, ibis]>=1.0
+ibis-framework[duckdb]
 s3fs~=2024.6.0
 joblib~=1.4.2
 pandas~=2.2.2

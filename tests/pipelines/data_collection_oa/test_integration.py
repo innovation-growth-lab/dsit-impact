@@ -19,7 +19,7 @@ def gtr_data(project_context):
     gtr_input_data = project_context.catalog.load(
         "gtr.data_collection.publications.intermediate"
     )
-    return gtr_input_data.sample(10, random_state=42)
+    return gtr_input_data.sample(50, random_state=42)
 
 
 @pytest.fixture(scope="function")
@@ -27,7 +27,7 @@ def oa_first_data(project_context):
     oa_input_data = project_context.catalog.load(
         "oa.data_matching.gtr.doi.intermediate"
     )
-    return oa_input_data.sample(10, random_state=42)
+    return oa_input_data.sample(50, random_state=42)
 
 
 @pytest.fixture(scope="function")
@@ -35,7 +35,7 @@ def cr_rlu_candidates(project_context):
     cr_rlu_candidates = project_context.catalog.load(
         "cr.data_matching.gtr.doi.intermediate"
     )
-    return cr_rlu_candidates.sample(10, random_state=42)
+    return cr_rlu_candidates.sample(50, random_state=42)
 
 
 @pytest.fixture(scope="function")
@@ -43,7 +43,7 @@ def oa_rlu_candidates(project_context):
     oa_rlu_candidates = project_context.catalog.load(
         "oa_search.data_matching.gtr.doi.best_match.intermediate"
     )
-    return oa_rlu_candidates.sample(10, random_state=42)
+    return oa_rlu_candidates.sample(50, random_state=42)
 
 
 @pytest.fixture(scope="function")
@@ -121,7 +121,7 @@ def test_gtr_cr_rlu_collection_pipeline(caplog, catalog_data, seq_runner):
     caplog.set_level(logging.DEBUG, logger="kedro")
     successful_run_msg = "Pipeline execution completed successfully."
 
-    results = seq_runner.run(pipeline, catalog_data)
+    seq_runner.run(pipeline, catalog_data)
 
     assert successful_run_msg in caplog.text
 
@@ -137,7 +137,7 @@ def test_gtr_oa_rlu_collection_pipeline(caplog, catalog_data, seq_runner):
     caplog.set_level(logging.DEBUG, logger="kedro")
     successful_run_msg = "Pipeline execution completed successfully."
 
-    results = seq_runner.run(pipeline, catalog_data)
+    seq_runner.run(pipeline, catalog_data)
 
     assert successful_run_msg in caplog.text
 
@@ -153,6 +153,6 @@ def test_final_selection_pipeline(caplog, catalog_data, seq_runner):
     caplog.set_level(logging.DEBUG, logger="kedro")
     successful_run_msg = "Pipeline execution completed successfully."
 
-    results = seq_runner.run(pipeline, catalog_data)
+    seq_runner.run(pipeline, catalog_data)
 
     assert successful_run_msg in caplog.text

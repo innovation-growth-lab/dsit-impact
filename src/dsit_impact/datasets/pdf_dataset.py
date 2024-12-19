@@ -1,11 +1,16 @@
+"""Custom dataset for working with PDF files.
+
+Returns:
+    pymupdf.Document: The loaded PDF document.
+"""
 import io
+import logging
 from pathlib import PurePosixPath
 from typing import Any, Dict
 from kedro.io import AbstractDataset
 from kedro.io.core import get_filepath_str, get_protocol_and_path
 import fsspec
 import pymupdf
-import logging
 
 log = logging.getLogger(__name__)
 

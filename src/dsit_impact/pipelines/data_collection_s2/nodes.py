@@ -60,7 +60,7 @@ def get_citation_data(
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
     day_timestamp = str(datetime.now().strftime("%y%m%d"))
 
-    if filter_date is not "None":
+    if filter_date not in ("None", None):
         # for left-censored updates, filter out older OA publications
         assert re.match(r"\d{4}-\d{2}-\d{2}", filter_date)
         oa_dataset = oa_dataset[oa_dataset["publication_date"] >= filter_date]
@@ -110,7 +110,7 @@ def get_paper_data(
     oa_dataset["doi"] = oa_dataset["doi"].str.extract(r"(10\..+)")
     day_timestamp = str(datetime.now().strftime("%y%m%d"))
 
-    if filter_date is not "None":
+    if filter_date not in ("None", None):
         # for left-censored updates, filter out older OA publications
         assert re.match(r"\d{4}-\d{2}-\d{2}", filter_date)
         oa_dataset = oa_dataset[oa_dataset["publication_date"] >= filter_date]
