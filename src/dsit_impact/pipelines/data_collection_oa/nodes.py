@@ -10,10 +10,10 @@ Functions:
         with the OA filter module.
     create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
         Creates a list of DOI values from the GtR publication data.
-    fetch_papers(ids: Union[List[str], List[List[str]]], mailto: str, perpage: int, 
+    fetch_papers(ids: Union[List[str], List[List[str]]], mails: List[str], perpage: int, 
                  filter_criteria: Union[str, List[str]], parallel_jobs: int = 8) 
                  -> Dict[str, List[Callable]]:
-        Fetches papers based on the provided processed IDs, mailto, perpage, 
+        Fetches papers based on the provided processed IDs, mails, perpage, 
         filter criteria, and parallel jobs.
     concatenate_openalex(data: Dict[str, AbstractDataset]) -> pd.DataFrame:
         Loads and concatenates partitioned JSON datasets.
@@ -87,7 +87,7 @@ def create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
 
 def fetch_papers(
     ids: Union[List[str], List[List[str]]],
-    mailto: str,
+    mails: List[str],
     perpage: int,
     filter_criteria: Union[str, List[str]],
     parallel_jobs: int = 8,
@@ -98,7 +98,7 @@ def fetch_papers(
 
     Args:
         ids (Union[List[str], List[List[str]]]): The processed IDs of the papers to fetch.
-        mailto (str): The email address to use for fetching papers.
+        mails (List[str]): The email address to use for fetching papers.
         perpage (int): The number of papers to fetch per page.
         filter_criteria (Union[str, List[str]]): The filter criteria to apply when fetching papers.
         parallel_jobs (int, optional): The number of parallel jobs to use for fetching papers.
@@ -113,7 +113,7 @@ def fetch_papers(
     logger.info("Slicing data. Number of oa_id_chunks: %s", len(oa_id_chunks))
     return {
         f"s{str(i)}": lambda chunk=chunk: Parallel(n_jobs=parallel_jobs, verbose=10)(
-            delayed(fetch_papers_for_id)(oa_id, mailto, perpage, filter_criteria)
+            delayed(fetch_papers_for_id)(oa_id, mails, perpage, filter_criteria)
             for oa_id in chunk
         )
         for i, chunk in enumerate(oa_id_chunks)

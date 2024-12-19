@@ -42,6 +42,8 @@ def catalog_data(
             "oa.publications.gtr.primary": oa_input_data,
             "s2.citation_details.oracle": oracle_citation_data,
             "s2.paper_details.oracle": oracle_paper_data,
+            "params:s2.data_collection.only_unparsed": params["only_unparsed"],
+            "params:s2.data_collection.filter_date": params["filter_date"],
             "params:s2.data_collection.strength.api.base_url": params["strength"][
                 "api"
             ]["base_url"],

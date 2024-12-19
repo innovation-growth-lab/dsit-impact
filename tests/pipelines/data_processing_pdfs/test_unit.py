@@ -1,5 +1,5 @@
 # pylint: skip-file
-import logging
+from datetime import datetime
 import pandas as pd
 import pytest
 from kedro.io import MemoryDataset
@@ -186,10 +186,12 @@ def test_get_citation_sections(oa_input_data, s2_input_data, catalog_data):
 
     parse_result = next(result)
 
-    assert isinstance(parse_result["s0"], pd.DataFrame)
-    assert not parse_result["s0"].empty
+    day_datetime = datetime.now().strftime("%y%m%d")
+
+    assert isinstance(parse_result[f"{day_datetime}/s0"], pd.DataFrame)
+    assert not parse_result[f"{day_datetime}/s0"].empty
     assert all(
-        col in parse_result["s0"].columns
+        col in parse_result[f"{day_datetime}/s0"].columns
         for col in [
             "parent_id",
             "doi",
@@ -200,8 +202,8 @@ def test_get_citation_sections(oa_input_data, s2_input_data, catalog_data):
             "main_section_heading",
         ]
     )
-    assert parse_result["s0"].parent_id.nunique() <= 10
-    assert parse_result["s0"].parent_id.nunique() >= 3
+    assert parse_result[f"{day_datetime}/s0"].parent_id.nunique() <= 10
+    assert parse_result[f"{day_datetime}/s0"].parent_id.nunique() >= 3
 
 
 def test_compute_section_shares():

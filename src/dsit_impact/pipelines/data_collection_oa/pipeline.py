@@ -77,8 +77,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
             node(
                 func=fetch_papers,
                 inputs={
-                    "mailto": "params:oa.data_matching.gtr.api.mailto",
                     "perpage": "params:oa.data_matching.gtr.api.perpage",
+                    "mails": "params:oa.data_matching.gtr.api.mails",
                     "ids": "oa.data_matching.gtr.doi_list",
                     "filter_criteria": "params:oa.data_matching.gtr.filter_doi",
                     "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
@@ -172,8 +172,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
             node(
                 func=fetch_papers,
                 inputs={
-                    "mailto": "params:oa.data_matching.gtr.api.mailto",
                     "perpage": "params:oa.data_matching.gtr.api.perpage",
+                    "mails": "params:oa.data_matching.gtr.api.mails",
                     "ids": "doi_list",
                     "filter_criteria": "params:oa.data_matching.gtr.filter_doi",
                     "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",
@@ -202,8 +202,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
             node(
                 func=fetch_papers,
                 inputs={
-                    "mailto": "params:oa.data_matching.gtr.api.mailto",
                     "perpage": "params:oa.data_matching.gtr.api.perpage",
+                    "mails": "params:oa.data_matching.gtr.api.mails",
                     "ids": "oa_list",
                     "filter_criteria": "params:oa.data_matching.gtr.filter_oa",
                     "parallel_jobs": "params:oa.data_matching.gtr.n_jobs",

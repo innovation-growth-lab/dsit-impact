@@ -1,6 +1,7 @@
 s2:
   data_collection:
     filter_date: None
+    only_unparsed: True
     strength:
       api:
         key: 4xdrZY4Ukp2YvjViW2jiT1wIjKCme2AXvQGWQJJi
@@ -22,4 +23,3 @@ s2:
           - isOpenAccess
           - openAccessPdf
           - influentialCitationCount
-    only_unparsed: True

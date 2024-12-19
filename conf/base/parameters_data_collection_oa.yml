@@ -16,6 +16,7 @@ oa:
         - "george.richardson@nesta.org.uk"
         - "yanyan.leung@nesta.org.uk"
         - "innovationgrowthlab@nesta.org.uk"
+      mailto: "innovationgrowthlab@nesta.org.uk"
       perpage: "200"
     gtr:
       api: *api

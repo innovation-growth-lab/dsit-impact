@@ -61,7 +61,7 @@ def catalog_data(
             "oa.data_matching.gtr.doi.intermediate": oa_first_data,
             "cr.data_matching.gtr.doi.intermediate": cr_rlu_candidates,
             "oa_search.data_matching.gtr.doi.best_match.intermediate": oa_rlu_candidates,
-            "params:oa.data_matching.gtr.api.mailto": params["api"]["mailto"],
+            "params:oa.data_matching.gtr.api.mails": params["api"]["mails"],
             "params:oa.data_matching.gtr.api.perpage": params["api"]["perpage"],
             "params:oa.data_matching.gtr.n_jobs": 2,
             "params:oa.data_matching.gtr.filter_doi": params["filter_doi"],

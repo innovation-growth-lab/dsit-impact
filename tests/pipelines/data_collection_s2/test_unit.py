@@ -1,4 +1,5 @@
 # pylint: skip-file
+from datetime import datetime
 import pandas as pd
 import pytest
 from unittest.mock import patch
@@ -117,11 +118,13 @@ def test_get_citation_data(oa_dataset, catalog_data):
         )
     )
 
+    day_datetime = datetime.now().strftime("%y%m%d")
+
     assert len(result) == 1
-    assert "s0" in result[0]
-    assert isinstance(result[0]["s0"], pd.DataFrame)
+    assert f"{day_datetime}/s0" in result[0]
+    assert isinstance(result[0][f"{day_datetime}/s0"], pd.DataFrame)
     assert all(
-        col in result[0]["s0"].columns
+        col in result[0][f"{day_datetime}/s0"].columns
         for col in [
             "id",
             "pmid",
@@ -153,10 +156,12 @@ def test_get_paper_data(oa_dataset, catalog_data):
         )
     )
 
+    day_datetime = datetime.now().strftime("%y%m%d")
+
     assert len(result) == 1
-    assert "s0" in result[0]
-    assert isinstance(result[0]["s0"], pd.DataFrame)
+    assert f"{day_datetime}/s0" in result[0]
+    assert isinstance(result[0][f"{day_datetime}/s0"], pd.DataFrame)
     assert all(
-        col in result[0]["s0"].columns
+        col in result[0][f"{day_datetime}/s0"].columns
         for col in ["id", "influential", "is_open_access", "pdf_url"]
     )

@@ -82,7 +82,7 @@ def test_fetch_papers(gtr_data, params):
 
     papers = fetch_papers(
         ids=doi_list,
-        mailto=params["api"]["mailto"],
+        mails=params["api"]["mails"],
         perpage=params["api"]["perpage"],
         filter_criteria=params["filter_doi"],
         parallel_jobs=params["n_jobs"],
@@ -101,7 +101,7 @@ def test_concatenate_openalex(gtr_data, params):
 
     papers = fetch_papers(
         ids=doi_list,
-        mailto=params["api"]["mailto"],
+        mails=params["api"]["mails"],
         perpage=params["api"]["perpage"],
         filter_criteria=params["filter_doi"],
         parallel_jobs=params["n_jobs"],

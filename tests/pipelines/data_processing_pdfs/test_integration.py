@@ -1,5 +1,6 @@
 # pylint: skip-file
 import logging
+from datetime import datetime
 import pandas as pd
 import pytest
 from kedro.io import MemoryDataset
@@ -79,10 +80,11 @@ def test_pdf_collection_pipeline(caplog, seq_runner, catalog_data):
     # assert code ran successfully
     assert successful_run_msg in caplog.text
 
+    day_datetime = datetime.now().strftime("%y%m%d")
     pdf_sections = results["pdfs.section_details.raw"]
-    assert isinstance(pdf_sections["s0"], pd.DataFrame)
+    assert isinstance(pdf_sections[f"{day_datetime}/s0"], pd.DataFrame)
     assert all(
-        col in pdf_sections["s0"].columns
+        col in pdf_sections[f"{day_datetime}/s0"].columns
         for col in [
             "parent_id",
             "doi",
