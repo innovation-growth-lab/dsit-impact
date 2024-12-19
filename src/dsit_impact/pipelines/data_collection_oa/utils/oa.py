@@ -105,6 +105,10 @@ def _parse_results(
             "abstract": _revert_abstract_index(
                 paper.get("abstract_inverted_index", {})
             ),
+            "fwci": paper.get("fwci", ""),
+            "citation_normalized_percentile": paper.get(
+                "citation_normalized_percentile", []
+            ),
             "authorships": paper.get("authorships", []),
             "cited_by_count": paper.get("cited_by_count", ""),
             "concepts": paper.get("concepts", []),

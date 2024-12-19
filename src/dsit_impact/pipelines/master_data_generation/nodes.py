@@ -100,6 +100,17 @@ def create_master_dataset(
         inplace=True,
     )
 
+    # Coerce values higher than 1 to 1
+    columns_to_clip = [
+        "coauthor_evenness",
+        "coauthor_variety",
+        "coauthor_disparity",
+        "paper_evenness",
+        "paper_variety",
+        "paper_disparity",
+    ]
+    master_data[columns_to_clip] = master_data[columns_to_clip].clip(upper=1)
+
     logger.info("Merging GtR data.")
     gtr_oa_list = gtr_to_oa_map.groupby("id")["outcome_id"].apply(list).reset_index()
     master_data = master_data.merge(gtr_oa_list, on="id", how="left")

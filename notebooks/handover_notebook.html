@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="David Ampudia Vicente">
+<meta name="dcterms.date" content="2024-12-19">
+
+<title>Handover Notebook</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="handover_notebook_files/libs/clipboard/clipboard.min.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/quarto.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/popper.min.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/anchor.min.js"></script>
+<link href="handover_notebook_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="handover_notebook_files/libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="handover_notebook_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="handover_notebook_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="handover_notebook_files/libs/bootstrap/bootstrap-de5f75ba0e9a74f6dd9045a57a301c09.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sections" id="toc-sections" class="nav-link active" data-scroll-target="#sections">Sections:</a></li>
+  <li><a href="#preliminary-steps" id="toc-preliminary-steps" class="nav-link" data-scroll-target="#preliminary-steps">0. Preliminary steps</a>
+  <ul class="collapse">
+  <li><a href="#setting-up-the-kedro-environment" id="toc-setting-up-the-kedro-environment" class="nav-link" data-scroll-target="#setting-up-the-kedro-environment">0.1. Setting up the Kedro environment</a></li>
+  <li><a href="#exploring-and-interacting-with-the-data-catalog" id="toc-exploring-and-interacting-with-the-data-catalog" class="nav-link" data-scroll-target="#exploring-and-interacting-with-the-data-catalog">0.2. Exploring and interacting with the data catalog</a></li>
+  </ul></li>
+  <li><a href="#data-collection-and-enrichment" id="toc-data-collection-and-enrichment" class="nav-link" data-scroll-target="#data-collection-and-enrichment">1. Data Collection and enrichment</a>
+  <ul class="collapse">
+  <li><a href="#fetching-gtr-data" id="toc-fetching-gtr-data" class="nav-link" data-scroll-target="#fetching-gtr-data">1.1 Fetching GtR Data</a></li>
+  <li><a href="#initial-matching-with-openalex" id="toc-initial-matching-with-openalex" class="nav-link" data-scroll-target="#initial-matching-with-openalex">1.2 Initial matching with OpenAlex</a></li>
+  <li><a href="#second-matching-with-openalex-and-crossref" id="toc-second-matching-with-openalex-and-crossref" class="nav-link" data-scroll-target="#second-matching-with-openalex-and-crossref">1.3 Second matching with OpenAlex and CrossRef</a></li>
+  </ul></li>
+  <li><a href="#citation-intent-and-section-identification" id="toc-citation-intent-and-section-identification" class="nav-link" data-scroll-target="#citation-intent-and-section-identification">2. Citation intent and section identification</a>
+  <ul class="collapse">
+  <li><a href="#citation-intent-and-influence-using-semantic-scholar" id="toc-citation-intent-and-influence-using-semantic-scholar" class="nav-link" data-scroll-target="#citation-intent-and-influence-using-semantic-scholar">2.1. Citation Intent and Influence using Semantic Scholar</a></li>
+  <li><a href="#parsing-pdf-content" id="toc-parsing-pdf-content" class="nav-link" data-scroll-target="#parsing-pdf-content">2.2 Parsing PDF Content</a></li>
+  </ul></li>
+  <li><a href="#diversity-metrics-from-topics-and-team-composition" id="toc-diversity-metrics-from-topics-and-team-composition" class="nav-link" data-scroll-target="#diversity-metrics-from-topics-and-team-composition">3. Diversity Metrics from Topics and Team Composition</a>
+  <ul class="collapse">
+  <li><a href="#collecting-author-and-topic-data" id="toc-collecting-author-and-topic-data" class="nav-link" data-scroll-target="#collecting-author-and-topic-data">3.1 Collecting Author and Topic Data</a></li>
+  <li><a href="#aggregating-co-author-topics" id="toc-aggregating-co-author-topics" class="nav-link" data-scroll-target="#aggregating-co-author-topics">3.2 Aggregating Co-Author Topics</a></li>
+  <li><a href="#calculating-diversity-metrics" id="toc-calculating-diversity-metrics" class="nav-link" data-scroll-target="#calculating-diversity-metrics">3.3 Calculating Diversity Metrics</a></li>
+  </ul></li>
+  <li><a href="#master-dataset-generation" id="toc-master-dataset-generation" class="nav-link" data-scroll-target="#master-dataset-generation">4. Master Dataset Generation</a>
+  <ul class="collapse">
+  <li><a href="#merging-data-from-multiple-sources" id="toc-merging-data-from-multiple-sources" class="nav-link" data-scroll-target="#merging-data-from-multiple-sources">4.1 Merging Data from Multiple Sources</a></li>
+  <li><a href="#applications-of-the-master-dataset" id="toc-applications-of-the-master-dataset" class="nav-link" data-scroll-target="#applications-of-the-master-dataset">4.2 Applications of the Master Dataset</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Handover Notebook</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>David Ampudia Vicente </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 19, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="cell-1" class="cell" data-execution_count="101">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> percentileofscore</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This notebook serves as a handover guide for understanding and interacting with the project’s key processes, which enrich and analyse UKRI-funded research publication data. The notebook is divided into sections corresponding to key steps in the pipeline:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handover_notebook_files/dsit_proj3_diagram.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+<section id="sections" class="level3">
+<h3 class="anchored" data-anchor-id="sections">Sections:</h3>
+<ol type="1">
+<li><strong>Data Collection and Enrichment</strong>:
+<ul>
+<li>Reverse DOI lookups and OpenAlex matching.</li>
+<li>Improving metadata coverage for publications from Gateway to Research (GtR).</li>
+</ul></li>
+<li><strong>Citation Intent and PDF Content Parsing</strong>:
+<ul>
+<li>Extracting citation intents using Semantic Scholar data, and parse PDFs.</li>
+<li>Understanding the relationship between citation contexts and research impact.</li>
+</ul></li>
+<li><strong>Diversity and Collaboration Metrics</strong>:
+<ul>
+<li>Exploring the interdisciplinary nature of research teams.</li>
+<li>Using diversity metrics to evaluate team composition and its association with research outcomes.</li>
+</ul></li>
+</ol>
+<hr>
+</section>
+<section id="preliminary-steps" class="level2">
+<h2 class="anchored" data-anchor-id="preliminary-steps">0. Preliminary steps</h2>
+<section id="setting-up-the-kedro-environment" class="level3">
+<h3 class="anchored" data-anchor-id="setting-up-the-kedro-environment">0.1. Setting up the Kedro environment</h3>
+<p>Before exploring these processes, we’ll ensure the Kedro environment is loaded and ready for interaction.</p>
+<div id="cell-4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Kedro extensions</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>load_ext kedro.ipython</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Reload the Kedro context</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>reload_kedro</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="exploring-and-interacting-with-the-data-catalog" class="level3">
+<h3 class="anchored" data-anchor-id="exploring-and-interacting-with-the-data-catalog">0.2. Exploring and interacting with the data catalog</h3>
+<p>Kedro’s Data Catalog is the central hub for managing project datasets. In this section, we’ll list a handful of available datasets, inspect their metadata, and load a sample dataset to get started.</p>
+<p>You can always refer to <code>conf/base/catalog.yml</code> to find more about each of the elements in the catalog, including the file path, and database credentials.</p>
+<section id="listing-available-datasets" class="level4">
+<h4 class="anchored" data-anchor-id="listing-available-datasets">0.2.1 Listing available datasets</h4>
+<div id="cell-6" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># List all datasets available in the catalog</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>catalog.<span class="bu">list</span>()[:<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-bold">[</span>
+    <span class="ansi-green-fg">'gtr.data_collection.publications.raw'</span>,
+    <span class="ansi-green-fg">'gtr.data_collection.publications.intermediate'</span>,
+    <span class="ansi-green-fg">'oa.data_matching.gtr.doi.raw'</span>,
+    <span class="ansi-green-fg">'oa.data_matching.gtr.doi.intermediate'</span>,
+    <span class="ansi-green-fg">'cr.data_matching.gtr.doi.raw'</span>
+<span class="ansi-bold">]</span></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="loading-and-previewing-a-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="loading-and-previewing-a-dataset">0.2.2 Loading and previewing a dataset</h4>
+<p>The primary method for loading datasets in Kedro is via <code>catalog.load()</code>. However, Kedro pipelines do not require users to explicitly load datasets. Instead, transformation operations are defined in <code>nodes</code> (self-contained functions), and the <code>pipeline</code> automatically fetches and loads the required elements from the catalog, matching the argument names in the <code>nodes</code>.</p>
+<div id="cell-8" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the GtR publications dataset</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>gtr_data <span class="op">=</span> catalog.load(<span class="st">"oa.publications.gtr.map.primary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This repository supports various approaches to storing data, with Parquet files being the most commonly used format. For instance, the <code>gtr_data</code> object we just loaded is stored as a Parquet file.</p>
+<div id="cell-10" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>gtr_data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">outcome_id</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">doi</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1A455359-E3E1-4BD0-83A8-F45ADEB1616F</td>
+<td>W2104199131</td>
+<td>10.18637/jss.v045.i05</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0326D8C4-7E7F-4EA3-8956-BC238BA159D6</td>
+<td>W2955962623</td>
+<td>10.1002/sia.6681</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>036EE6D9-9151-4587-8E6C-8B90B27CC0A7</td>
+<td>W4300594366</td>
+<td>10.1073/pnas.2206885119</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1ADB6934-CA45-49B3-896B-6EF0F2463CC3</td>
+<td>W2947461406</td>
+<td>10.48550/arxiv.1902.10486</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1AF3DF51-985B-4236-B4FD-1969847FE8B2</td>
+<td>W2772579088</td>
+<td>10.1590/1516-3180.2017.0174100917</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Additionally, the project uses <a href="https://docs.kedro.org/projects/kedro-datasets/en/kedro-datasets-6.0.0/api/kedro_datasets.partitions.PartitionedDataset.html">partitioned Parquet datasets</a>, which enable operations to be broken down into manageable chunks. Partitioned datasets are stored as dictionaries, where: - <strong>Keys</strong> correspond to chunk IDs (often combining a slice ID and a timestamp). - <strong>Values</strong> reference individual Parquet files for each chunk.</p>
+<div id="cell-12" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the partitioned raw GtR object</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>gtr_data_ptd <span class="op">=</span> catalog.load(<span class="st">"gtr.data_collection.publications.raw"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-13" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first key, value pair</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>first_key <span class="op">=</span> <span class="bu">list</span>(gtr_data_ptd.keys())[<span class="dv">0</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>first_value <span class="op">=</span> gtr_data_ptd[first_key]()</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Key: </span><span class="sc">{</span>first_key<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>first_value.head(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Key: p1</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">project_id</th>
+<th data-quarto-table-cell-role="th">outcome_id</th>
+<th data-quarto-table-cell-role="th">pubMedId</th>
+<th data-quarto-table-cell-role="th">isbn</th>
+<th data-quarto-table-cell-role="th">issn</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">chapterTitle</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">publication_date</th>
+<th data-quarto-table-cell-role="th">journal_title</th>
+<th data-quarto-table-cell-role="th">publication_url</th>
+<th data-quarto-table-cell-role="th">author</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>3450502B-5849-4606-BD71-9D432B26FD2E</td>
+<td>1A455359-E3E1-4BD0-83A8-F45ADEB1616F</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>http://dx.doi.org/10.18637/jss.v045.i05</td>
+<td>REALCOM-IMPUTE Software for Multilevel Multipl...</td>
+<td>None</td>
+<td>Journal Article/Review</td>
+<td>2011-01-01</td>
+<td>Journal of Statistical Software</td>
+<td>http://www.jstatsoft.org/v45/i05/paper</td>
+<td>Carpenter J</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>DB63DCA3-276E-4568-82CF-A8F5CCA7A7BA</td>
+<td>1A75C325-F519-4926-8548-63081CFE63BD</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>Weather shocks and nutritional status of disad...</td>
+<td>None</td>
+<td>Working Paper</td>
+<td>2013-01-01</td>
+<td>None</td>
+<td>http://www.york.ac.uk/media/economics/document...</td>
+<td>Edoka, I.P.</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Note that the partitioned datasets are lazily saved and loaded. This has many advantages, allowing for efficient use of memory resources. It however requires instantiating the loader function of each of the lazy partitiones, as in <code>gtr_data_ptd[first_key]()</code>. In spite of this, this structure facilitates efficient processing and storage for large-scale data.</p>
+</section>
+</section>
+</section>
+<section id="data-collection-and-enrichment" class="level2">
+<h2 class="anchored" data-anchor-id="data-collection-and-enrichment">1. Data Collection and enrichment</h2>
+<p>This section focuses on adding publication metadata to Gateway to Research (GtR) outputs through iterative DOI lookups using OpenAlex and CrossRef. We progressively increase DOI coverage through:</p>
+<ol type="1">
+<li>An initial matching with OpenAlex for existing DOIs.</li>
+<li>Reverse lookups using OpenAlex and CrossRef APIs to identify missing DOIs.</li>
+<li>A second round of matching with OpenAlex to finalise the dataset.</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handover_notebook_files/section1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%"></p>
+</figure>
+</div>
+<p>The relevant pipelines are <code>data_collection_gtr</code> and <code>data_collection_oa</code>.</p>
+<hr>
+<section id="fetching-gtr-data" class="level3">
+<h3 class="anchored" data-anchor-id="fetching-gtr-data">1.1 Fetching GtR Data</h3>
+<p>The Gateway to Research (GtR) dataset provides metadata for publications supported by UKRI funding. However, many records lack DOIs, making it difficult to link these publications to external citation databases.</p>
+<p>Let’s begin by fetching the initial GtR dataset and examining its coverage.</p>
+<div id="cell-16" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the GtR dataset</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>gtr_data <span class="op">=</span> catalog.load(<span class="st">"gtr.data_collection.publications.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-17" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>gtr_data.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-bold">(</span><span class="ansi-cyan-fg ansi-bold">1276892</span>, <span class="ansi-cyan-fg ansi-bold">13</span><span class="ansi-bold">)</span></pre>
+</div>
+</div>
+</div>
+<p>As of December 2024, we have collected over 1.2 million project outputs using Gateway to Research’s API. This process is implemented in the pipeline available in this repository as <code>data_collection_gtr</code>.</p>
+<div id="cell-19" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>gtr_data.head(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">project_id</th>
+<th data-quarto-table-cell-role="th">outcome_id</th>
+<th data-quarto-table-cell-role="th">pubMedId</th>
+<th data-quarto-table-cell-role="th">isbn</th>
+<th data-quarto-table-cell-role="th">issn</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">chapterTitle</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">publication_date</th>
+<th data-quarto-table-cell-role="th">journal_title</th>
+<th data-quarto-table-cell-role="th">publication_url</th>
+<th data-quarto-table-cell-role="th">author</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>3450502B-5849-4606-BD71-9D432B26FD2E</td>
+<td>1A455359-E3E1-4BD0-83A8-F45ADEB1616F</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>http://dx.doi.org/10.18637/jss.v045.i05</td>
+<td>REALCOM-IMPUTE Software for Multilevel Multipl...</td>
+<td>None</td>
+<td>Journal Article/Review</td>
+<td>2011-01-01</td>
+<td>Journal of Statistical Software</td>
+<td>http://www.jstatsoft.org/v45/i05/paper</td>
+<td>Carpenter J</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>DB63DCA3-276E-4568-82CF-A8F5CCA7A7BA</td>
+<td>1A75C325-F519-4926-8548-63081CFE63BD</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>Weather shocks and nutritional status of disad...</td>
+<td>None</td>
+<td>Working Paper</td>
+<td>2013-01-01</td>
+<td>None</td>
+<td>http://www.york.ac.uk/media/economics/document...</td>
+<td>Edoka, I.P.</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>An important step in our analysis involves leveraging Digital Object Identifiers (DOIs) to map these outputs to key academic variables, such as citation metrics and authorship details. While many outputs in GtR include a DOI, this is not universal, and a portion remains unmapped.</p>
+<div id="cell-21" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ss">f"Number of unique DOIs in GtR: </span><span class="sc">{</span>gtr_data<span class="sc">.</span>doi<span class="sc">.</span>nunique()<span class="sc">}</span><span class="ss">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-green-fg">'Number of unique DOIs in GtR: 603576'</span></pre>
+</div>
+</div>
+</div>
+<div id="cell-22" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate initial DOI coverage</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>gtr_initial_coverage <span class="op">=</span> gtr_data[<span class="st">"doi"</span>].notnull().mean() <span class="op">*</span> <span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-green-fg">'Initial DOI Coverage in GtR: 86.41%'</span></pre>
+</div>
+</div>
+</div>
+<div id="cell-23" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ss">f"Initial DOI Coverage in GtR: </span><span class="sc">{</span>gtr_initial_coverage<span class="sc">:.2f}</span><span class="ss">%"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Additionally, although a majority of outputs report DOIs, these identifiers are often repeated across multiple outputs, typically associated with overlapping projects that share co-authors. Addressing these duplicates helps to improve the dataset’s quality and usability for downstream work.</p>
+<div id="cell-25" class="cell" data-execution_count="30">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># combining IDs in first pass with the GtR outcome ID</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>oa_to_gtr_id <span class="op">=</span> catalog.load(<span class="st">"oa.publications.gtr.map.primary"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>oa_to_gtr_id <span class="op">=</span> oa_to_gtr_id.merge(gtr_data, on<span class="op">=</span><span class="st">"outcome_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="initial-matching-with-openalex" class="level3">
+<h3 class="anchored" data-anchor-id="initial-matching-with-openalex">1.2 Initial matching with OpenAlex</h3>
+<p>The first step uses OpenAlex to match records in the GtR dataset based on existing DOIs. This step establishes a baseline for coverage.</p>
+<div id="cell-27" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>oa_first_match <span class="op">=</span> catalog.load(<span class="st">"oa.data_matching.gtr.doi.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-28" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ss">f"Number of unique DOIs in OA: </span><span class="sc">{</span>oa_first_match<span class="sc">.</span>doi<span class="sc">.</span>nunique()<span class="sc">}</span><span class="ss">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="31">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-green-fg">'Number of unique DOIs in OA: 558799'</span></pre>
+</div>
+</div>
+</div>
+<p>An initial round of API requests to OpenAlex, using the DOIs available in the Gateway to Research data, yields approximately 560,000 matches. This indicates that nearly all but 40,000 DOIs associated with project outcomes can be directly matched.</p>
+<div id="cell-30" class="cell" data-execution_count="32">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>oa_first_w_ids <span class="op">=</span> oa_first_match.merge(oa_to_gtr_id[[<span class="st">"id"</span>, <span class="st">"outcome_id"</span>]], on<span class="op">=</span><span class="st">"id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>matched_gtr_ids <span class="op">=</span> gtr_data.merge(oa_first_w_ids, on<span class="op">=</span><span class="st">"outcome_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-31" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate match rate based on matched_gtr_ids with non-null id</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>match_rate <span class="op">=</span> matched_gtr_ids[<span class="st">"id"</span>].notnull().mean() <span class="op">*</span> <span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="33">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-green-fg">'Match rate based on matched GtR IDs: 83.99%'</span></pre>
+</div>
+</div>
+</div>
+<div id="cell-32" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ss">f"Match rate based on matched GtR IDs: </span><span class="sc">{</span>match_rate<span class="sc">:.2f}</span><span class="ss">%"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This procedure retrieves metadata from OpenAlex for over 80% of all outcome IDs in the GtR data. New data includes co-authors, publication citations, external identifiers, and relevant topics and concepts, which will be useful in estimating the topic diversity of UKRI-funded research.</p>
+<div id="cell-34" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>oa_first_match.head(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">pmid</th>
+<th data-quarto-table-cell-role="th">mag_id</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">publication_date</th>
+<th data-quarto-table-cell-role="th">cited_by_count</th>
+<th data-quarto-table-cell-role="th">counts_by_year</th>
+<th data-quarto-table-cell-role="th">authorships</th>
+<th data-quarto-table-cell-role="th">topics</th>
+<th data-quarto-table-cell-role="th">concepts</th>
+<th data-quarto-table-cell-role="th">grants</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>W2768286292</td>
+<td>https://doi.org/10.3847/2041-8213/aa9f0c</td>
+<td>None</td>
+<td>2768286292</td>
+<td>GW170608: Observation of a 19 Solar-mass Binar...</td>
+<td>2017-12-18</td>
+<td>1129</td>
+<td>[[2024, 58], [2023, 61], [2022, 76], [2021, 12...</td>
+<td>[[A5109427038, I122411786, US, first], [A51079...</td>
+<td>[[T10463, Pulsars and Gravitational Waves Rese...</td>
+<td>[[C48372109, Binary number], [C149792144, Coal...</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>W2104199131</td>
+<td>https://doi.org/10.18637/jss.v045.i05</td>
+<td>None</td>
+<td>2104199131</td>
+<td>&lt;b&gt;REALCOM-IMPUTE&lt;/b&gt;Software for Multilevel M...</td>
+<td>2011-01-01</td>
+<td>336</td>
+<td>[[2024, 21], [2023, 8], [2022, 3], [2021, 53],...</td>
+<td>[[A5072810129, I36234482, GB, first], [A508354...</td>
+<td>[[T10243, Statistical Methods and Bayesian Inf...</td>
+<td>[[C58041806, Imputation (statistics)], [C52740...</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="second-matching-with-openalex-and-crossref" class="level3">
+<h3 class="anchored" data-anchor-id="second-matching-with-openalex-and-crossref">1.3 Second matching with OpenAlex and CrossRef</h3>
+<p>After the initial OpenAlex matching, we perform reverse lookups using both OpenAlex and CrossRef APIs to address missing DOIs. These reverse lookups use metadata such as titles, authors, and publication years to identify DOIs for records without them. Finally, we combine these results and perform a second matching round with OpenAlex to enrich the dataset further.</p>
+<section id="reverse-lookups-openalex-and-crossref" class="level4">
+<h4 class="anchored" data-anchor-id="reverse-lookups-openalex-and-crossref">Reverse Lookups: OpenAlex and CrossRef</h4>
+<p>The reverse lookups with OpenAlex and CrossRef follow these key steps: 1. <strong>Metadata-based search</strong>: Both platforms use bibliographic metadata (e.g., title, author, journal, publication year) to identify missing DOIs for unmatched records. 2. <strong>Result filtering and scoring</strong>: Potential matches are filtered and scored for relevance: - <strong>OpenAlex</strong>: Matches are retrieved using the <code>search works</code> API. - <strong>CrossRef</strong>: Matches are scored using fuzzy matching on titles, authors, and journals, combined with a composite scoring system. 3. <strong>Combining results</strong>: Matched DOIs from both OpenAlex and CrossRef are combined in node <code>select_better_match</code>.</p>
+</section>
+<section id="final-openalex-matching" class="level4">
+<h4 class="anchored" data-anchor-id="final-openalex-matching">Final OpenAlex matching</h4>
+<p>After combining the reverse lookup results, we perform a second round of OpenAlex matching to retrieve metadata for records that now have DOIs.</p>
+<div id="cell-36" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>oa_second_match <span class="op">=</span> catalog.load(<span class="st">"oa.publications.gtr.primary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-37" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>oa_second_match.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-bold">(</span><span class="ansi-cyan-fg ansi-bold">597572</span>, <span class="ansi-cyan-fg ansi-bold">12</span><span class="ansi-bold">)</span></pre>
+</div>
+</div>
+</div>
+<p>The second OpenAlex match results in some additional 50,000 OpenAlex papers that match to at least one outcome in the GtR data.</p>
+<div id="cell-39" class="cell" data-execution_count="34">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>oa_second_w_ids <span class="op">=</span> oa_second_match.merge(oa_to_gtr_id[[<span class="st">"id"</span>, <span class="st">"outcome_id"</span>]], on<span class="op">=</span><span class="st">"id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>matched_gtr_ids <span class="op">=</span> gtr_data.merge(oa_second_w_ids, on<span class="op">=</span><span class="st">"outcome_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-40" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate match rate based on matched_gtr_ids with non-null id</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>match_rate <span class="op">=</span> matched_gtr_ids[<span class="st">"id"</span>].notnull().mean() <span class="op">*</span> <span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="35">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-green-fg">'Match rate based on matched GtR IDs: 85.45%'</span></pre>
+</div>
+</div>
+</div>
+<div id="cell-41" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ss">f"Match rate based on matched GtR IDs: </span><span class="sc">{</span>match_rate<span class="sc">:.2f}</span><span class="ss">%"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Unlike the outcomes with DOIs already included in the GtR data, these new matches obtained through reverse lookups only slightly increase the match rate, bringing it to just over 85%.</p>
+<div id="cell-43" class="cell" data-execution_count="18">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>oa_second_match.head(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="18">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">pmid</th>
+<th data-quarto-table-cell-role="th">mag_id</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">publication_date</th>
+<th data-quarto-table-cell-role="th">cited_by_count</th>
+<th data-quarto-table-cell-role="th">counts_by_year</th>
+<th data-quarto-table-cell-role="th">authorships</th>
+<th data-quarto-table-cell-role="th">topics</th>
+<th data-quarto-table-cell-role="th">concepts</th>
+<th data-quarto-table-cell-role="th">grants</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>W2768286292</td>
+<td>https://doi.org/10.3847/2041-8213/aa9f0c</td>
+<td>None</td>
+<td>2768286292</td>
+<td>GW170608: Observation of a 19 Solar-mass Binar...</td>
+<td>2017-12-18</td>
+<td>1129</td>
+<td>[[2024, 58], [2023, 61], [2022, 76], [2021, 12...</td>
+<td>[[A5109427038, I122411786, US, first], [A51079...</td>
+<td>[[T10463, Pulsars and Gravitational Waves Rese...</td>
+<td>[[C48372109, Binary number], [C149792144, Coal...</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>W2104199131</td>
+<td>https://doi.org/10.18637/jss.v045.i05</td>
+<td>None</td>
+<td>2104199131</td>
+<td>&lt;b&gt;REALCOM-IMPUTE&lt;/b&gt;Software for Multilevel M...</td>
+<td>2011-01-01</td>
+<td>336</td>
+<td>[[2024, 21], [2023, 8], [2022, 3], [2021, 53],...</td>
+<td>[[A5072810129, I36234482, GB, first], [A508354...</td>
+<td>[[T10243, Statistical Methods and Bayesian Inf...</td>
+<td>[[C58041806, Imputation (statistics)], [C52740...</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="citation-intent-and-section-identification" class="level2">
+<h2 class="anchored" data-anchor-id="citation-intent-and-section-identification">2. Citation intent and section identification</h2>
+<p>The dataset, with its expanded DOI coverage, helps improve coverage of downstream analysis. DOIs now serve as more reliable keys to access external data sources, including detailed citation contexts and full-text documents.</p>
+<p>Building on this foundation, the next steps focus on: - <strong>Understanding citation contexts</strong> by collecting citation intents and identifying how publications are referenced in scholarly work. - <strong>Exploring document structure</strong> by parsing PDF sections to determine where citations occur within a publication.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handover_notebook_files/section2.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%"></p>
+</figure>
+</div>
+<p>The relevant pipelines are <code>data_collection_s2</code> and <code>data_processing_pdfs</code>.</p>
+<section id="citation-intent-and-influence-using-semantic-scholar" class="level3">
+<h3 class="anchored" data-anchor-id="citation-intent-and-influence-using-semantic-scholar">2.1. Citation Intent and Influence using Semantic Scholar</h3>
+<p>To better understand the academic influence of UKRI-funded research, we leverage the Semantic Scholar API to collect detailed citation intent and influence metrics.</p>
+<section id="citation-intent-retrieval" class="level4">
+<h4 class="anchored" data-anchor-id="citation-intent-retrieval">2.1.1 Citation Intent Retrieval</h4>
+<p>The first step uses Semantic Scholar’s API to retrieve citation intents for matched DOIs in the OpenAlex dataset. Citation intents classify the nature of a citation (e.g., background, method, or result) and include additional context. This data provides a deeper understanding of how publications are used in the academic ecosystem.</p>
+<ul>
+<li><strong>Inputs</strong>: Dataset of matched DOIs from OpenAlex (<code>oa.publications.gtr.primary</code>).</li>
+<li><strong>Outputs</strong>: Partitioned dataset of citation intents (<code>s2.citation_details.raw</code>).</li>
+<li><strong>Intermediate Step</strong>: Concatenates partitioned outputs into a single dataset for analysis (<code>s2.citation_details.intermediate</code>).</li>
+</ul>
+<div id="cell-46" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>s2_citations_dict <span class="op">=</span> catalog.load(<span class="st">"s2.citation_details.raw"</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>s2_citations_example <span class="op">=</span> <span class="bu">list</span>(s2_citations_dict.values())[<span class="dv">0</span>]()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-47" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>s2_citations_example.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">pmid</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">mag_id</th>
+<th data-quarto-table-cell-role="th">is_open_access</th>
+<th data-quarto-table-cell-role="th">pdf_url</th>
+<th data-quarto-table-cell-role="th">influential</th>
+<th data-quarto-table-cell-role="th">intent</th>
+<th data-quarto-table-cell-role="th">context</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6865</td>
+<td>W4323660938</td>
+<td></td>
+<td>10.1103/PhysRevD.107.055029</td>
+<td></td>
+<td>True</td>
+<td>http://link.aps.org/pdf/10.1103/PhysRevD.107.0...</td>
+<td>False</td>
+<td>background</td>
+<td>The excluded parameter space is shown in gray,...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7065</td>
+<td>W4389961161</td>
+<td></td>
+<td>10.48550/arXiv.2406.03766</td>
+<td></td>
+<td>False</td>
+<td>None</td>
+<td>True</td>
+<td>background</td>
+<td>Existing works in the privacy literature, such...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">716</td>
+<td>W4210792795</td>
+<td>37153606</td>
+<td>10.3389/fimmu.2023.1156758</td>
+<td></td>
+<td>True</td>
+<td>https://www.frontiersin.org/articles/10.3389/f...</td>
+<td>False</td>
+<td>background</td>
+<td>Likewise, clonal expansion of CD8+ T cells has...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5489</td>
+<td>W4313219621</td>
+<td></td>
+<td>10.1007/s42114-023-00737-x</td>
+<td></td>
+<td>True</td>
+<td>https://www.researchsquare.com/article/rs-3039...</td>
+<td>False</td>
+<td>methodology</td>
+<td>In this study, the electrocatalysts are succes...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2682</td>
+<td>W4206195597</td>
+<td></td>
+<td>10.1007/s12583-023-1859-6</td>
+<td></td>
+<td>False</td>
+<td>None</td>
+<td>True</td>
+<td>background</td>
+<td>…becomes an emerging research field that could...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Through this matching process, we have identified approximately 3.4 million unique papers citing outputs from GtR for which a positive OpenAlex match was established. Collectively, these papers represent over 15 million citations.</p>
+</section>
+<section id="paper-metadata-retrieval" class="level4">
+<h4 class="anchored" data-anchor-id="paper-metadata-retrieval">2.1.2 Paper Metadata Retrieval</h4>
+<p>In parallel with citation intents, the pipeline also collects paper-level metadata, such as: - Open access status. - PDF availability. - Influential citation counts.</p>
+<p>This step provides additional descriptive characteristics of publications, which can be used to identify open access trends and measure publication impact.</p>
+<ul>
+<li><strong>Inputs</strong>: Dataset of matched DOIs from OpenAlex.</li>
+<li><strong>Outputs</strong>: Partitioned dataset of paper metadata (<code>s2.paper_details.raw</code>).</li>
+<li><strong>Intermediate Step</strong>: Combines partitioned outputs into a unified dataset (<code>s2.paper_details.intermediate</code>).</li>
+</ul>
+<div id="cell-50" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>s2_papers_dict <span class="op">=</span> catalog.load(<span class="st">"s2.paper_details.raw"</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>s2_papers_example <span class="op">=</span> <span class="bu">list</span>(s2_papers_dict.values())[<span class="dv">0</span>]()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-51" class="cell" data-execution_count="39">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>s2_papers_example.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="39">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">influential</th>
+<th data-quarto-table-cell-role="th">is_open_access</th>
+<th data-quarto-table-cell-role="th">pdf_url</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6246</td>
+<td>W4390833043</td>
+<td>0</td>
+<td>False</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">433</td>
+<td>W4229029495</td>
+<td>1</td>
+<td>True</td>
+<td>https://academic.oup.com/jcem/article-pdf/107/...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">368</td>
+<td>W4295366905</td>
+<td>0</td>
+<td>True</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9277</td>
+<td>W4284893833</td>
+<td>2</td>
+<td>True</td>
+<td>https://www.biorxiv.org/content/biorxiv/early/...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2126</td>
+<td>W4319720160</td>
+<td>0</td>
+<td>True</td>
+<td>https://academic.oup.com/jrsssc/article-pdf/72...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="combining-data" class="level4">
+<h4 class="anchored" data-anchor-id="combining-data">2.1.3 Combining Data</h4>
+<p>To efficiently manage large datasets, the pipeline uses oracles in the data catalog to optionally skip Semantic Scholar papers that have already been processed. This mechanism ensures that redundant API calls are avoided, saving time and computational resources.</p>
+</section>
+</section>
+<section id="parsing-pdf-content" class="level3">
+<h3 class="anchored" data-anchor-id="parsing-pdf-content">2.2 Parsing PDF Content</h3>
+<p>With citation intents and metadata collected, this step identifies where citations occur within the 2 million PDFs linked to UKRI-funded research included in the S2 data. The PDF parsing process extracts citation sections and maps them to specific document headings (e.g., “Introduction,” “Methods”).</p>
+<p>PDF processing relies on tools like Grobid and SciPDF to analyse document structure. The parsing step is optimised by checking the data catalog for already-parsed PDFs, ensuring only new records (or unsuccessfuly parsed ones) are processed.</p>
+<div id="cell-54" class="cell" data-execution_count="41">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load parsed citation sections</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>parsed_sections_dict <span class="op">=</span> catalog.load(<span class="st">"pdfs.section_details.raw"</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>parsed_sections_example <span class="op">=</span> <span class="bu">list</span>(parsed_sections_dict.values())[<span class="dv">0</span>]()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-55" class="cell" data-execution_count="43">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>parsed_sections_example.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="43">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">parent_id</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">mag_id</th>
+<th data-quarto-table-cell-role="th">pmid</th>
+<th data-quarto-table-cell-role="th">section_index</th>
+<th data-quarto-table-cell-role="th">section_heading</th>
+<th data-quarto-table-cell-role="th">main_section_heading</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1504</td>
+<td>W2896485194</td>
+<td>10.1002/14651858.CD013398.pub3</td>
+<td></td>
+<td>33471371</td>
+<td>-2</td>
+<td>Error</td>
+<td>Error</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">310</td>
+<td>W1900802472</td>
+<td>10.1002/14651858.CD000371.pub7</td>
+<td>2973016055</td>
+<td>31508807</td>
+<td>132</td>
+<td>Agreements and disagreements with other studie...</td>
+<td>Empirical Design</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">536</td>
+<td>W2132367212</td>
+<td>10.1002/14651858.CD007646.PUB2</td>
+<td>2783159663</td>
+<td>30970390</td>
+<td>5</td>
+<td>Main results</td>
+<td>Background</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">615</td>
+<td>W2132367212</td>
+<td>10.1002/14651858.CD007646.PUB2</td>
+<td>2783159663</td>
+<td>30970390</td>
+<td>135</td>
+<td>Comparison 1</td>
+<td>Results</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1455</td>
+<td>W3020992444</td>
+<td>10.1002/14651858.CD013207.pub2</td>
+<td></td>
+<td>34383961</td>
+<td>70</td>
+<td>Cochrane Database of Systematic Reviews</td>
+<td>Background</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>More than 900,000 PDFs are succesfully parsed. Unsuccessful attempts are often the result of outdated PDF URLs or journals who throttle access to the scrapers. Although coverage is as a result lower than that of Semantic Scholar data, the results still serve to provide additional nuance as to how UKRI-funded research is used.</p>
+</section>
+</section>
+<section id="diversity-metrics-from-topics-and-team-composition" class="level2">
+<h2 class="anchored" data-anchor-id="diversity-metrics-from-topics-and-team-composition">3. Diversity Metrics from Topics and Team Composition</h2>
+<p>This section measures the diversity of research topics and team composition within UKRI-funded publications. We calculate diversity metrics such as <strong>Variety</strong>, <strong>Evenness</strong>, and <strong>Disparity</strong> by analysing historical data on topics associated with GtR-affiliated authors and their publications.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handover_notebook_files/section3.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%"></p>
+</figure>
+</div>
+<p>The relevant pipelines are <code>data_processing_authors</code> and <code>data_results_team_metrics</code>.</p>
+<section id="collecting-author-and-topic-data" class="level3">
+<h3 class="anchored" data-anchor-id="collecting-author-and-topic-data">3.1 Collecting Author and Topic Data</h3>
+<p>To calculate diversity metrics, the pipeline first collects historical topic data for all GtR-affiliated authors using OpenAlex. The data spans publications dating back to 2007, capturing: - <strong>Author publication topics</strong>: Retrieved from OpenAlex taxonomies. - <strong>CWTS taxonomy levels</strong>: Grouped into subfields, fields, and domains to enable hierarchical analysis.</p>
+<p>This process uses OpenAlex’s API in the same manner as described in Section 1, and collects publication data for over 900,000 unique researchers in the Gateway to Research data.</p>
+<div id="cell-58" class="cell" data-execution_count="44">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load author topic data</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>author_dict <span class="op">=</span> catalog.load(<span class="st">"authors.oa_dataset.raw"</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>author_example <span class="op">=</span> <span class="bu">list</span>(author_dict.values())[<span class="dv">0</span>]()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-59" class="cell" data-execution_count="45">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>author_example.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="45">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">author</th>
+<th data-quarto-table-cell-role="th">publication_date</th>
+<th data-quarto-table-cell-role="th">topics</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">28813</td>
+<td>W4387560257</td>
+<td>A5072132945</td>
+<td>2023-01-01</td>
+<td>[[T12579, Defect Identification using Positron...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">34114</td>
+<td>W4385325762</td>
+<td>A5100394072</td>
+<td>2023-07-27</td>
+<td>[[T10549, Neonatal Lung Development and Respir...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">25709</td>
+<td>W2558091178</td>
+<td>A5007170420</td>
+<td>2016-06-01</td>
+<td>[[T10590, Chalcogenide Semiconductor Thin Film...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">43696</td>
+<td>W1976716413</td>
+<td>A5014300283</td>
+<td>2012-03-16</td>
+<td>[[T11809, Advanced NMR Techniques and Applicat...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4509</td>
+<td>W2802919254</td>
+<td>A5087519538</td>
+<td>2017-10-01</td>
+<td>[[T11044, Particle Detector Development and Pe...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="aggregating-co-author-topics" class="level3">
+<h3 class="anchored" data-anchor-id="aggregating-co-author-topics">3.2 Aggregating Co-Author Topics</h3>
+<p>To calculate diversity metrics, the pipeline aggregates topics across all co-authors of a publication. This includes:</p>
+<ol type="1">
+<li><strong>Historical topic frequencies</strong>:
+<ul>
+<li>Topics are weighted by their occurrence across an author’s historical publications.</li>
+<li>Frequencies are aggregated by taxonomy level (e.g., subfields, fields, domains) to capture different levels of topic granularity.</li>
+</ul></li>
+<li><strong>Topic distributions</strong>:
+<ul>
+<li>For each publication, the co-author topic distributions are combined to create a unified topic profile.</li>
+<li>These profiles serve as the basis for calculating diversity metrics.</li>
+</ul></li>
+<li><strong>Topic embeddings and distance matrix</strong>:
+<ul>
+<li>Topics are embedded into a continuous space using the SPECTER pre-trained language model.</li>
+<li>A distance matrix between the output embeddings quantifies the dissimilarity between topics, providing the foundation for calculating <strong>disparity</strong>.</li>
+</ul></li>
+</ol>
+<div id="cell-61" class="cell" data-execution_count="46">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load author topic data</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>cumulative_domains <span class="op">=</span> catalog.load(<span class="st">"authors.domain.cumulative_aggregates.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-62" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>cumulative_domains.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="48">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">author</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">publications</th>
+<th data-quarto-table-cell-role="th">total_publications</th>
+<th data-quarto-table-cell-role="th">frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2603520</td>
+<td>A5078722284</td>
+<td>2006</td>
+<td>2</td>
+<td>17</td>
+<td>[6.207, 2.3, 2.875, 0.2678]</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">10078286</td>
+<td>A5020035966</td>
+<td>2015</td>
+<td>4</td>
+<td>58</td>
+<td>[7.543, 20.9, 0.35, 3.514]</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3406061</td>
+<td>A5032279126</td>
+<td>2021</td>
+<td>5</td>
+<td>52</td>
+<td>[29.31, 0.0, 0.4082, 10.22]</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">387151</td>
+<td>A5002906837</td>
+<td>2017</td>
+<td>9</td>
+<td>94</td>
+<td>[42.7, 0.583, 39.16, 1.293]</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8802165</td>
+<td>A5018697167</td>
+<td>2019</td>
+<td>5</td>
+<td>65</td>
+<td>[2.207, 0.0, 43.25, 0.0]</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="calculating-diversity-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="calculating-diversity-metrics">3.3 Calculating Diversity Metrics</h3>
+<p>Using the collected topic data, the pipeline computes diversity metrics following the modified <strong>DIV function</strong> proposed by Leydesdorff et al.&nbsp;(2019). These metrics capture three dimensions of diversity:</p>
+<div id="cell-64" class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load author topic data</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>diversity_results <span class="op">=</span> catalog.load(<span class="st">"authors.domain.diversity_components.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-65" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>diversity_results.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">author</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">yearly_publication_count</th>
+<th data-quarto-table-cell-role="th">total_publication_count</th>
+<th data-quarto-table-cell-role="th">variety</th>
+<th data-quarto-table-cell-role="th">evenness</th>
+<th data-quarto-table-cell-role="th">disparity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6526206</td>
+<td>A5043863693</td>
+<td>2017</td>
+<td>1</td>
+<td>13</td>
+<td>0.50</td>
+<td>0.800000</td>
+<td>0.719756</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4215775</td>
+<td>A5007719231</td>
+<td>2020</td>
+<td>2</td>
+<td>8</td>
+<td>0.50</td>
+<td>0.800000</td>
+<td>0.884232</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3639654</td>
+<td>A5054789767</td>
+<td>2006</td>
+<td>1</td>
+<td>75</td>
+<td>0.25</td>
+<td>0.000000</td>
+<td>0.000000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">8426873</td>
+<td>A5047538382</td>
+<td>2017</td>
+<td>2</td>
+<td>9</td>
+<td>0.50</td>
+<td>0.800000</td>
+<td>0.884232</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8191213</td>
+<td>A5058015553</td>
+<td>2009</td>
+<td>3</td>
+<td>76</td>
+<td>0.50</td>
+<td>0.246154</td>
+<td>0.719756</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="variety" class="level4">
+<h4 class="anchored" data-anchor-id="variety">1. Variety</h4>
+<p><strong>Variety</strong> represents the breadth of unique disciplines or topics involved in a research paper or team. In the context of team science, high variety suggests contributions from a wide range of fields.</p>
+<p><span class="math display">\[
+\text{Variety} = \frac{nc}{N}
+\]</span></p>
+<p>where: - $ nc $: The number of unique disciplines or topics present. - $ N $: The total possible number of disciplines in the dataset.</p>
+<p>This component captures how many distinct fields are involved, with higher values indicating greater diversity of expertise or research themes.</p>
+</section>
+<section id="evenness" class="level4">
+<h4 class="anchored" data-anchor-id="evenness">2. Evenness</h4>
+<p><strong>Evenness</strong> reflects the balance of contributions from each discipline, highlighting how evenly the topics or disciplinary inputs are distributed across the research. A perfectly balanced paper or team would have equal representation across all fields, while an imbalance indicates that certain disciplines dominate the work.</p>
+<p><span class="math display">\[
+\text{Evenness} = 1 - \text{Gini}
+\]</span></p>
+<p>where: - <strong>Gini coefficient</strong>: A statistical measure of distribution inequality, ranging from 0 (perfect balance) to 1 (perfect inequality). By taking $ 1 - $, we ensure that values closer to 1 indicate a more balanced distribution.</p>
+</section>
+<section id="disparity" class="level4">
+<h4 class="anchored" data-anchor-id="disparity">3. Disparity</h4>
+<p><strong>Disparity</strong> measures the distinctiveness or <strong>dissimilarity</strong> between disciplines within a research team or paper. This dimension captures the extent to which the included fields differ from one another, as more distinct fields can contribute to a more interdisciplinary output.</p>
+<p><span class="math display">\[
+\text{Disparity} = \frac{\sum d_{ij}}{nc \times (nc - 1)}
+\]</span></p>
+<p>where: - $ d_{ij} $: The distance or dissimilarity between disciplines $ i $ and $ j $, typically sourced from a disparity matrix that quantifies the “distance” between different fields. - $ nc $: The number of unique disciplines represented in the research.</p>
+<p>The metrics are computed for both individual publications and co-author teams. The latter</p>
+<div id="cell-67" class="cell" data-execution_count="51">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load author topic data</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>gtr_diversity_results <span class="op">=</span> catalog.load(<span class="st">"publications.domain.coauthor_diversity_scores.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-68" class="cell" data-execution_count="52">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>gtr_diversity_results.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="52">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">variety</th>
+<th data-quarto-table-cell-role="th">evenness</th>
+<th data-quarto-table-cell-role="th">disparity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">50223</td>
+<td>W1999950116</td>
+<td>0.75</td>
+<td>0.006348</td>
+<td>0.733001</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">26860</td>
+<td>W1966765126</td>
+<td>1.00</td>
+<td>0.401693</td>
+<td>0.834283</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">113756</td>
+<td>W2091197170</td>
+<td>1.00</td>
+<td>0.783854</td>
+<td>0.834283</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">223537</td>
+<td>W2559793677</td>
+<td>1.00</td>
+<td>0.068359</td>
+<td>0.834283</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">174879</td>
+<td>W2201224967</td>
+<td>1.00</td>
+<td>0.075521</td>
+<td>0.834283</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="master-dataset-generation" class="level2">
+<h2 class="anchored" data-anchor-id="master-dataset-generation">4. Master Dataset Generation</h2>
+<p>The final step in the pipeline integrates data from various sources to produce a master dataset. This dataset provides a comprehensive view of UKRI-funded research, incorporating metadata, citation contexts, PDF section details, and diversity metrics.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handover_notebook_files/dsit_proj3_diagram.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+<section id="merging-data-from-multiple-sources" class="level3">
+<h3 class="anchored" data-anchor-id="merging-data-from-multiple-sources">4.1 Merging Data from Multiple Sources</h3>
+<p>The pipeline combines datasets from OpenAlex, Semantic Scholar, and processed PDFs, as well as diversity scores derived from author topics and publications. Key inputs include: - <strong>OpenAlex Data</strong>: Metadata and mappings to Gateway to Research (GtR) records. - <strong>Semantic Scholar Data</strong>: Citation intents, influence metrics, and paper metadata. - <strong>PDF Sectional Data</strong>: Citation section counts and placements within documents. - <strong>Diversity Metrics</strong>: Topic diversity scores at the author and paper levels.</p>
+<p>The merging process is handled by the <code>create_master_dataset</code> node.</p>
+<div id="cell-71" class="cell" data-execution_count="56">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load master dataset</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>master_data <span class="op">=</span> catalog.load(<span class="st">"oa.publications.gtr.master.data"</span>)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>master_data.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-72" class="cell" data-execution_count="58">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>master_data.head(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="58">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">doi</th>
+<th data-quarto-table-cell-role="th">pmid</th>
+<th data-quarto-table-cell-role="th">mag_id</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">publication_date</th>
+<th data-quarto-table-cell-role="th">cited_by_count</th>
+<th data-quarto-table-cell-role="th">counts_by_year</th>
+<th data-quarto-table-cell-role="th">authorships</th>
+<th data-quarto-table-cell-role="th">topics</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">open_access_count</th>
+<th data-quarto-table-cell-role="th">total_sections</th>
+<th data-quarto-table-cell-role="th">section_counts</th>
+<th data-quarto-table-cell-role="th">coauthor_variety</th>
+<th data-quarto-table-cell-role="th">coauthor_evenness</th>
+<th data-quarto-table-cell-role="th">coauthor_disparity</th>
+<th data-quarto-table-cell-role="th">paper_variety</th>
+<th data-quarto-table-cell-role="th">paper_evenness</th>
+<th data-quarto-table-cell-role="th">paper_disparity</th>
+<th data-quarto-table-cell-role="th">outcome_id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>W2768286292</td>
+<td>https://doi.org/10.3847/2041-8213/aa9f0c</td>
+<td>None</td>
+<td>2768286292</td>
+<td>GW170608: Observation of a 19 Solar-mass Binar...</td>
+<td>2017-12-18</td>
+<td>1129</td>
+<td>[[2024, 58], [2023, 61], [2022, 76], [2021, 12...</td>
+<td>[[A5109427038, I122411786, US, first], [A51079...</td>
+<td>[[T10463, Pulsars and Gravitational Waves Rese...</td>
+<td>...</td>
+<td>148</td>
+<td>50</td>
+<td>[[Conclusion, 2], [Discussion, 3], [Error, 3],...</td>
+<td>0.626984</td>
+<td>0.010201</td>
+<td>0.504405</td>
+<td>0.003968</td>
+<td>0.0</td>
+<td>0.000000</td>
+<td>[1C77CAB4-9F57-4219-A10B-9B2D878F5073, B850BB6...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>W2104199131</td>
+<td>https://doi.org/10.18637/jss.v045.i05</td>
+<td>None</td>
+<td>2104199131</td>
+<td>&lt;b&gt;REALCOM-IMPUTE&lt;/b&gt;Software for Multilevel M...</td>
+<td>2011-01-01</td>
+<td>340</td>
+<td>[[2024, 21], [2023, 8], [2022, 3], [2021, 53],...</td>
+<td>[[A5072810129, I36234482, GB, first], [A508354...</td>
+<td>[[T10243, Statistical Methods and Bayesian Inf...</td>
+<td>...</td>
+<td>59</td>
+<td>32</td>
+<td>[[Background, 2], [Data Analysis, 4], [Discuss...</td>
+<td>0.246032</td>
+<td>0.109695</td>
+<td>0.487065</td>
+<td>0.007937</td>
+<td>0.8</td>
+<td>0.379825</td>
+<td>[1A455359-E3E1-4BD0-83A8-F45ADEB1616F, 5CA8C4F...</td>
+</tr>
+</tbody>
+</table>
+
+<p>2 rows × 29 columns</p>
+</div>
+</div>
+</div>
+<p>The dataset includes numerous columns derived from various pipeline stages. Let’s list all available columns.</p>
+<div id="cell-74" class="cell" data-execution_count="59">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the columns of the master dataset</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>master_data.columns</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="59">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-magenta-fg ansi-bold">Index</span><span class="ansi-bold">(</span><span class="ansi-bold">[</span><span class="ansi-green-fg">'id'</span>, <span class="ansi-green-fg">'doi'</span>, <span class="ansi-green-fg">'pmid'</span>, <span class="ansi-green-fg">'mag_id'</span>, <span class="ansi-green-fg">'title'</span>, <span class="ansi-green-fg">'publication_date'</span>,
+       <span class="ansi-green-fg">'cited_by_count'</span>, <span class="ansi-green-fg">'counts_by_year'</span>, <span class="ansi-green-fg">'authorships'</span>, <span class="ansi-green-fg">'topics'</span>, <span class="ansi-green-fg">'concepts'</span>,
+       <span class="ansi-green-fg">'grants'</span>, <span class="ansi-green-fg">'influential'</span>, <span class="ansi-green-fg">'is_open_access'</span>, <span class="ansi-green-fg">'pdf_url'</span>,
+       <span class="ansi-green-fg">'s2_citation_count'</span>, <span class="ansi-green-fg">'methodology_count'</span>, <span class="ansi-green-fg">'result_count'</span>,
+       <span class="ansi-green-fg">'background_count'</span>, <span class="ansi-green-fg">'open_access_count'</span>, <span class="ansi-green-fg">'total_sections'</span>,
+       <span class="ansi-green-fg">'section_counts'</span>, <span class="ansi-green-fg">'coauthor_variety'</span>, <span class="ansi-green-fg">'coauthor_evenness'</span>,
+       <span class="ansi-green-fg">'coauthor_disparity'</span>, <span class="ansi-green-fg">'paper_variety'</span>, <span class="ansi-green-fg">'paper_evenness'</span>,
+       <span class="ansi-green-fg">'paper_disparity'</span>, <span class="ansi-green-fg">'outcome_id'</span><span class="ansi-bold">]</span>,
+      <span class="ansi-yellow-fg">dtype</span>=<span class="ansi-green-fg">'object'</span><span class="ansi-bold">)</span></pre>
+</div>
+</div>
+</div>
+<p>Let’s also look at an example of a single record in the master dataset.</p>
+<div id="cell-76" class="cell" data-execution_count="60">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># An example of the master dataset</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>master_data.loc[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="60">
+<div class="ansi-escaped-output">
+<pre>id                                                          W2768286292
+doi                            <span style="text-decoration:underline" class="ansi-bright-blue-fg">https://doi.org/10.3847/2041-8213/aa9f0c</span>
+pmid                                                               <span style="font-style:italic" class="ansi-magenta-fg">None</span>
+mag_id                                                       <span class="ansi-cyan-fg ansi-bold">2768286292</span>
+title                 GW170608: Observation of a <span class="ansi-cyan-fg ansi-bold">19</span> Solar-mass Binar<span class="ansi-yellow-fg">...</span>
+publication_date                                             <span class="ansi-cyan-fg ansi-bold">2017</span>-<span class="ansi-cyan-fg ansi-bold">12</span>-<span class="ansi-cyan-fg ansi-bold">18</span>
+cited_by_count                                                     <span class="ansi-cyan-fg ansi-bold">1129</span>
+counts_by_year        <span class="ansi-bold">[</span><span class="ansi-bold">[</span><span class="ansi-cyan-fg ansi-bold">2024</span>, <span class="ansi-cyan-fg ansi-bold">58</span><span class="ansi-bold">]</span>, <span class="ansi-bold">[</span><span class="ansi-cyan-fg ansi-bold">2023</span>, <span class="ansi-cyan-fg ansi-bold">61</span><span class="ansi-bold">]</span>, <span class="ansi-bold">[</span><span class="ansi-cyan-fg ansi-bold">2022</span>, <span class="ansi-cyan-fg ansi-bold">76</span><span class="ansi-bold">]</span>, <span class="ansi-bold">[</span><span class="ansi-cyan-fg ansi-bold">2021</span>, <span class="ansi-cyan-fg ansi-bold">12</span><span class="ansi-yellow-fg">...</span>
+authorships           <span class="ansi-bold">[</span><span class="ansi-bold">[</span>A5109427038, I122411786, US, first<span class="ansi-bold">]</span>, <span class="ansi-bold">[</span>A51079<span class="ansi-yellow-fg">...</span>
+topics                <span class="ansi-bold">[</span><span class="ansi-bold">[</span>T10463, Pulsars and Gravitational Waves Rese<span class="ansi-yellow-fg">...</span>
+concepts              <span class="ansi-bold">[</span><span class="ansi-bold">[</span>C48372109, Binary number<span class="ansi-bold">]</span>, <span class="ansi-bold">[</span>C149792144, Coal<span class="ansi-yellow-fg">...</span>
+grants                                                             <span style="font-style:italic" class="ansi-magenta-fg">None</span>
+influential                                                        <span class="ansi-cyan-fg ansi-bold">28.0</span>
+is_open_access                                                     <span style="font-style:italic" class="ansi-bright-green-fg">True</span>
+pdf_url               <span style="text-decoration:underline" class="ansi-bright-blue-fg">https://iopscience.iop.org/article/10.3847/204...</span>
+s2_citation_count                                                   <span class="ansi-cyan-fg ansi-bold">182</span>
+methodology_count                                                    <span class="ansi-cyan-fg ansi-bold">57</span>
+result_count                                                          <span class="ansi-cyan-fg ansi-bold">6</span>
+background_count                                                    <span class="ansi-cyan-fg ansi-bold">106</span>
+open_access_count                                                   <span class="ansi-cyan-fg ansi-bold">148</span>
+total_sections                                                       <span class="ansi-cyan-fg ansi-bold">50</span>
+section_counts        <span class="ansi-bold">[</span><span class="ansi-bold">[</span>Conclusion, <span class="ansi-cyan-fg ansi-bold">2</span><span class="ansi-bold">]</span>, <span class="ansi-bold">[</span>Discussion, <span class="ansi-cyan-fg ansi-bold">3</span><span class="ansi-bold">]</span>, <span class="ansi-bold">[</span>Error, <span class="ansi-cyan-fg ansi-bold">3</span><span class="ansi-bold">]</span>,<span class="ansi-yellow-fg">...</span>
+coauthor_variety                                               <span class="ansi-cyan-fg ansi-bold">0.626984</span>
+coauthor_evenness                                              <span class="ansi-cyan-fg ansi-bold">0.010201</span>
+coauthor_disparity                                             <span class="ansi-cyan-fg ansi-bold">0.504405</span>
+paper_variety                                                  <span class="ansi-cyan-fg ansi-bold">0.003968</span>
+paper_evenness                                                      <span class="ansi-cyan-fg ansi-bold">0.0</span>
+paper_disparity                                                     <span class="ansi-cyan-fg ansi-bold">0.0</span>
+outcome_id            <span class="ansi-bold">[</span><span class="ansi-bright-yellow-fg">1C77CAB4-9F57-4219-A10B-9B2D878F5073</span>, B850BB6<span class="ansi-yellow-fg">...</span>
+Name: <span class="ansi-cyan-fg ansi-bold">0</span>, dtype: object</pre>
+</div>
+</div>
+</div>
+</section>
+<section id="applications-of-the-master-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="applications-of-the-master-dataset">4.2 Applications of the Master Dataset</h3>
+<p>The master dataset offers a robust foundation for analysing UKRI-funded research from multiple dimensions. One practical application is assessing the diversity of research teams in real time, particularly when evaluating new funding proposals.</p>
+<p>For instance, if new funding is announced for researchers, we can immediately estimate their degree of diversity—such as topic variety, evenness, and disparity by referencing their historical contributions and collaborations. This insight can be used to design programs that foster interdisciplinary and balanced research efforts.</p>
+<p>To illustrate, we analyse the diversity metrics for a reference publication from the dataset. Below, we compare the co-author diversity scores of this paper against the overall distribution in the dataset.</p>
+<div id="cell-78" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="dv">6</span>))</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> master_data[[<span class="st">"id"</span>, <span class="st">"coauthor_variety"</span>, <span class="st">"coauthor_evenness"</span>, <span class="st">"coauthor_disparity"</span>]].dropna()</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>reference_paper <span class="op">=</span> plot_data.loc[plot_data[<span class="st">"id"</span>] <span class="op">==</span> plot_data.loc[<span class="dv">0</span>][<span class="st">"id"</span>]]</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot variety, evenness, and disparity</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, metric <span class="kw">in</span> <span class="bu">enumerate</span>([<span class="st">"coauthor_variety"</span>, <span class="st">"coauthor_evenness"</span>, <span class="st">"coauthor_disparity"</span>]):</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    sns.histplot(plot_data[metric], bins<span class="op">=</span><span class="dv">20</span>, kde<span class="op">=</span><span class="va">False</span>, ax<span class="op">=</span>axes[i])</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    axes[i].axvline(</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>        reference_paper[metric].values[<span class="dv">0</span>],</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"red"</span>,</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>        linestyle<span class="op">=</span><span class="st">"--"</span>,</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">"Reference Paper"</span>,</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>    axes[i].set_title(<span class="ss">f"Distribution of Coauthor </span><span class="sc">{</span>metric<span class="sc">.</span>capitalize()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>    axes[i].set_xlabel(<span class="ss">f"Coauthor </span><span class="sc">{</span>metric<span class="sc">.</span>capitalize()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>    axes[i].set_ylabel(<span class="st">"Frequency"</span>)</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>    percentile <span class="op">=</span> percentileofscore(plot_data[metric], reference_paper[metric].values[<span class="dv">0</span>])</span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>    axes[i].text(</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.95</span>, <span class="fl">0.95</span>,</span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"Percentile: </span><span class="sc">{</span>percentile<span class="sc">:.2f}</span><span class="ss">%"</span>,</span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>        transform<span class="op">=</span>axes[i].transAxes,</span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a>        fontsize<span class="op">=</span><span class="dv">18</span>,</span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>        verticalalignment<span class="op">=</span><span class="st">'top'</span>,</span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a>        horizontalalignment<span class="op">=</span><span class="st">'right'</span>,</span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a>        bbox<span class="op">=</span><span class="bu">dict</span>(facecolor<span class="op">=</span><span class="st">'white'</span>, alpha<span class="op">=</span><span class="fl">0.8</span>, edgecolor<span class="op">=</span><span class="st">'none'</span>)</span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust layout</span></span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the plot</span></span>
+<span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="handover_notebook_files/figure-html/cell-46-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Understanding the diversity of research teams is crucial, but why does it matter? One key hypothesis is that diversity in co-authorship and research topics might be linked to higher downstream impact, as measured by citation counts.</p>
+<p>To explore this relationship, we use the dataset to run a regression analysis. The dependent variable is the year-normalised citation count (<code>cited_by_count_norm</code>), and the independent variables are the three diversity metrics: coauthor_variety, coauthor_evenness, and coauthor_disparity.</p>
+<div id="cell-80" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Normalise citation counts by publication year</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>master_data[<span class="st">"publication_year"</span>] <span class="op">=</span> master_data[<span class="st">"publication_date"</span>].<span class="bu">str</span>[:<span class="dv">4</span>].astype(<span class="bu">int</span>)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>master_data[<span class="st">"cited_by_count_norm"</span>] <span class="op">=</span> master_data[</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cited_by_count"</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>] <span class="op">/</span> master_data.groupby(<span class="st">"publication_year"</span>)[<span class="st">"cited_by_count"</span>].transform(<span class="st">"mean"</span>)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>regression_data <span class="op">=</span> master_data[</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    [</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"cited_by_count_norm"</span>,</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"coauthor_variety"</span>,</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"coauthor_evenness"</span>,</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"coauthor_disparity"</span>,</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>].dropna()</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> regression_data[[<span class="st">"coauthor_variety"</span>, <span class="st">"coauthor_evenness"</span>, <span class="st">"coauthor_disparity"</span>]]</span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>X_scaled <span class="op">=</span> scaler.fit_transform(X)</span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>X_scaled <span class="op">=</span> sm.add_constant(X_scaled)</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> regression_data[<span class="st">"cited_by_count_norm"</span>]</span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> sm.OLS(y, X_scaled).fit()</span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.summary())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                             OLS Regression Results                            
+===============================================================================
+Dep. Variable:     cited_by_count_norm   R-squared:                       0.018
+Model:                             OLS   Adj. R-squared:                  0.018
+Method:                  Least Squares   F-statistic:                     3338.
+Date:                 Thu, 19 Dec 2024   Prob (F-statistic):               0.00
+Time:                         21:35:45   Log-Likelihood:            -1.5243e+06
+No. Observations:               557160   AIC:                         3.049e+06
+Df Residuals:                   557156   BIC:                         3.049e+06
+Df Model:                            3                                         
+Covariance Type:             nonrobust                                         
+==============================================================================
+                 coef    std err          t      P&gt;|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const          1.0110      0.005    202.206      0.000       1.001       1.021
+x1             0.5651      0.008     72.579      0.000       0.550       0.580
+x2            -0.0339      0.005     -6.316      0.000      -0.044      -0.023
+x3            -0.1058      0.008    -13.452      0.000      -0.121      -0.090
+==============================================================================
+Omnibus:                  1798226.390   Durbin-Watson:                   1.711
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):     905693562333.565
+Skew:                          53.332   Prob(JB):                         0.00
+Kurtosis:                    6248.151   Cond. No.                         2.91
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</code></pre>
+</div>
+</div>
+<p>In this example without controls or fixed effects, and with particularly poor fit, we see that coauthor variety positively correlates with citation impact. Conversely, both evenness and disparity show slight negative associations, suggesting that balance and extreme field dissimilarity may not always enhance downstream influence.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
