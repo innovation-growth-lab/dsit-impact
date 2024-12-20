@@ -27,7 +27,10 @@ class PdfDataset(AbstractDataset):
         protocol, path = get_protocol_and_path(filepath)
         self._protocol = protocol
         self._filepath = PurePosixPath(path)
-        self._fs = fsspec.filesystem(self._protocol, **credentials)
+        if credentials is None:
+            self._fs = fsspec.filesystem(self._protocol)
+        else:
+            self._fs = fsspec.filesystem(self._protocol, **credentials)
 
     def _load(self) -> pymupdf.Document:
         """
