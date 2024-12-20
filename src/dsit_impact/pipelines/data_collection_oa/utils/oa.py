@@ -427,6 +427,30 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
             )
         )
 
+        # extract the content of citation_normalized_percentile
+        try:
+            df[
+                [
+                    "citation_normalized_percentile_value",
+                    "citation_normalized_percentile_is_in_top_1_percent",
+                    "citation_normalized_percentile_is_in_top_10_percent",
+                ]
+            ] = df.apply(
+                lambda x: (pd.Series(x["citation_normalized_percentile"])),
+                axis=1,
+                result_type="expand",
+            )
+        except (ValueError, KeyError):
+            logger.warning(
+                "citation_normalized_percentile not found in %s", df["id"].values[0]
+            )
+
+        # coerce "" in citation_normalized_percentile_value and fwci to None
+        df["citation_normalized_percentile_value"] = df[
+            "citation_normalized_percentile_value"
+        ].apply(lambda x: x if x != "" else None)
+        df["fwci"] = df["fwci"].apply(lambda x: x if x != "" else None)
+
         df = df[
             [
                 "id",
@@ -434,6 +458,10 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                 "pmid",
                 "mag_id",
                 "title",
+                "fwci",
+                "citation_normalized_percentile_value",
+                "citation_normalized_percentile_is_in_top_1_percent",
+                "citation_normalized_percentile_is_in_top_10_percent",
                 "publication_date",
                 "cited_by_count",
                 "counts_by_year",

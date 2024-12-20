@@ -188,7 +188,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 name="concatenate_openalex_doi",
             ),
         ],
-        tags=["second_search", "fetch_second_search"]
+        tags="second_search"
     )
 
     oa_id_collection_pipeline = pipeline(
@@ -218,7 +218,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=unused-argument
                 name="concatenate_openalex_id",
             ),
         ],
-        tags=["second_search", "fetch_second_search"]
+        tags="second_search"
     )
 
     primary_pipeline = pipeline(

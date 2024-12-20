@@ -1,3 +1,4 @@
+# Core dependencies
 ipython>=8.10
 jupyterlab_server>=2.11.1
 jupyterlab~=3.0
@@ -5,19 +6,35 @@ jupyter~=1.0
 kedro==0.19.10
 kedro-telemetry>=0.3.1
 notebook
-kedro-datasets[pandas.CSVDataset, pandas.ExcelDataset, pandas.ParquetDataset, plotly.PlotlyDataset, plotly.JSONDataset, matplotlib.MatplotlibWriter, duckdb, ibis]>=1.0
+kedro-datasets[pandas.CSVDataset,pandas.ExcelDataset,pandas.ParquetDataset,plotly.PlotlyDataset,plotly.JSONDataset,matplotlib.MatplotlibWriter,duckdb,ibis]>=1.0
 ibis-framework[duckdb]
 s3fs~=2024.6.0
+
+# Data processing and analysis
 joblib~=1.4.2
 pandas~=2.2.2
 numpy~=1.26.4
-pytest~=8.2.2
-thefuzz~=0.22.1
-git+https://github.com/ampudia19/scipdf_parser
-spacy~=3.7.5
-pymupdf~=1.24.7
-selenium~=4.22.0
-sentence-transformers~=3.0.1
 scipy~=1.14.0
-adapters~=0.2.2
 statsmodels~=0.14.4
+
+# Text processing and NLP
+thefuzz~=0.22.1
+spacy~=3.7.5
+sentence-transformers~=3.0.1
+
+# PDF processing
+pymupdf~=1.24.7
+# NOTE: scipdf_parser must be installed from https://github.com/ampudia19/scipdf_parser
+# Do NOT install the original scipdf_parser package
+
+# Web and API
+selenium~=4.22.0
+requests>=2.31.0
+adapters~=0.2.2
+
+# Testing
+pytest~=8.2.2
+
+# Visuals
+matplotlib~=3.5.1
+seaborn~=0.13.2

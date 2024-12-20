@@ -32,21 +32,33 @@ This project enhances the analysis of UKRI-funded research by linking publicatio
    cd dsit-impact
    ```
 
-2. **Install the package**:
+2. **Set up Python environment**:
+   ```bash
+   conda create -n dsit_impact python=3.12
+   conda activate dsit_impact
+   ```
+
+3. **Install the package**:
    ```bash
    pip install -e .
    ```
 
-3. **Install required libraries**:
+4. **Install required libraries**:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Set up `scipdf`**:
+5. **Install custom scipdf_parser**:
+   ```bash
+   # Important: This must be our custom fork, not the original package
+   pip install git+https://github.com/ampudia19/scipdf_parser
+   ```
+
+6. **Set up `scipdf`**:
    - Install any [spaCy English language](https://spacy.io/usage) library.
    - Run an instance of `GROBID`. The recommended method is via its [Docker image](https://hub.docker.com/r/lfoppiano/grobid/). Refer to the `GROBID` [documentation](https://grobid.readthedocs.io/en/latest/Grobid-docker/) for setup instructions.
 
-5. **Configure environment variables**:
+7. **Configure environment variables**:
    - Set up environment variables required for S3 file repositories. Refer to Kedro's [documentation](https://docs.kedro.org/en/stable/configuration/credentials.html) for creating a `credentials.yml` file.
 
 ## Getting Started
@@ -89,7 +101,11 @@ Each aspect of the project is implemented through specific pipelines:
 
 - **Citation Intent and Section Identification**:
   - Pipelines: `data_collection_s2`, `data_processing_pdfs`
-  - Functions: Collecting citation context data from Semantic Scholar, processing open-access full-text publications to identify citation sections and contexts.
+  - Functions: Collecting citation contexts from Semantic Scholar, processing PDF content for section identification, and categorising citations based on intent.
+
+- **Interdisciplinary Metrics Development**:
+  - Pipeline: `data_results_team_metrics`
+  - Functions: Computing variety, balance, and disparity metrics for research teams, using the Leiden CWTS topics taxonomy.
 
 - **Team Science Metrics**:
   - Pipelines: `data_processing_authors`, `data_analysis_team_metrics`
@@ -99,4 +115,67 @@ Each aspect of the project is implemented through specific pipelines:
   - Pipeline: `master_data_generation`
   - Functions: Integrating outputs from other pipelines, preparing final datasets for use by DSIT.
 
-For more details, visit the [dsit-impact GitHub repository](https://github.com/innovation-growth-lab/dsit-impact). 
+## Pipeline Dependencies
+
+Each pipeline has specific dependencies that need to be installed:
+
+- **Core Dependencies**: Kedro framework and its plugins for data processing
+- **Data Processing**: pandas, numpy, scipy for numerical computations
+- **Text Processing**: spaCy for NLP tasks, sentence-transformers for text embeddings
+- **PDF Processing**: 
+  - `scipdf_parser` for parsing scientific PDFs
+  - `pymupdf` for PDF manipulation
+  - `GROBID` service for PDF content extraction
+- **APIs**: 
+  - Selenium for web scraping
+  - Requests for API interactions
+- **Visualisation**: matplotlib and seaborn for data visualisation
+
+## Output Data Structure
+
+The project generates several key datasets:
+
+1. **Matched Publications Dataset**:
+   - Links between GtR and OpenAlex publications
+   - Confidence scores for matches
+   - Additional metadata from both sources
+
+2. **Citation Context Dataset**:
+   - Citation contexts from full-text analysis
+   - Section information where citations appear
+   - Citation intent classifications
+
+3. **Team Metrics Dataset**:
+   - Interdisciplinary metrics for research teams
+   - Topic distributions and diversity measures
+   - Temporal analysis of team compositions
+
+## Common Issues and Solutions
+
+1. **GROBID Service**:
+   - Ensure GROBID Docker container is running before processing PDFs
+   - Default port is 8070, can be configured in `conf/base/parameters.yml`
+
+2. **API Rate Limits**:
+   - OpenAlex and Crossref APIs have rate limits
+   - Use provided email in API calls for higher rate limits
+   - Pipeline includes automatic retry mechanisms
+
+3. **Memory Usage**:
+   - Large PDF processing tasks may require significant memory
+   - Configure batch sizes in parameters for memory management
+   - Use provided chunking mechanisms for large datasets
+
+## Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `pytest tests/`
+5. Submit a pull request
+
+For more detailed information, check the [handover notebook](notebooks/handover_notebook.ipynb).
+
+For more details, visit the [dsit-impact GitHub repository](https://github.com/innovation-growth-lab/dsit-impact).
