@@ -345,26 +345,44 @@ def json_loader(data: Dict[str, Union[str, List[str]]]) -> pd.DataFrame:
                 [
                     (
                         (
-                            author["author"]["id"].replace("https://openalex.org/", ""),
+                            (
+                                author["author"]["id"].replace(
+                                    "https://openalex.org/", ""
+                                )
+                                if author["author"]["id"]
+                                else ""
+                            ),
                             inst["id"].replace("https://openalex.org/", ""),
-                            inst["country_code"],
+                            inst.get("country_code", ""),
                             author["author_position"],
                         )
-                        if author["institutions"]
-                        else [
-                            author["author"]["id"].replace("https://openalex.org/", ""),
+                        if author.get("institutions")
+                        else (
+                            (
+                                author["author"]["id"].replace(
+                                    "https://openalex.org/", ""
+                                )
+                                if author["author"]["id"]
+                                else ""
+                            ),
                             "",
                             "",
                             author["author_position"],
-                        ]
+                        )
                     )
                     for author in x
-                    for inst in author["institutions"] or [{}]
+                    if author.get("author")
+                    for inst in author.get("institutions", []) or [{}]
                 ]
                 if x
                 else None
             )
         )
+        # filter out authorships entries without author ids
+        df["authorships"] = df["authorships"].apply(
+            lambda x: ([entry for entry in x if entry and entry[0]] if x else None)
+        )
+
 
         # create tuples from counts by year, if available
         df["counts_by_year"] = df["counts_by_year"].apply(
