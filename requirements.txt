@@ -36,5 +36,5 @@ adapters~=0.2.2
 pytest~=8.2.2
 
 # Visuals
-matplotlib~=3.5.1
+matplotlib
 seaborn~=0.13.2
