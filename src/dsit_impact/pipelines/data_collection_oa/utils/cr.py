@@ -1,18 +1,18 @@
 """
-This script provides utility functions for processing and matching publication 
-data using the Crossref API. It includes functions for processing individual 
-items, setting up HTTP requests with retries, and calculating fuzzy matching 
+This script provides utility functions for processing and matching publication
+data using the Crossref API. It includes functions for processing individual
+items, setting up HTTP requests with retries, and calculating fuzzy matching
 scores for titles, authors, and journals.
 
 Functions:
-    _process_item(item: Dict[str, Union[str, Dict[str, str]]], title: str, 
-                  author: str, journal: str, publication_date: str) 
+    _process_item(item: Dict[str, Union[str, Dict[str, str]]], title: str,
+                  author: str, journal: str, publication_date: str)
                   -> Union[Dict[str, Union[str, int, float]], None]:
-        Processes an item and returns a dictionary containing relevant information 
+        Processes an item and returns a dictionary containing relevant information
         if the item meets certain criteria.
     setup_requests_with_retries(retries: int, backoff_factor: float) -> requests.Session:
         Sets up an HTTP session with retry logic for handling transient errors.
-    calculate_fuzzy_scores(title: str, author: str, journal: str, item: Dict[str, Union[str, Dict[str, str]]]) 
+    calculate_fuzzy_scores(title: str, author: str, journal: str, item: Dict[str, Union[str, Dict[str, str]]])
                            -> Dict[str, Union[str, int, float]]:
         Calculates fuzzy matching scores for the title, author, and journal of an item.
 
@@ -28,7 +28,7 @@ from typing import List, Dict, Union
 from html import unescape
 import requests
 from requests.adapters import HTTPAdapter, Retry
-from thefuzz import fuzz # pylint: disable=import-error
+from thefuzz import fuzz  # pylint: disable=import-error
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def _process_item(
     title: str,
     author: str,
     journal: str,
-    publication_date: str
+    publication_date: str,
 ) -> Union[Dict[str, Union[str, int, float]], None]:
     """
     Process an item and return a dictionary containing relevant information if the
@@ -85,15 +85,14 @@ def _process_item(
 
 
 def clean_html_entities(
-    input_record: Dict[str, Union[str, int, float]]
+    input_record: Dict[str, Union[str, int, float]],
 ) -> Dict[str, Union[str, int, float]]:
     """
     Iterate over each key-value pair in the record and unescape HTML entities
     in string values
     """
     return {
-        key: unescape(value.replace("&", "and")) if isinstance(
-            value, str) else value
+        key: unescape(value.replace("&", "and")) if isinstance(value, str) else value
         for key, value in input_record.items()
     }
 
@@ -155,7 +154,7 @@ def get_doi(
     journal: str,
     publication_date: str,
     mailto: str,
-    session: requests.Session
+    session: requests.Session,
 ) -> Dict[str, str]:
     """
     Retrieves the DOI (Digital Object Identifier) for a given publication by querying
@@ -177,8 +176,7 @@ def get_doi(
 
     title = "".join([c for c in title if c.isalnum() or c.isspace()])
     query = f"{title}, {author}, {journal}, {publication_date}"
-    url = f'https://api.crossref.org/works?query.bibliographic="{
-        query}"&mailto={mailto}&rows=5'
+    url = f'https://api.crossref.org/works?query.bibliographic="{query}"&mailto={mailto}&rows=5'
     max_retries = 5
     attempts = 0
 
