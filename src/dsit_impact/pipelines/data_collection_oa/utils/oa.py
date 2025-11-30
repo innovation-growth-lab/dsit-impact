@@ -218,8 +218,7 @@ def _works_generator(
     else:  # OA does not accept cursor pagination with samples.
         cursor_url = (
             f"https://api.openalex.org/works?filter={filter_string}&seed=123"
-            f"&mailto={
-                mailto}&per-page={perpage}&sample={sample_size}&page={{}}"
+            f"&mailto={mailto}&per-page={perpage}&sample={sample_size}&page={{}}"
         )
 
         try:
