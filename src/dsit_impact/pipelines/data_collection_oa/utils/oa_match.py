@@ -1,28 +1,28 @@
 """
-This script provides functions to process and match Open Access (OA) 
-publications based on various criteria such as title, author, and 
-publication date. It includes utilities for cleaning HTML entities, 
-performing fuzzy matching of author names, and retrieving OA matches 
+This script provides functions to process and match Open Access (OA)
+publications based on various criteria such as title, author, and
+publication date. It includes utilities for cleaning HTML entities,
+performing fuzzy matching of author names, and retrieving OA matches
 from an external API.
 
 Functions:
     - _process_string(s: str) -> Union[str, list]:
-        Processes a string by removing non-alphanumeric characters and 
+        Processes a string by removing non-alphanumeric characters and
         splitting it based on specified delimiters.
-    - clean_html_entities_for_oa(input_record: Dict[str, Union[str, int, float]]) 
+    - clean_html_entities_for_oa(input_record: Dict[str, Union[str, int, float]])
       -> Dict[str, Union[str, int, float, Dict[str, str]]]:
-        Cleans HTML entities in the input record and processes strings 
+        Cleans HTML entities in the input record and processes strings
         containing specific delimiters.
-    - get_oa_match(outcome_id: str, title: Union[str, List[str]], 
-      chapter_title: str, author: str, publication_date: str, 
+    - get_oa_match(outcome_id: str, title: Union[str, List[str]],
+      chapter_title: str, author: str, publication_date: str,
       config: Dict[str, str], session: requests.Session) -> List[Dict[str, str]]:
         Retrieves OA matches based on the provided parameters.
-    - author_fuzzy_match(author: str, candidate_author: List[Dict[str, Union[str, 
+    - author_fuzzy_match(author: str, candidate_author: List[Dict[str, Union[str,
       Dict[str, str]]]]) -> Union[Dict[str, Union[str, Dict[str, str]]], None]:
-        Performs a fuzzy matching between the given author name and a 
+        Performs a fuzzy matching between the given author name and a
         candidate author name.
     - get_best_match(group: pd.Series.groupby) -> pd.DataFrame:
-        Returns the best match from a group of records based on the 
+        Returns the best match from a group of records based on the
         'title_gtr' column.
 
 Dependencies:
@@ -37,7 +37,6 @@ Dependencies:
 
 import logging
 import random
-from typing import List, Dict, Union
 import re
 from html import unescape
 import requests
@@ -47,7 +46,7 @@ from thefuzz import fuzz, process  # pylint: disable=import-error
 logger = logging.getLogger(__name__)
 
 
-def _process_string(s: str) -> Union[str, list]:
+def _process_string(s: str) -> str | list:
     # find all positions of the specified characters
     split_positions = [m.start() for m in re.finditer("[:\\(\\[]", s)]
     if not split_positions:
@@ -74,8 +73,8 @@ def _process_string(s: str) -> Union[str, list]:
 
 
 def clean_html_entities_for_oa(
-    input_record: Dict[str, Union[str, int, float]]
-) -> Dict[str, Union[str, int, float, Dict[str, str]]]:
+    input_record: dict[str, str | int | float],
+) -> dict[str, str | int | float | dict[str, str]]:
     """
     Iterate over each key-value pair in the record and unescape HTML entities
     in string values. If ":", "(", or "[" is in the string, split and create a
@@ -85,7 +84,9 @@ def clean_html_entities_for_oa(
         key: (
             value
             if key in ["outcome_id", "author", "publication_date"]
-            else _process_string(value) if isinstance(value, str) else value
+            else _process_string(value)
+            if isinstance(value, str)
+            else value
         )
         for key, value in input_record.items()
     }
@@ -93,13 +94,13 @@ def clean_html_entities_for_oa(
 
 def get_oa_match(
     outcome_id: str,
-    title: Union[str, List[str]],
+    title: str | list[str],
     chapter_title: str,
     author: str,
     publication_date: str,
-    config: Dict[str, str],
+    config: dict[str, str],
     session: requests.Session,
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """
     Retrieves Open Access (OA) matches based on the provided parameters.
 
@@ -200,7 +201,7 @@ def get_oa_match(
 
 
 def author_fuzzy_match(
-    author: str, candidate_author: List[Dict[str, Union[str, Dict[str, str]]]]
+    author: str, candidate_author: list[dict[str, str | dict[str, str]]]
 ):
     """
     Performs a fuzzy matching between the given author name and a
@@ -216,7 +217,10 @@ def author_fuzzy_match(
         if the fuzzy score is above or equal to 75, otherwise None.
     """
 
-    candidate_author_name = candidate_author["display_name"]
+    candidate_author_name = candidate_author.get("display_name")
+    if candidate_author_name is None:
+        return None
+
     author = " ".join([word for word in author.split() if len(word) > 1])
     fuzzy_score = fuzz.token_set_ratio(author.lower(), candidate_author_name.lower())
     if fuzzy_score >= 75:
