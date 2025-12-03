@@ -38,6 +38,7 @@ Dependencies:
 import logging
 import random
 import re
+import time
 from html import unescape
 import requests
 import pandas as pd
@@ -130,7 +131,7 @@ def get_oa_match(
 
     mailto = random.choice(config["mails"])
     candidate_outputs = []
-    for candidate_title in display_titles:
+    for idx, candidate_title in enumerate(display_titles):
         logger.info("Processing title: %s", candidate_title)
         query = f"{candidate_title}"
         url = (
@@ -139,28 +140,59 @@ def get_oa_match(
         )
         max_retries = 5
         attempts = 0
-        success = False  # Flag to indicate successful data fetch
-
+        success = False
+        
         while attempts < max_retries and not success:
             attempts += 1
             logging.info("Attempt %s for: %s", attempts, query)
-            if attempts == max_retries:
-                logging.error("Max retries reached for: %s", query)
-                break
-
+            
+            # exponential backoff
+            if attempts > 1:
+                wait_time = min(2 ** (attempts - 1), 60)  # cap at 60 sec
+                logger.info("Waiting %s seconds before retry...", wait_time)
+                time.sleep(wait_time)
+            
             try:
                 response = session.get(url, timeout=20)
+                
+                if response.status_code == 429:
+                    logger.warning("Rate limited. Waiting 10 seconds before retry...")
+                    time.sleep(10)
+                    continue
+                
+                # raise for other HTTP errors
+                response.raise_for_status()
+                
                 data = response.json()
                 results = data.get("results")
                 candidate_outputs.append(results)
-                break
+                success = True
+                
+                # add small delay between successful requests to avoid throttling
+                if idx < len(display_titles) - 1:
+                    time.sleep(0.1)  # 100ms delay
+                    
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 429:
+                    # already handled above, but catch here for safety
+                    continue
+                logging.warning("HTTP error: %s", e)
+            except requests.exceptions.RequestException as e:
+                logging.warning("Request exception: %s", e)
             except KeyError as e:
                 logging.warning("Missing key: %s", e)
             except Exception as e:  # pylint: disable=broad-except
                 logging.warning("Error fetching data: %s", e)
+        
+        if not success:
+            logging.error("Max retries reached for: %s", query)
 
-    # flatten list of candidates
-    candidate_flat = [item for sublist in candidate_outputs for item in sublist]
+    # flatten list of candidates, filtering out None values (redundant)
+    candidate_flat = [
+        item for sublist in candidate_outputs 
+        if sublist is not None 
+        for item in (sublist if sublist else [])
+    ]
 
     # keep candidates with one approximate author name
     matching_author = []
@@ -173,13 +205,22 @@ def get_oa_match(
                 matching_author.append(candidate_output)
 
     # keep candidates with up to 2 years difference in publication date
+    # if publication_year is None, include as candidate (missing on OA, err on including)
     matching_date = []
     if matching_author and publication_date:
         for candidate_output in matching_author:
-            publication_year = candidate_output["publication_year"]
-            year_diff = abs(int(publication_date[:4]) - int(publication_year))
-            if year_diff < 2:
+            publication_year = candidate_output.get("publication_year")
+            if publication_year is None:
                 matching_date.append(candidate_output)
+            else:
+                # if we can parse the year, check if it's within 2 years
+                try:
+                    year_diff = abs(int(publication_date[:4]) - int(publication_year))
+                    if year_diff < 2:
+                        matching_date.append(candidate_output)
+                except (ValueError, TypeError):
+                    # if we can't parse the year (oa update), include as candidate
+                    matching_date.append(candidate_output)
 
     return_dicts = []
     ids = []
