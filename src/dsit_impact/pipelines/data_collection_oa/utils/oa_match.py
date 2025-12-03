@@ -142,22 +142,32 @@ def get_oa_match(
         attempts = 0
         success = False
         
+        # Add initial jitter to avoid synchronized requests across parallel workers
+        if idx == 0:
+            initial_jitter = random.uniform(0.5, 2.0)
+            time.sleep(initial_jitter)
+        
         while attempts < max_retries and not success:
             attempts += 1
             logging.info("Attempt %s for: %s", attempts, query)
             
-            # exponential backoff
+            # exponential backoff with jitter
             if attempts > 1:
-                wait_time = min(2 ** (attempts - 1), 60)  # cap at 60 sec
-                logger.info("Waiting %s seconds before retry...", wait_time)
+                base_wait = min(2 ** (attempts - 1), 60)  # cap at 60 sec
+                jitter = random.uniform(0, base_wait * 0.3)  # add up to 30% jitter
+                wait_time = base_wait + jitter
+                logger.info("Waiting %.2f seconds before retry...", wait_time)
                 time.sleep(wait_time)
             
             try:
                 response = session.get(url, timeout=20)
                 
                 if response.status_code == 429:
-                    logger.warning("Rate limited. Waiting 10 seconds before retry...")
-                    time.sleep(10)
+                    wait_time = 5 + random.uniform(10, 30)  # 60-90 seconds with jitter
+                    logger.warning(
+                        "Rate limited. Waiting %.2f seconds before retry...", wait_time
+                    )
+                    time.sleep(wait_time)
                     continue
                 
                 # raise for other HTTP errors
@@ -170,14 +180,35 @@ def get_oa_match(
                 
                 # add small delay between successful requests to avoid throttling
                 if idx < len(display_titles) - 1:
-                    time.sleep(0.1)  # 100ms delay
+                    delay = 1.0 + random.uniform(0, 1.0)  # 1-2 seconds with jitter
+                    time.sleep(delay)
                     
             except requests.exceptions.HTTPError as e:
-                if e.response.status_code == 429:
-                    # already handled above, but catch here for safety
-                    continue
+                if hasattr(e, 'response') and e.response is not None:
+                    if e.response.status_code == 429:
+                        # handle 429 in exception case too
+                        retry_after = e.response.headers.get("Retry-After")
+                        if retry_after:
+                            wait_time = int(retry_after) + random.uniform(5, 15)
+                        else:
+                            wait_time = 10 + random.uniform(10, 30)
+                        logger.warning(
+                            "Rate limited (HTTPError). Waiting %.2f seconds...", wait_time
+                        )
+                        time.sleep(wait_time)
+                        continue
                 logging.warning("HTTP error: %s", e)
             except requests.exceptions.RequestException as e:
+                # Check if it's a "too many 429" error
+                if "too many 429" in str(e).lower():
+                    wait_time = 10 + random.uniform(10, 30)  # 1-3 minutes with jitter
+                    logger.warning(
+                        "Too many 429 errors. Waiting %.2f seconds before retry...", wait_time
+                    )
+                    time.sleep(wait_time)
+                    # Reset attempts to give it another try after long wait
+                    if attempts < max_retries:
+                        continue
                 logging.warning("Request exception: %s", e)
             except KeyError as e:
                 logging.warning("Missing key: %s", e)
