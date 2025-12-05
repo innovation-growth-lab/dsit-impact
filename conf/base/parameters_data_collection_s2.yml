@@ -4,7 +4,9 @@ s2:
     only_unparsed: True
     strength:
       api:
-        key: 0VsRMRMrVG2toSQgrNoVR2Yq2rsCf0qX2UWbQaVy
+        key: 
+          - 0VsRMRMrVG2toSQgrNoVR2Yq2rsCf0qX2UWbQaVy
+          - G9lrUCYYRC5Uur8jkxtBF4lfpw9gzjj46M3B3lXs
         base_url: https://api.semanticscholar.org/graph/v1/paper
         cites: citations
         cited_by: references
@@ -17,7 +19,9 @@ s2:
         perpage: 500
     paper_details:
       api:
-        key: 0VsRMRMrVG2toSQgrNoVR2Yq2rsCf0qX2UWbQaVy
+        key: 
+          - 0VsRMRMrVG2toSQgrNoVR2Yq2rsCf0qX2UWbQaVy
+          - G9lrUCYYRC5Uur8jkxtBF4lfpw9gzjj46M3B3lXs
         base_url: https://api.semanticscholar.org/graph/v1/paper
         fields:
           - isOpenAccess

@@ -39,14 +39,56 @@ Dependencies:
     - requests.adapters.Retry
     - joblib
 """
+
 import logging
+import time
+import threading
 from typing import Sequence, Dict, Union, List, Any
 import pandas as pd
 import requests
 from requests.adapters import HTTPAdapter, Retry
-from joblib import Parallel, delayed
 
 logger = logging.getLogger(__name__)
+
+
+class RateLimiter:
+    """Rate limiter that enforces 1 request per second per API key."""
+
+    def __init__(self, api_keys: List[str]):
+        """
+        Initialize rate limiter with API keys.
+
+        Args:
+            api_keys: List of API keys to rotate through
+        """
+        self.api_keys = api_keys
+        self.key_index = 0
+        self.last_request_time = {key: 0.0 for key in api_keys}
+        self.lock = threading.Lock()
+
+    def get_api_key(self) -> str:
+        """
+        Get the next API key to use, ensuring 1 RPS per key.
+
+        Returns:
+            API key to use
+        """
+        with self.lock:
+            # rotate through keys
+            api_key = self.api_keys[self.key_index]
+            self.key_index = (self.key_index + 1) % len(self.api_keys)
+
+            # ensure at least 1 second has passed since last request for this key
+            current_time = time.time()
+            time_since_last = current_time - self.last_request_time[api_key]
+
+            if time_since_last < 1.0:
+                sleep_time = 1.0 - time_since_last
+                time.sleep(sleep_time)
+                current_time = time.time()
+
+            self.last_request_time[api_key] = current_time
+            return api_key
 
 
 def get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
@@ -55,7 +97,8 @@ def get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
 
     Args:
         oa_dataset (pd.DataFrame): The input OA dataset.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Additional keyword arguments. If 'api_key' is a list,
+            multiple keys will be used with rate limiting (1 RPS per key).
 
     Returns:
         pd.DataFrame: A DataFrame containing the processed intent citations
@@ -67,15 +110,27 @@ def get_intent(oa_dataset: pd.DataFrame, **kwargs) -> pd.DataFrame:
             - intent: The intent of the citation.
             - context: The context of the citation.
     """
-    inputs = oa_dataset.apply(
+    # Handle multiple API keys with rate limiting
+    api_key = kwargs.get("api_key")
+    if isinstance(api_key, list):
+        rate_limiter = RateLimiter(api_key)
+        kwargs["rate_limiter"] = rate_limiter
+    elif isinstance(api_key, str):
+        # Single key - create a rate limiter with just one key
+        rate_limiter = RateLimiter([api_key])
+        kwargs["rate_limiter"] = rate_limiter
+    else:
+        raise ValueError("api_key must be a string or list of strings")
+
+    works = oa_dataset.apply(
         lambda x: (x["id"], x["doi"], x["mag_id"], x["pmid"]),
         axis=1,
     ).tolist()
 
-    s2_outputs = Parallel(n_jobs=8, verbose=10)(
-        delayed(iterate_citation_detail_points)(*input, direction="citations", **kwargs)
-        for input in inputs
-    )
+    s2_outputs = [
+        iterate_citation_detail_points(*work, direction="citations", **kwargs)
+        for work in works
+    ]
 
     s2_dict = dict(list(zip(oa_dataset["id"], s2_outputs)))
 
@@ -160,7 +215,8 @@ def fetch_citation_details(
     base_url: str,
     direction: str,
     fields: Sequence[str],
-    api_key: str,
+    api_key: str = None,
+    rate_limiter: RateLimiter = None,
     perpage: int = 500,
 ) -> Sequence[Dict[str, str]]:
     """
@@ -171,21 +227,14 @@ def fetch_citation_details(
         base_url (str): The base URL for the API.
         direction (str): The direction of the citations.
         fields (Sequence[str]): The fields to fetch.
-        api_key (str): The API key to use.
+        api_key (str, optional): The API key to use (if rate_limiter not provided).
+        rate_limiter (RateLimiter, optional): Rate limiter for multiple API keys.
         perpage (int, optional): The number of citations to fetch per page.
             Defaults to 500.
 
     Returns:
         Sequence[Dict[str, str]]: A list of citation details.
     """
-    offset = 0
-    url = (
-        f"{base_url}/{work_id}/{direction}?"
-        f"fields={','.join(fields)}&offset={offset}&limit={perpage}"
-    )
-
-    headers = {"x-api-key": api_key}
-
     session = requests.Session()
     retries = Retry(
         total=2,
@@ -195,7 +244,24 @@ def fetch_citation_details(
     session.mount("https://", HTTPAdapter(max_retries=retries))
 
     data_list = []
+    offset = 0
+
     while True:
+        # Get API key from rate limiter if available, otherwise use provided key
+        if rate_limiter:
+            current_api_key = rate_limiter.get_api_key()
+        elif api_key:
+            current_api_key = api_key
+        else:
+            raise ValueError("Either api_key or rate_limiter must be provided")
+
+        url = (
+            f"{base_url}/{work_id}/{direction}?"
+            f"fields={','.join(fields)}&offset={offset}&limit={perpage}"
+        )
+
+        headers = {"x-api-key": current_api_key}
+
         response = session.get(url, headers=headers)
         response.raise_for_status()
         data = response.json().get("data", [])
@@ -205,12 +271,6 @@ def fetch_citation_details(
             break
 
         offset += perpage
-        url = (
-            f"{base_url}/{work_id}/{direction}?"
-            f"fields={','.join(fields)}&offset={offset}&limit={perpage}"
-        )
-
-        # time.sleep(random.uniform(0.25, 0.75))
 
     return data_list
 
@@ -269,20 +329,33 @@ def get_paper_details(oa_dataset: pd.DataFrame, **kwargs):
 
     Args:
         oa_dataset (pd.DataFrame): The dataset containing paper information.
-        **kwargs: Additional keyword arguments.
+        **kwargs: Additional keyword arguments. If 'api_key' is a list,
+            multiple keys will be used with rate limiting (1 RPS per key).
 
     Returns:
         pd.DataFrame: A DataFrame containing processed paper details.
 
     """
+    # Handle multiple API keys with rate limiting
+    api_key = kwargs.get("api_key")
+    if isinstance(api_key, list):
+        rate_limiter = RateLimiter(api_key)
+        kwargs["rate_limiter"] = rate_limiter
+    elif isinstance(api_key, str):
+        # Single key - create a rate limiter with just one key
+        rate_limiter = RateLimiter([api_key])
+        kwargs["rate_limiter"] = rate_limiter
+    else:
+        raise ValueError("api_key must be a string or list of strings")
+
     inputs = oa_dataset.apply(
         lambda x: (x["id"], x["doi"], x["mag_id"], x["pmid"]),
         axis=1,
     ).tolist()
 
-    s2_outputs = Parallel(n_jobs=6, verbose=10)(
-        delayed(iterate_paper_detail_points)(*input, **kwargs) for input in inputs
-    )
+    s2_outputs = [
+        iterate_paper_detail_points(*input_tuple, **kwargs) for input_tuple in inputs
+    ]
 
     s2_dict = dict(list(zip(oa_dataset["id"], s2_outputs)))
 
@@ -355,26 +428,33 @@ def _fetch_paper_details(
     work_id: str,
     base_url: str,
     fields: Sequence[str],
-    api_key: str,
+    api_key: str = None,
+    rate_limiter: RateLimiter = None,
 ) -> Sequence[Dict[str, str]]:
     """
-    Fetches citation details for a given work ID.
+    Fetches paper details for a given work ID.
 
     Args:
-        work_id (str): The work ID to fetch citation details for.
+        work_id (str): The work ID to fetch paper details for.
         base_url (str): The base URL for the API.
-        direction (str): The direction of the citations.
         fields (Sequence[str]): The fields to fetch.
-        api_key (str): The API key to use.
-        perpage (int, optional): The number of citations to fetch per page.
-            Defaults to 500.
+        api_key (str, optional): The API key to use (if rate_limiter not provided).
+        rate_limiter (RateLimiter, optional): Rate limiter for multiple API keys.
 
     Returns:
-        Sequence[Dict[str, str]]: A list of citation details.
+        Sequence[Dict[str, str]]: Paper details.
     """
+    # Get API key from rate limiter if available, otherwise use provided key
+    if rate_limiter:
+        current_api_key = rate_limiter.get_api_key()
+    elif api_key:
+        current_api_key = api_key
+    else:
+        raise ValueError("Either api_key or rate_limiter must be provided")
+
     url = f"{base_url}/{work_id}?fields={','.join(fields)}"
 
-    headers = {"X-API-KEY": api_key}
+    headers = {"X-API-KEY": current_api_key}
 
     session = requests.Session()
     retries = Retry(
