@@ -163,7 +163,7 @@ def get_oa_match(
                 response = session.get(url, timeout=20)
                 
                 if response.status_code == 429:
-                    wait_time = 5 + random.uniform(10, 30)  # 60-90 seconds with jitter
+                    wait_time = 5 + random.uniform(10, 30)  # 15-45 seconds with jitter
                     logger.warning(
                         "Rate limited. Waiting %.2f seconds before retry...", wait_time
                     )
@@ -199,14 +199,13 @@ def get_oa_match(
                         continue
                 logging.warning("HTTP error: %s", e)
             except requests.exceptions.RequestException as e:
-                # Check if it's a "too many 429" error
+                # check if it's a "too many 429" error
                 if "too many 429" in str(e).lower():
                     wait_time = 10 + random.uniform(10, 30)  # 1-3 minutes with jitter
                     logger.warning(
                         "Too many 429 errors. Waiting %.2f seconds before retry...", wait_time
                     )
                     time.sleep(wait_time)
-                    # Reset attempts to give it another try after long wait
                     if attempts < max_retries:
                         continue
                 logging.warning("Request exception: %s", e)
