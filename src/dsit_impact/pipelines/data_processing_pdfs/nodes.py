@@ -185,7 +185,7 @@ def get_unparsed_pdfs(
         pd.DataFrame: The dataset with the parsed PDF content.
     """
     parsed_pdfs = []
-    for i, loader in enumerate(section_details.values()[:20]):
+    for i, loader in enumerate(section_details.values()):
         logger.info("Processing loader %d / %d", i, len(section_details))
         data = loader()
         data = data.drop_duplicates(subset=["parent_id", "doi", "pmid", "mag_id"])
