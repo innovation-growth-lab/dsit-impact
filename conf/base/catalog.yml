@@ -332,7 +332,7 @@ pdfs.section_details.oracle:
     section_heading: string
     main_section_heading: string
   filename_suffix: '.parquet'
-  path: s3://igl-public/03_publication_metrics/update/data/01_raw/pdfs/citation_sections/
+  path: s3://igl-public/03_publication_metrics/data/01_raw/pdfs/citation_sections/
   credentials: s3_credentials
 
 pdfs.section_details.raw:
