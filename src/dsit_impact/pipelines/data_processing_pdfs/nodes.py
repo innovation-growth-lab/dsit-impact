@@ -193,9 +193,17 @@ def get_unparsed_pdfs(
 
     parsed_pdfs = pd.concat(parsed_pdfs, ignore_index=True)
 
-    # get the unparsed PDFs
-    unparsed_pdfs = incoming_data[
-        ~incoming_data["doi"].isin(parsed_pdfs["doi"])
+    # drop duplicates again
+    parsed_pdfs = parsed_pdfs.drop_duplicates(
+        subset=["parent_id", "doi", "pmid", "mag_id"]
+    )
+
+    # drop if pdf_url is None or ""
+    parsed_pdfs = parsed_pdfs[
+        parsed_pdfs["pdf_url"].notna() & (parsed_pdfs["pdf_url"] != "")
     ]
+
+    # get the unparsed PDFs
+    unparsed_pdfs = incoming_data[~incoming_data["doi"].isin(parsed_pdfs["doi"])]
 
     return unparsed_pdfs
