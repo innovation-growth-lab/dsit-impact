@@ -185,7 +185,7 @@ def get_unparsed_pdfs(
         pd.DataFrame: The dataset with the parsed PDF content.
     """
     parsed_pdfs = []
-    for i, loader in enumerate(section_details.values()):
+    for i, loader in enumerate(section_details.values()[:20]):
         logger.info("Processing loader %d / %d", i, len(section_details))
         data = loader()
         data = data.drop_duplicates(subset=["parent_id", "doi", "pmid", "mag_id"])
@@ -198,12 +198,11 @@ def get_unparsed_pdfs(
         subset=["parent_id", "doi", "pmid", "mag_id"]
     )
 
-    # drop if pdf_url is None or ""
-    parsed_pdfs = parsed_pdfs[
-        parsed_pdfs["pdf_url"].notna() & (parsed_pdfs["pdf_url"] != "")
+    # get the unparsed PDFs that have a valid pdf_url (not None or empty string)
+    unparsed_pdfs = incoming_data[
+        (~incoming_data["doi"].isin(parsed_pdfs["doi"]))
+        & (incoming_data["pdf_url"].notnull())
+        & (incoming_data["pdf_url"] != "")
     ]
-
-    # get the unparsed PDFs
-    unparsed_pdfs = incoming_data[~incoming_data["doi"].isin(parsed_pdfs["doi"])]
 
     return unparsed_pdfs
