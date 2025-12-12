@@ -309,6 +309,10 @@ pdfs.section_details.preprocessed:
   <<: *_pq
   filepath: s3://igl-public/03_publication_metrics/update/data/01_raw/pdfs/citation_details/section_inputs.parquet
 
+pdf.section_details.unparsed:
+  <<: *_pq
+  filepath: s3://igl-public/03_publication_metrics/update/data/01_raw/pdfs/sections_unparsed.parquet
+
 pdfs.objects.raw:
   type: partitions.PartitionedDataset
   dataset: dsit_impact.datasets.pdf_dataset.PdfDataset
