@@ -28,6 +28,8 @@ Dependencies:
 import logging
 from typing import Sequence, Tuple, Dict, Union
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+import signal
+import sys
 import scipdf
 import pandas as pd
 import numpy as np
@@ -37,41 +39,16 @@ from joblib import Parallel, delayed
 logger = logging.getLogger(__name__)
 
 
-def get_pdf_content(
-    dataset: pd.DataFrame, main_sections: Sequence[str]
-) -> Sequence[Tuple[int, str]]:
-    """
-    Retrieves the content of PDF files based on the provided dataset.
-
-    Args:
-        dataset (pd.DataFrame): The dataset containing 'id', 'pdf_url',
-            'title', and 'context' columns.
-
-    Returns:
-        list: A list of paper sections extracted from the PDF files.
-    """
-    inputs = dataset.apply(
-        lambda x: (
-            x["doi"],
-            x["mag_id"],
-            x["pmid"],
-            x["pdf_url"],
-            list(x["id"]),
-            list(x["title"]),
-            list(x["context"]),
-        ),
-        axis=1,
-    ).tolist()
-
-    # get paper sections
-    sections = Parallel(n_jobs=8, verbose=10)(
-        delayed(_parse_pdf)(*input, main_sections=main_sections) for input in inputs
-    )
-
-    return sections
+class TimeoutError(Exception):
+    """Custom timeout exception for PDF parsing."""
 
 
-def _parse_pdf(
+def _timeout_handler(signum, frame):
+    """Signal handler that raises TimeoutError when timeout is reached."""
+    raise TimeoutError("PDF processing timed out")
+
+
+def _parse_pdf_impl(
     doi: str,
     mag_id: str,
     pmid: int,
@@ -82,22 +59,7 @@ def _parse_pdf(
     main_sections: Sequence[str],
 ) -> Sequence[Tuple[int, str]]:
     """
-    Parse a PDF file and extract citation sections.
-
-    Args:
-        oa_id (Sequence[str]): A sequence of citation IDs.
-        doi (str): The DOI (Digital Object Identifier) of the article.
-        mag_id (str): The MAG (Microsoft Academic Graph) ID of the article.
-        pmid (int): The PubMed ID of the article.
-        pdf (str): The path to the PDF file.
-        parent_title (Sequence[str]): A sequence of parent titles for each citation.
-        contexts (Sequence[Sequence[str]]): A sequence of sequences containing citation contexts.
-        main_sections (Sequence[str]): A sequence of main sections to extract from the PDF.
-
-    Returns:
-        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the
-            extracted section.
-
+    Internal implementation of PDF parsing without timeout wrapper.
     """
     # timeout for PDF parsing (in seconds) - prevents hanging on problematic PDFs
     PDF_PARSE_TIMEOUT = 120  # 2 minutes
@@ -154,6 +116,116 @@ def _parse_pdf(
         citation_sections.extend(sections)
 
     return citation_sections
+
+
+def get_pdf_content(
+    dataset: pd.DataFrame, main_sections: Sequence[str]
+) -> Sequence[Tuple[int, str]]:
+    """
+    Retrieves the content of PDF files based on the provided dataset.
+
+    Args:
+        dataset (pd.DataFrame): The dataset containing 'id', 'pdf_url',
+            'title', and 'context' columns.
+
+    Returns:
+        list: A list of paper sections extracted from the PDF files.
+    """
+    inputs = dataset.apply(
+        lambda x: (
+            x["doi"],
+            x["mag_id"],
+            x["pmid"],
+            x["pdf_url"],
+            list(x["id"]),
+            list(x["title"]),
+            list(x["context"]),
+        ),
+        axis=1,
+    ).tolist()
+
+    # get paper sections
+    sections = Parallel(n_jobs=8, verbose=10)(
+        delayed(_parse_pdf)(*input, main_sections=main_sections) for input in inputs
+    )
+
+    return sections
+
+
+def _parse_pdf(
+    doi: str,
+    mag_id: str,
+    pmid: int,
+    pdf: str,
+    oa_id: Sequence[str],
+    parent_title: Sequence[str],
+    contexts: Sequence[Sequence[str]],
+    main_sections: Sequence[str],
+) -> Sequence[Tuple[int, str]]:
+    """
+    Parse a PDF file and extract citation sections.
+    This function uses signal-based timeout to prevent hanging.
+
+    Args:
+        oa_id (Sequence[str]): A sequence of citation IDs.
+        doi (str): The DOI (Digital Object Identifier) of the article.
+        mag_id (str): The MAG (Microsoft Academic Graph) ID of the article.
+        pmid (int): The PubMed ID of the article.
+        pdf (str): The path to the PDF file.
+        parent_title (Sequence[str]): A sequence of parent titles for each citation.
+        contexts (Sequence[Sequence[str]]): A sequence of sequences containing citation contexts.
+        main_sections (Sequence[str]): A sequence of main sections to extract from the PDF.
+
+    Returns:
+        Sequence[Tuple[int, str]]: A sequence of tuples containing the citation ID and the
+            extracted section.
+
+    """
+    # total timeout for entire PDF processing (in seconds) - prevents hanging
+    TOTAL_TIMEOUT = 180  # 3 minutes (includes parsing + section extraction)
+
+    # check if it's running on a Unix-like system (signal.alarm only works on Unix)
+    if sys.platform in ("win32", "cygwin"):
+        # On Windows, fall back to just the inner timeout without signal
+        logger.warning(
+            "Signal-based timeout not available on Windows. "
+            "Using thread-based timeout only for %s",
+            pdf,
+        )
+        try:
+            return _parse_pdf_impl(
+                doi, mag_id, pmid, pdf, oa_id, parent_title, contexts, main_sections
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error parsing PDF for %s: %s", doi, e)
+            return []
+
+    # Unix-like system: use signal.alarm for timeout
+    old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+    try:
+        signal.alarm(TOTAL_TIMEOUT)
+        try:
+            result = _parse_pdf_impl(
+                doi, mag_id, pmid, pdf, oa_id, parent_title, contexts, main_sections
+            )
+            signal.alarm(0)  # Cancel the alarm
+            return result
+        except TimeoutError:
+            logger.error(
+                "PDF processing timed out after %d seconds for %s (DOI: %s). "
+                "The PDF may be corrupted or too complex.",
+                TOTAL_TIMEOUT,
+                pdf,
+                doi,
+            )
+            signal.alarm(0)  # Cancel the alarm
+            return []
+    except Exception as e:  # pylint: disable=broad-except
+        signal.alarm(0)  # Cancel the alarm in case of other errors
+        logger.error("Error parsing PDF for %s: %s", doi, e)
+        return []
+    finally:
+        signal.signal(signal.SIGALRM, old_handler)  # Restore original handler
 
 
 def _parent_section_extraction(
