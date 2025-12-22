@@ -1,17 +1,17 @@
 """
-This module provides utility functions for handling PDF content extraction and 
+This module provides utility functions for handling PDF content extraction and
 downloading PDF files using a headless Chrome browser.
 
 Functions:
-    - get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]) -> 
+    - get_pdf_content(dataset: pd.DataFrame, main_sections: Sequence[str]) ->
       Sequence[Tuple[int, str]]:
         Retrieves the content of PDF files based on the provided dataset.
-    - _parse_pdf(doi: str, mag_id: str, pmid: int, pdf: str, oa_id: Sequence[str], 
-      parent_title: Sequence[str], contexts: Sequence[Sequence[str]], 
+    - _parse_pdf(doi: str, mag_id: str, pmid: int, pdf: str, oa_id: Sequence[str],
+      parent_title: Sequence[str], contexts: Sequence[Sequence[str]],
       main_sections: Sequence[str]) -> Sequence[Tuple[int, str]]:
         Parses a PDF file and extracts citation sections.
-    - _parent_section_extraction(article_dict: Dict[str, Union[str, Dict[str, str]]], 
-      parent_title: str, contexts: str, main_sections: str, doi: str, mag_id: str, 
+    - _parent_section_extraction(article_dict: Dict[str, Union[str, Dict[str, str]]],
+      parent_title: str, contexts: str, main_sections: str, doi: str, mag_id: str,
       pmid: str) -> Sequence[Tuple[int, str]]:
         Extracts parent sections from an article based on the provided parameters.
     - get_browser_pdf_object(articles: Sequence[Tuple[str, str]]):
@@ -27,6 +27,7 @@ Dependencies:
 
 import logging
 from typing import Sequence, Tuple, Dict, Union
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 import scipdf
 import pandas as pd
 import numpy as np
@@ -98,8 +99,24 @@ def _parse_pdf(
             extracted section.
 
     """
+    # timeout for PDF parsing (in seconds) - prevents hanging on problematic PDFs
+    PDF_PARSE_TIMEOUT = 120  # 2 minutes
+
     try:
-        article_dict = scipdf.parse_pdf_to_dict(pdf)
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(scipdf.parse_pdf_to_dict, pdf)
+            try:
+                article_dict = future.result(timeout=PDF_PARSE_TIMEOUT)
+            except FuturesTimeoutError:
+                logger.error(
+                    "PDF parsing timed out after %d seconds for %s (DOI: %s). "
+                    "The PDF may be corrupted or too complex.",
+                    PDF_PARSE_TIMEOUT,
+                    pdf,
+                    doi,
+                )
+                return []
+
         if article_dict is None:
             logger.error(
                 "Received None for article_dict while parsing PDF for %s."
