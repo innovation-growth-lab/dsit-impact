@@ -116,14 +116,18 @@ def _postprocess_results(
             [
                 (
                     (
-                        author["author"]["id"].replace("https://openalex.org/", ""),
-                        inst["id"].replace("https://openalex.org/", ""),
+                        (author["author"]["id"] or "").replace(
+                            "https://openalex.org/", ""
+                        ),
+                        (inst["id"] or "").replace("https://openalex.org/", ""),
                         inst["country_code"],
                         author["author_position"],
                     )
                     if author["institutions"]
                     else [
-                        author["author"]["id"].replace("https://openalex.org/", ""),
+                        (author["author"]["id"] or "").replace(
+                            "https://openalex.org/", ""
+                        ),
                         "",
                         "",
                         author["author_position"],
