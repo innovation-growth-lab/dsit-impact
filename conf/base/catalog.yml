@@ -341,7 +341,7 @@ pdfs.section_details.oracle:
 
 pdfs.section_details.raw:
   <<: *_pq_ptd
-  path: s3://igl-public/03_publication_metrics/update/data/01_raw/pdfs/citation_sections/
+  path: s3://igl-public/03_publication_metrics/data/01_raw/pdfs/citation_sections/
 
 pdfs.section_shares.intermediate:
   <<: *_pq
@@ -367,7 +367,7 @@ authors.oa_dataset.raw:
 # -> 11. CWTS Topics:
 cwts.topics.input:
   <<: *_pq
-  filepath: s3://igl-public/03_publication_metrics/update/data/01_raw/cwts/cwts_oa_topics.parquet
+  filepath: s3://igl-public/03_publication_metrics/data/01_raw/cwts/cwts_oa_topics.parquet
 
 "cwts.topics.{level}.distance_matrix":
   <<: *_pq

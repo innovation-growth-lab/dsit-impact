@@ -135,41 +135,41 @@ def compute_section_shares(section_details: AbstractDataset) -> pd.DataFrame:
     section_data (DataFrame): A DataFrame containing the computed section shares for
         each parent_id.
     """
-    section_data = []
+    all_data = []
     for i, loader in enumerate(section_details.values()):
         logger.info("Processing loader %d / %d", i, len(section_details))
         data = loader()
-        data = data.drop_duplicates(subset=["parent_id", "doi", "main_section_heading"])
+        all_data.append(data)
 
-        pivot_table = data.pivot_table(
-            index="parent_id",
-            columns="main_section_heading",
-            values="doi",
-            aggfunc="count",
-            fill_value=0,
-        ).reset_index()
+    combined_data = pd.concat(all_data, ignore_index=True)
+    combined_data = combined_data.drop_duplicates(
+        subset=["parent_id", "doi", "main_section_heading", "day_timestamp"]
+    )
 
-        pivot_table["total_sections"] = pivot_table[
-            [col for col in pivot_table.columns if col != "parent_id"]
-        ].sum(axis=1)
+    pivot_table = combined_data.pivot_table(
+        index="parent_id",
+        columns="main_section_heading",
+        values="doi",
+        aggfunc="count",
+        fill_value=0,
+    ).reset_index()
 
-        # add the number of unique doi per parent_id
-        pivot_table["unique_dois"] = (
-            data.groupby("parent_id")["doi"].nunique().reset_index()["doi"]
-        )
+    pivot_table["total_sections"] = pivot_table[
+        [col for col in pivot_table.columns if col != "parent_id"]
+    ].sum(axis=1)
 
-        section_data.append(pivot_table)
+    unique_dois = (
+        combined_data.groupby("parent_id")["doi"].nunique().reset_index()["doi"]
+    )
+    pivot_table["unique_dois"] = unique_dois
 
-    section_data = pd.concat(section_data, ignore_index=True)
+    if "day_timestamp" not in pivot_table.columns:
+        pivot_table["day_timestamp"] = None
 
-    # if day_timestamp not in the column names, drop it
-    if "day_timestamp" not in section_data.columns:
-        section_data["day_timestamp"] = None
+    pivot_table = pivot_table.drop_duplicates(subset=["parent_id", "day_timestamp"])
+    pivot_table = pivot_table.groupby("parent_id").sum().reset_index()
 
-    section_data = section_data.drop_duplicates(subset=["parent_id", "day_timestamp"])
-    section_data = section_data.groupby("parent_id").sum().reset_index()
-
-    return section_data
+    return pivot_table
 
 
 def get_unparsed_pdfs(
